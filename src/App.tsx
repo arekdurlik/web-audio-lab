@@ -1,10 +1,15 @@
-function App() {
+import { Fullscreen, GlobalStyle } from './styled'
+import { FlowEditor } from './FlowEditor'
 
+function App() {
   return (
-    <div>
-      yooo
-    </div>
+    <Fullscreen>
+      <GlobalStyle />
+      <FlowEditor />
+    </Fullscreen>
   )
 }
 
 export default App
+
+
