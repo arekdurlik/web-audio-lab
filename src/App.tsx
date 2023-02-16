@@ -1,5 +1,5 @@
+import { FlowEditor } from './components/FlowEditor'
 import { Fullscreen, GlobalStyle } from './styled'
-import { FlowEditor } from './FlowEditor'
 
 function App() {
   return (

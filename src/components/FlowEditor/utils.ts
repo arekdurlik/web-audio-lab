@@ -25,7 +25,7 @@ export const initialNodes: Node[] = [
     id: '1', 
     type: 'delayNode',
     position: { x: 150, y: -125 }, 
-    data: { label: '1' }, 
+    data: { label: '1', rotation: 3 }, 
   },
   { 
     id: '2', 
@@ -121,6 +121,12 @@ export const initialNodes: Node[] = [
     id: '14', 
     type: 'gainNode',
     position: { x: 150, y: 125 }, 
+    data: { label: 'x2' },
+  },
+  { 
+    id: '15', 
+    type: 'gainNode',
+    position: { x: 150, y: 185 }, 
     data: { label: 'x2' },
   }
 ]

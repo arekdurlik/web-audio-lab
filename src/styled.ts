@@ -1,8 +1,10 @@
 import styled, { createGlobalStyle } from 'styled-components'
 
 export const GlobalStyle = createGlobalStyle`
-body, html, * {
-  font-family: 'Arial';
+
+* {
+  font-family: 'Arial', sans-serif;
+  image-rendering: pixelated;
 }
 
 .react-flow__minimap-node {
@@ -22,9 +24,27 @@ body, html, * {
     border-top: none;
   }
 }
+
+.react-flow__edge {
+  z-index: 1000 !important;
+  &.updating,
+  &.selected {
+    path {
+      stroke-width: 2 !important;
+    }
+  }
+}
 `
 
 export const Fullscreen = styled.div`
 position: absolute;
 inset: 0;
+`
+
+export const FlexContainer = styled.div<{ direction?: string, justify?: string, align?: string, gap?: string | number }>`
+  display: flex;
+  ${({ direction }) => direction && `flex-direction: ${direction};`}
+  ${({ justify }) => justify && `justify-content: ${justify};`}
+  ${({ align }) => align && `align-items: ${align};`}
+  ${({ gap }) => gap && `gap: ${gap}px;`}
 `

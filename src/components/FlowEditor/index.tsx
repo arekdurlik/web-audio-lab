@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
 import ReactFlow, {
-  MiniMap,
-  Controls,
   Background,
   useNodesState,
   useEdgesState,
@@ -9,11 +7,12 @@ import ReactFlow, {
   updateEdge,
   Edge,
   Connection,
-  ConnectionLineType
+  ConnectionLineType,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { edgeOptions, initialEdges, initialNodes, nodeTypes, propOptions } from './utils'
-import { useNodeStore } from '../nodeStore'
+import { FlowControls } from './Controls'
+import { useNodeStore } from '../../stores/nodeStore'
 
 export function FlowEditor() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
@@ -22,7 +21,7 @@ export function FlowEditor() {
   const edgeUpdateSuccessful = useRef(true)
 
   useEffect(() => {
-    const connections = edges.map(edge => ({ source: edge.source, target: edge.target }))
+    const connections = edges.map(edge => ({ source: edge.sourceHandle, target: edge.targetHandle }))
 
     reconnectChain(connections)
   }, [edges])
@@ -44,16 +43,19 @@ export function FlowEditor() {
     edgeUpdateSuccessful.current = true
   }, [])
 
-  const onConnect = useCallback((params: Edge | Connection) => setEdges((edges) => addEdge({ 
-    ...params, type: 'step', style: { stroke: '#000', strokeWidth: 1 }},
-    edges
-  )), [setEdges])
+  const onConnect = useCallback((params: Edge | Connection) => setEdges((edges) => {
+    return addEdge({ 
+      ...params, type: 'step', style: { stroke: `#000`, strokeWidth: 1 }},
+      edges
+    )
+  }), [setEdges])
 
   return <ReactFlow
     nodes={nodes}
     edges={edges}
     nodeTypes={nodeTypes}
     snapToGrid
+    snapGrid={[10, 10]}
     connectionLineType={ConnectionLineType.Straight}
     onNodesChange={onNodesChange}
     onEdgesChange={onEdgesChange}
@@ -64,8 +66,7 @@ export function FlowEditor() {
     defaultEdgeOptions={edgeOptions}
     proOptions={propOptions}
   >
-    <MiniMap />
-    <Controls />
-    <Background gap={15} />
+    <FlowControls />
+    <Background gap={20} />
   </ReactFlow>
 }
