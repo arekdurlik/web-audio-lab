@@ -13,6 +13,7 @@ export type Edge = 'left' | 'top' | 'right' | 'bottom'
 export type NodeProps = {
   id: string,
   name: string | ReactNode,
+  value?: number | string,
   width?: number
   height?: number
   parameters?: ReactNode

@@ -1,7 +1,7 @@
 import { Handle, Position } from 'reactflow'
 import styled from 'styled-components'
 import { Label } from './styled'
-
+import {GoTriangleRight } from 'react-icons/go'
 type HandleProps = {
   id: string
   label?: string
@@ -36,6 +36,7 @@ export function TriangleHandle({ id, label, type, position, offset = 20 }: Handl
       position={position}
       offset={offset}
     >
+      <Triangle direction={direction} />
       <Label position={position}>
         {label}
       </Label>
@@ -63,7 +64,7 @@ ${({ position, offset }) => {
   switch(position) {
     case Position.Left: return `
     top: auto;
-      bottom: ${offset}px;
+      bottom: ${offset - 2}px;
     `
     case Position.Right: return `
     bottom: auto;
@@ -71,9 +72,8 @@ ${({ position, offset }) => {
     `
     case Position.Bottom: return `
       left: auto;
-      right: ${offset}px;
+      right: ${offset - 2}px;
     `
-
     case Position.Top: return `
       right: auto;
       left: ${offset}px;
@@ -82,27 +82,33 @@ ${({ position, offset }) => {
 }}
 
 ${({ position, type }) => type === 'target' 
-  ? `${position}: 0px;` 
-  : `${position}: -1px;`
+  ? `${position}: 3px;` 
+  : `${position}: 3px;`
 }
+`
 
-&:before {
-  content: '';
-  border-top: 5px solid transparent !important;
-  border-bottom: 5px solid transparent !important;
-  border-left: 8px solid #000 !important;
-  position: absolute;
-
-  ${({ direction, type }) => type === 'target' 
-  ? `${direction}: -7px;`
-  : '' }
-
-  ${({ direction }) => direction === 'bottom' 
-  ? 'transform: rotate(90deg);' 
-  : direction === 'left'
-  ? 'transform: rotate(180deg);'
-  : direction === 'top'
-  ? 'transform: rotate(-90deg);' : ''
+const Triangle = styled(GoTriangleRight)<{ direction: 'right' | 'bottom' | 'left' | 'top' }>`
+position: absolute;
+top: -4px;
+font-size: 15px;
+fill: #fff;
+stroke: #000;
+stroke-width: 1px;
+${({ direction }) => {
+  switch(direction) {
+    case 'bottom': return `
+    transform: rotate(90deg);
+    top: -7px;`
+    case 'left': return `
+    transform: rotate(180deg);
+    left: -6px;
+    top: -7px;`
+    case 'top': return `
+    transform: rotate(-90deg);
+    top: -6px;`
+    case 'right': return `
+    left: -7px;
+    top: -7px;`
   }
-}
+}}
 `

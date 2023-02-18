@@ -1,8 +1,9 @@
 import { NodeProps } from './types'
 import { useEffect } from 'react'
-import { Node } from './Node'
 import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
+import { SocketOnly } from './SocketOnlyNode'
+import { HandleType } from 'reactflow'
 
 export function Destination({id, data}: NodeProps) {
   const nodes = useNodeStore(state => state.nodes)
@@ -11,19 +12,19 @@ export function Destination({id, data}: NodeProps) {
     nodes.set('destination', audio.circuit.out)
   }, [])
 
+  const socket ={
+    id: 'destination',
+    type: 'target' as HandleType,
+    offset: 20
+  }
+
   return (
-    <Node 
-      id={id}
-      data={data}
-      name='Output'
-      height={40}
-      sockets={[{
-        id: 'destination',
-        type: 'target',
-        edge: 'left',
-        offset: 20
-      }]}
-      disableRemoval
+    <SocketOnly 
+      id={id} 
+      label='Output'
+      data={data} 
+      defaultRotation={2}
+      socket={socket}
     />
   )
 }

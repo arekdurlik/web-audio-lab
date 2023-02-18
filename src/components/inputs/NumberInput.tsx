@@ -3,15 +3,17 @@ import styled from 'styled-components'
 
 type NumberInputProps = {
   value?: number | string
-  onChange: (event: ChangeEvent<HTMLInputElement>) => void
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void
   label?: string
   defaultValue?: number
   min?: number | string
   max?: number | string
   step?: number
   width?: number
+  disabled?: boolean
+  unit?: string
 }
-export function NumberInput({ label, value, min, max, step = 0.01, width = 60, onChange }: NumberInputProps) {
+export function NumberInput({ label, value, min, max, step = 0.01, width = 60, unit, disabled, onChange }: NumberInputProps) {
 
   function checkBounds(e: KeyboardEvent<HTMLInputElement>) {
     const target = e.target as HTMLInputElement
@@ -36,19 +38,22 @@ export function NumberInput({ label, value, min, max, step = 0.01, width = 60, o
         value={value}
         min={min}
         max={max}
+        disabled={disabled}
         onChange={onChange} 
         onKeyUp={checkBounds}
         onMouseDownCapture={(e) => e.stopPropagation()}
         onPointerDownCapture={(e) => e.stopPropagation()}
         width={width}
       />
+      {unit}
     </Wrapper>
   )
 }
 
 const Wrapper = styled.div`
 display: flex;
-gap: 10px;
+gap: 5px;
+align-items: center;
 justify-content: space-between;
 `
 

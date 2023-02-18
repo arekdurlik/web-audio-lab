@@ -3,13 +3,14 @@ import { RiDeleteBin2Line } from 'react-icons/ri'
 import styled from 'styled-components'
 
 export const NodeTitle = styled.span<{ rotation?: 0 | 1 | 2 | 3 }>`
-  
+  font-size: 12px;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
   height: 100%;
+  flex: 1;
   white-space: nowrap;
 
   ${({ rotation }) => {
@@ -20,7 +21,7 @@ export const NodeTitle = styled.span<{ rotation?: 0 | 1 | 2 | 3 }>`
   }}
 `
 
-export const NodeContainer = styled.div<{ width?: number, height?: number}>`
+export const NodeContainer = styled.div<{ width?: number, height?: number }>`
   position: relative;
   box-sizing: border-box;
   background-color: white;
@@ -29,9 +30,10 @@ export const NodeContainer = styled.div<{ width?: number, height?: number}>`
   display: flex;
   flex-direction: column;
   gap: 5px;
+  overflow: hidden;
   
-  ${({ width }) => `width: ${width ? width : '120'}px;`}
-  ${({ height }) => `height: ${height ? height : '60'}px;`}
+  ${({ width }) => `min-width: ${width ? width : '120'}px;`}
+  ${({ height }) => `min-height: ${height ? height : '60'}px;`}
   
   .react-flow__handle {
     border-color: #000;
@@ -52,7 +54,7 @@ export const Parameters = styled.div<{
   positions?: ('left' | 'top' | 'right' | 'bottom')[] 
 }>
 `
-
+font-size: 12px;
 background-color: #fff;
 border: 1px solid #000;
 padding: 5px;
@@ -61,8 +63,8 @@ z-index: 4;
 ${({ rotation = 0, positions = ['bottom', 'right', 'bottom', 'right'] }) => {
   switch(positions[rotation]) {
     case 'bottom': return `
-      position: relative;
-      bottom: 1px;`
+      position: absolute;
+      top: calc(100% - 1px);`
     case 'right': return `
       position: absolute;
       top: 0;
@@ -105,7 +107,7 @@ gap: 1px;
 export const HoverOptions = styled.div`
 box-sizing: border-box;
 position: absolute;
-top: 6px;
+top: 4px;
 padding-bottom: 15px;
 left: 4px;
 width: calc(100% - 8px);

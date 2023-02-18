@@ -1,21 +1,23 @@
 import { useEffect, useState, FC, ReactNode } from 'react'
 import { Delete, Expand, HoverOptions, LeftOptions, NodeContainer, NodeTitle, Parameters, Rotate } from './styled'
 import { IoChevronDownSharp, IoChevronUpSharp } from 'react-icons/io5'
-import { positions } from '../utils'
+import { getEdgeIndex, positions } from '../utils'
 import { useReactFlow, useUpdateNodeInternals } from 'reactflow'
-import { Edge, NodeProps } from './types'
+import { NodeProps } from './types'
 import { useOutsideClick } from '../../../hooks/useOutsideClick'
 import { TriangleHandle } from '../../handles/TriangleHandle'
 import { LineHandle } from '../../handles/LineHandle'
+import styled from 'styled-components'
 
 export const Node: FC<NodeProps> = function({ 
   id, 
   name, 
-  width = 120,
-  height = 60,
+  width = 6,
+  height = 3,
   data, 
   sockets, 
   parameters, 
+  value,
   parameterPositions = ['bottom', 'right', 'bottom', 'right'],
   disableRemoval
 }) {
@@ -25,6 +27,9 @@ export const Node: FC<NodeProps> = function({
   const reactFlowInstance = useReactFlow()
   const updateNodeInternals = useUpdateNodeInternals()
   const activator = useOutsideClick(() => setActive(false))
+  const gridSize = 16
+  const mulWidth = width * gridSize
+  const mulHeight = height * gridSize
 
   useEffect(() => {
     const newNodes = reactFlowInstance.getNodes().map((node) => {
@@ -39,15 +44,6 @@ export const Node: FC<NodeProps> = function({
     reactFlowInstance.setNodes(newNodes)
   }, [data.rotation])
 
-  function getEdgeIndex(edge: Edge) {
-    switch(edge) {
-      case 'left':    return 0
-      case 'top':     return 1
-      case 'right':   return 2
-      case 'bottom':  return 3
-    }
-  }
-  
   function handleDelete() {
     reactFlowInstance.deleteElements({ nodes: [{ id }]})
   }
@@ -79,8 +75,8 @@ export const Node: FC<NodeProps> = function({
       ref={activator}
     >
       <NodeContainer 
-        width={rotation === 0 || rotation === 2 ? width : height} 
-        height={rotation === 0 || rotation === 2 ? height : width}
+        width={rotation === 0 || rotation === 2 ? mulWidth : mulHeight} 
+        height={rotation === 0 || rotation === 2 ? mulHeight : mulWidth}
       >
         {active && <HoverOptions>
           <LeftOptions>
@@ -93,6 +89,7 @@ export const Node: FC<NodeProps> = function({
         </HoverOptions>}
         {handles}
         <NodeTitle rotation={rotation}>{name}</NodeTitle>
+        <Value>{value}</Value>
       </NodeContainer>
       {expanded && <Parameters 
         rotation={rotation}
@@ -104,3 +101,11 @@ export const Node: FC<NodeProps> = function({
     </div>
   )
 }
+
+const Value = styled.div`
+position: absolute;
+bottom: 0;
+left: 0;
+padding: 1px 3px;
+font-size: 12px;
+`

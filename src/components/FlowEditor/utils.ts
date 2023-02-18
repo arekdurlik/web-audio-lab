@@ -3,6 +3,9 @@ import { LiveInput } from '../nodes/LiveInput'
 import { Destination } from '../nodes/Destination'
 import { Delay } from '../nodes/Delay'
 import { Gain } from '../nodes/Gain'
+import { BiquadFilter } from '../nodes/BiquadFilter'
+import { Oscillator } from '../nodes/Oscillator'
+import { ConstantSource } from '../nodes/ConstantSource'
 
 export const propOptions = {
   hideAttribution: true
@@ -12,133 +15,23 @@ export const initialNodes: Node[] = [
   { 
     id: 'liveInput', 
     type: 'liveInput',
-    position: { x: 10, y: 10 }, 
+    position: { x: 320, y: 100 }, 
     data: { label: 'Live Input' }, 
   },
   { 
     id: 'destination', 
     type: 'destination',
-    position: { x: 500, y: 300 }, 
+    position: { x: 300, y: 200 }, 
     data: { label: 'Output' }, 
-  },
-  { 
-    id: '1', 
-    type: 'delayNode',
-    position: { x: 150, y: -125 }, 
-    data: { label: '1', rotation: 3 }, 
-  },
-  { 
-    id: '2', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '3', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '4', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '5', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '6', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '7', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '8', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '9', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '10', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '11', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '12', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '13', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '14', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '15', 
-    type: 'delayNode',
-    position: { x: 150, y: 0 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '13', 
-    type: 'gainNode',
-    position: { x: 150, y: 125 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '14', 
-    type: 'gainNode',
-    position: { x: 150, y: 125 }, 
-    data: { label: 'x2' },
-  },
-  { 
-    id: '15', 
-    type: 'gainNode',
-    position: { x: 150, y: 185 }, 
-    data: { label: 'x2' },
   }
 ]
 
 export const nodeTypes = {
   delayNode: Delay,
   gainNode: Gain,
+  constantSourceNode: ConstantSource,
+  filterNode: BiquadFilter,
+  oscillatorNode: Oscillator,
   liveInput: LiveInput,
   destination: Destination
-}
-
-export const initialEdges: Edge[] = []
-
-export const edgeOptions = {
 }

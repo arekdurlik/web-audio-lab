@@ -1,8 +1,8 @@
 import { NodeProps } from './types'
 import { ChangeEvent, useEffect, useMemo, useState } from 'react'
-import { Parameter } from './Node/styled'
-import { Node } from './Node'
-import { Socket } from './Node/types'
+import { Parameter } from './BaseNode/styled'
+import { Node } from './BaseNode'
+import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
 import { RangeInput } from '../inputs/RangeInput'
@@ -20,24 +20,24 @@ export function Delay({ id, data }: NodeProps) {
   const sockets: Socket[] = [
     {
       id: audioId,
-      label: 'in',
+      label: '',
       type: 'target',
       edge: 'left',
-      offset: 40
+      offset: 24
     },
     {
       id: controlVoltageId,
-      label: 'cv',
+      label: 't',
       visual: 'triangle',
       type: 'target',
       edge: 'top',
-      offset: 50
+      offset: 48
     },
     {
       id: audioId,
       type: 'source',
       edge: 'right',
-      offset: 20
+      offset: 24
     }
   ]
 
@@ -48,7 +48,7 @@ export function Delay({ id, data }: NodeProps) {
   }, [])
 
   useEffect(() => {
-    if (!time || Number.isNaN(time)) return
+    if (time === undefined || Number.isNaN(time)) return
 
     instance.delayTime.setValueAtTime(instance.delayTime.value, audio.context.currentTime)
     instance.delayTime.linearRampToValueAtTime(time, audio.context.currentTime + 0.04)
@@ -80,9 +80,8 @@ export function Delay({ id, data }: NodeProps) {
     <Node 
       id={id}
       name='Delay'
+      value={time}
       data={data}
-      width={100}
-      height={60}
       sockets={sockets}
       parameterPositions={['bottom', 'left', 'top', 'right']}
       parameters={Parameters}

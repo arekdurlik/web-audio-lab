@@ -1,9 +1,9 @@
 import { NodeProps } from './types'
-import { useEffect } from 'react'
-import styled from 'styled-components'
-import { Node } from './Node'
+import { useEffect, useState } from 'react'
 import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
+import { HandleType } from 'reactflow'
+import { SocketOnly } from './SocketOnlyNode'
 
 export function LiveInput({ id, data }: NodeProps) {
   const nodes = useNodeStore(state => state.nodes)
@@ -12,33 +12,18 @@ export function LiveInput({ id, data }: NodeProps) {
     nodes.set('liveInput', audio.circuit.in)
   }, [])
 
+  const socket ={
+    id: 'liveInput',
+    type: 'source' as HandleType,
+    offset: 20
+  }
+
   return (
-    <Node 
-      id={id}
-      name={<Title>Live Input<Recording/></Title>}
-      height={40}
-      width={140}
-      data={data}
-      sockets={[{
-        id: 'liveInput',
-        type: 'source',
-        edge: 'right',
-        offset: 20
-      }]}
-      disableRemoval
+    <SocketOnly 
+      id={id} 
+      label='Live in'
+      data={data} 
+      socket={socket}
     />
   )
 }
-
-const Title = styled.div`
-display: flex;
-gap: 5px;
-align-items: center;
-`
-const Recording = styled.div`
-width: 10px;
-height: 10px;
-background-color: #f00;
-border-radius: 100%;
-`
-

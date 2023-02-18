@@ -35,10 +35,18 @@ export const GlobalStyle = createGlobalStyle`
   }
 }
 `
+export const FlowWrapper = styled.div`
+position: relative;
+width: 100%;
+height: 100%;
+`
 
 export const Fullscreen = styled.div`
+display: flex;
+flex-direction: column;
 position: absolute;
 inset: 0;
+height: 100%;
 `
 
 export const FlexContainer = styled.div<{ direction?: string, justify?: string, align?: string, gap?: string | number }>`

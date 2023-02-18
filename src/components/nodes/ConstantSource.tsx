@@ -1,5 +1,5 @@
 import { NodeProps } from './types'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -9,59 +9,70 @@ import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
 import { NumberInput } from '../inputs/NumberInput'
 
-export function Gain({ id, data }: NodeProps) {
-  const [gain, setGain] = useState(1)
+export function ConstantSource({ id, data }: NodeProps) {
+  const [playing, setPlaying] = useState(false)
+  const [offset, setOffset] = useState(1)
   const [max, setMax] = useState<string | number>(2)
   const [min, setMin] = useState<string | number>(-2)
-  const audioId = `${id}-audio`
-  const controlVoltageId = `${id}-cv`
-  const [instance] = useState(new GainNode(audio.context))
+  const signalId = `${id}-signal`
+  const offsetId = `${id}-offset`
+  const instance = useRef(new ConstantSourceNode(audio.context, { offset: offset }))
   const setInstance = useNodeStore(state => state.setInstance)
   const sockets: Socket[] = [
     {
-      id: audioId,
-      label: '',
-      type: 'target',
-      edge: 'left',
+      id: signalId,
+      type: 'source',
+      edge: 'right',
       offset: 24
     },
     {
-      id: controlVoltageId,
-      label: 'g',
+      id: offsetId,
+      label: 'o',
       visual: 'triangle',
       type: 'target',
       edge: 'top',
       offset: 48
     },
-    {
-      id: audioId,
-      type: 'source',
-      edge: 'right',
-      offset: 24
-    }
   ]
 
   useEffect(() => {
-    instance.gain.value = gain
-    setInstance(audioId, instance)
-    setInstance(controlVoltageId, instance.gain)
+    setInstance(signalId, instance.current)
+    setInstance(offsetId, instance.current.offset)
   }, [])
 
   useEffect(() => {
-    if (gain === undefined || Number.isNaN(gain)) return
+    if (!offset || Number.isNaN(offset)) return
 
-    instance.gain.setValueAtTime(instance.gain.value, audio.context.currentTime)
-    instance.gain.linearRampToValueAtTime(gain, audio.context.currentTime + 0.03)
-  }, [gain])
+    instance.current.offset.setValueAtTime(instance.current.offset.value, audio.context.currentTime)
+    instance.current.offset.linearRampToValueAtTime(offset, audio.context.currentTime + 0.03)
+  }, [offset])
 
-  function handleGain(event: ChangeEvent<HTMLInputElement>) {
+  function handleStart() {
+    try { instance.current.stop() } catch {}
+    instance.current = new ConstantSourceNode(audio.context, { offset: offset })
+
+    setInstance(signalId, instance.current)
+    setInstance(offsetId, instance.current.offset)
+    setPlaying(true)
+    instance.current.start()
+  }
+
+  function handleStop() {
+    try { instance.current.stop() } catch {}
+    setPlaying(false)
+  }
+
+  function handleOffset(event: ChangeEvent<HTMLInputElement>) {
     const value = parseFloat(event.target.value)
-    setGain(value)
+    setOffset(value)
   }
 
   const Parameters = <FlexContainer direction='column' gap={8}>
+    <FlexContainer gap={8}>
+      <button onClick={playing ? handleStop : handleStart}>{playing ? 'Stop' : 'Start'}</button>
+    </FlexContainer>
     <div>
-    Gain:
+    Offset:
     <FlexContainer
       direction='column'
       gap={8}
@@ -70,13 +81,12 @@ export function Gain({ id, data }: NodeProps) {
         <RangeInput
           min={min}
           max={max}
-          onChange={handleGain} 
-          defaultValue={gain}
-          value={gain}
+          onChange={handleOffset} 
+          value={offset}
           />
         <NumberInput 
-          onChange={handleGain} 
-          value={gain}
+          onChange={handleOffset} 
+          value={offset}
           />
       </Parameter>
       <FlexContainer
@@ -107,8 +117,8 @@ export function Gain({ id, data }: NodeProps) {
   return (
     <Node 
       id={id}
-      name='Gain'
-      value={gain}
+      name='Constant'
+      value={offset}
       data={data}
       sockets={sockets}
       parameterPositions={['bottom', 'left', 'top', 'right']}

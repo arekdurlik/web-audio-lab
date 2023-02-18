@@ -78,14 +78,14 @@ ${({ position, offset }) => {
 
     case Position.Top: return `
       left: auto;
-      right: ${offset - 9}px;
+      right: ${offset - 8}px;
     `
   }
 }}
 
 ${({ position, type }) => type === 'target' 
-  ? `${position}: -3px;` 
-  : `${position}: -3px;`
+  ? `${position}: 3px;` 
+  : `${position}: 3px;`
 }
 
 &:before {
@@ -93,13 +93,13 @@ ${({ position, type }) => type === 'target'
   position: relative;
   display: grid;
   place-items: center;
-  width: 6px;
+  width: 4px;
   height: 1px;
-  background-color: #000;
+  background-color: #bbb;
 
   ${({ direction, type }) => type === 'target' 
-  ? `${direction}: 3px;`
-  : `${direction}: -3px;` }
+  ? `${direction}: 4px;`
+  : `${direction}: -4px;` }
 
   ${({ direction }) => direction === 'bottom' 
   ? 'transform: rotate(90deg);' 
