@@ -1,4 +1,4 @@
-import { NodeProps } from './types'
+import { ConstantSourceProps, NodeProps } from './types'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
@@ -8,16 +8,18 @@ import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
 import { NumberInput } from '../inputs/NumberInput'
+import { useReactFlow } from 'reactflow'
 
-export function ConstantSource({ id, data }: NodeProps) {
-  const [playing, setPlaying] = useState(false)
-  const [offset, setOffset] = useState(1)
-  const [max, setMax] = useState<string | number>(2)
-  const [min, setMin] = useState<string | number>(-2)
+export function ConstantSource({ id, data }: ConstantSourceProps) {
+  const [playing, setPlaying] = useState(data.playing ?? false)
+  const [offset, setOffset] = useState(data.offset ?? 0)
+  const [min, setMin] = useState<string | number>(data.min ?? 0)
+  const [max, setMax] = useState<string | number>(data.max ?? 1)
   const signalId = `${id}-signal`
   const offsetId = `${id}-offset`
   const instance = useRef(new ConstantSourceNode(audio.context, { offset: offset }))
   const setInstance = useNodeStore(state => state.setInstance)
+  const reactFlowInstance = useReactFlow()
   const sockets: Socket[] = [
     {
       id: signalId,
@@ -36,31 +38,47 @@ export function ConstantSource({ id, data }: NodeProps) {
   ]
 
   useEffect(() => {
-    setInstance(signalId, instance.current)
-    setInstance(offsetId, instance.current.offset)
+    return () => { try { 
+      instance.current.offset.value = 0
+      instance.current.stop()
+     } catch {} }
   }, [])
 
   useEffect(() => {
-    if (!offset || Number.isNaN(offset)) return
+    const invalid = [offset, min, max].find(param => {
+      if (param === undefined || Number.isNaN(param)) return true
+    })
+    if (invalid) return
 
+    const newNodes = reactFlowInstance.getNodes().map((node) => {
+      if (node.id === id) {
+        node.data = { ...node.data, playing, offset, min, max }
+      }
+      return node
+    })
+    reactFlowInstance.setNodes(newNodes)
+  }, [playing, offset, max, min])
+
+  
+  useEffect(() => {
+    if (offset === undefined || Number.isNaN(offset)) return
+    
     instance.current.offset.setValueAtTime(instance.current.offset.value, audio.context.currentTime)
     instance.current.offset.linearRampToValueAtTime(offset, audio.context.currentTime + 0.03)
   }, [offset])
+  
+  useEffect(() => {
+    if (playing) {
+      try { instance.current.stop() } catch {}
+      instance.current = new ConstantSourceNode(audio.context, { offset })
 
-  function handleStart() {
-    try { instance.current.stop() } catch {}
-    instance.current = new ConstantSourceNode(audio.context, { offset: offset })
-
-    setInstance(signalId, instance.current)
-    setInstance(offsetId, instance.current.offset)
-    setPlaying(true)
-    instance.current.start()
-  }
-
-  function handleStop() {
-    try { instance.current.stop() } catch {}
-    setPlaying(false)
-  }
+      setInstance(signalId, instance.current)
+      setInstance(offsetId, instance.current.offset)
+      instance.current.start()
+    } else {
+      try { instance.current.stop() } catch {}
+    }
+  }, [playing])
 
   function handleOffset(event: ChangeEvent<HTMLInputElement>) {
     const value = parseFloat(event.target.value)
@@ -69,7 +87,7 @@ export function ConstantSource({ id, data }: NodeProps) {
 
   const Parameters = <FlexContainer direction='column' gap={8}>
     <FlexContainer gap={8}>
-      <button onClick={playing ? handleStop : handleStart}>{playing ? 'Stop' : 'Start'}</button>
+      <button onClick={playing ? () => setPlaying(false) : () => setPlaying(true)}>{playing ? 'Stop' : 'Start'}</button>
     </FlexContainer>
     <div>
     Offset:

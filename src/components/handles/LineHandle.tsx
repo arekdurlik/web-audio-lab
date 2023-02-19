@@ -29,7 +29,7 @@ export function LineHandle({ id, label, type, position, offset = 20 }: HandlePro
   })()
   
   return (
-    <StyledHandle
+    <StyledLineHandle
       id={id}
       type={type}
       direction={direction}
@@ -39,13 +39,13 @@ export function LineHandle({ id, label, type, position, offset = 20 }: HandlePro
       <Label position={position}>
         {label}
       </Label>
-    </StyledHandle>
+    </StyledLineHandle>
   )
 }
 
 
 
-const StyledHandle = styled(Handle)<{ 
+export const StyledLineHandle = styled(Handle)<{ 
   direction: 'right' | 'bottom' | 'left' | 'top', 
   type?: 'source' | 'target', 
   offset: number 
@@ -57,8 +57,8 @@ background: none !important;
 border-radius: 0;
 min-width: 0;
 min-height: 0;
-width: 8px;
-height: 7px;
+width: 1px;
+height: 1px;
 z-index: 3;
 
 ${({ position, offset }) => {
@@ -69,7 +69,7 @@ ${({ position, offset }) => {
     `
     case Position.Right: return `
       top: auto;
-      bottom: ${offset - 7}px;
+      bottom: ${offset - 1}px;
     `
     case Position.Bottom: return `
       right: auto;
@@ -78,14 +78,14 @@ ${({ position, offset }) => {
 
     case Position.Top: return `
       left: auto;
-      right: ${offset - 8}px;
+      right: ${offset - 1}px;
     `
   }
 }}
 
 ${({ position, type }) => type === 'target' 
-  ? `${position}: 3px;` 
-  : `${position}: 3px;`
+  ? `${position}: 1px;` 
+  : `${position}: 1px;`
 }
 
 &:before {
@@ -93,12 +93,38 @@ ${({ position, type }) => type === 'target'
   position: relative;
   display: grid;
   place-items: center;
-  width: 4px;
+  width: 1px;
   height: 1px;
-  background-color: #bbb;
+  background-color: transparent;
+  height: 7px !important;
+  width: 7px !important; 
+  border-radius: 100%;
+
+  ${({ position }) => {
+  switch(position) {
+    case Position.Left: return `
+      top: -3px;
+      left: -4px;
+    `
+    case Position.Right: return `
+      left: -2px;
+      top: -3px;
+    `
+    case Position.Bottom: return `
+    left: -3px;
+    top: -2px;
+    `
+    case Position.Top: return `
+      left: -3px;
+      top: -4px;
+    `
+  }
+}}
+
+  
 
   ${({ direction, type }) => type === 'target' 
-  ? `${direction}: 4px;`
+  ? `${direction}: -2px;`
   : `${direction}: -4px;` }
 
   ${({ direction }) => direction === 'bottom' 

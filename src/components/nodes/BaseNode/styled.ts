@@ -1,6 +1,7 @@
 import { GiClockwiseRotation } from 'react-icons/gi'
 import { RiDeleteBin2Line } from 'react-icons/ri'
 import styled from 'styled-components'
+import { LineHandle, StyledLineHandle } from '../../handles/LineHandle'
 
 export const NodeTitle = styled.span<{ rotation?: 0 | 1 | 2 | 3 }>`
   font-size: 12px;
@@ -30,10 +31,24 @@ export const NodeContainer = styled.div<{ width?: number, height?: number }>`
   display: flex;
   flex-direction: column;
   gap: 5px;
-  overflow: hidden;
   
-  ${({ width }) => `min-width: ${width ? width : '120'}px;`}
-  ${({ height }) => `min-height: ${height ? height : '60'}px;`}
+  ${({ width }) => `width: ${width ? width : '120'}px;`}
+  ${({ height }) => `height: ${height ? height : '60'}px;`}
+
+  &:hover {
+    ${StyledLineHandle} {
+      &.target {
+        &:before {
+            background-color: #c00 !important;
+        }
+      }
+      &.source {
+        &:before {
+            background-color: #090 !important;
+        }
+      }
+    }
+  }
   
   .react-flow__handle {
     border-color: #000;

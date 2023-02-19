@@ -1,4 +1,4 @@
-import { NodeProps } from './types'
+import { GainProps, NodeProps } from './types'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
@@ -8,15 +8,17 @@ import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
 import { NumberInput } from '../inputs/NumberInput'
+import { useReactFlow } from 'reactflow'
 
-export function Gain({ id, data }: NodeProps) {
-  const [gain, setGain] = useState(1)
-  const [max, setMax] = useState<string | number>(2)
-  const [min, setMin] = useState<string | number>(-2)
+export function Gain({ id, data }: GainProps) {
+  const [gain, setGain] = useState(data.gain ?? 1)
+  const [min, setMin] = useState<string | number>(data.min ?? -2)
+  const [max, setMax] = useState<string | number>(data.max ?? 2)
   const audioId = `${id}-audio`
   const controlVoltageId = `${id}-cv`
   const [instance] = useState(new GainNode(audio.context))
   const setInstance = useNodeStore(state => state.setInstance)
+  const reactFlowInstance = useReactFlow()
   const sockets: Socket[] = [
     {
       id: audioId,
@@ -46,6 +48,21 @@ export function Gain({ id, data }: NodeProps) {
     setInstance(audioId, instance)
     setInstance(controlVoltageId, instance.gain)
   }, [])
+
+  useEffect(() => {
+    const invalid = [gain, min, max].find(param => {
+      if (param === undefined || Number.isNaN(param)) return true
+    })
+    if (invalid) return
+
+    const newNodes = reactFlowInstance.getNodes().map((node) => {
+      if (node.id === id) {
+        node.data = { ...node.data, gain, min, max }
+      }
+      return node
+    })
+    reactFlowInstance.setNodes(newNodes)
+  }, [gain, max, min])
 
   useEffect(() => {
     if (gain === undefined || Number.isNaN(gain)) return
@@ -116,5 +133,3 @@ export function Gain({ id, data }: NodeProps) {
     />
   )
 }
-
-

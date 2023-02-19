@@ -36,13 +36,13 @@ export const Node: FC<NodeProps> = function({
       if (node.id === id) {
         node.data = {
           ...node.data,
-          rotation: data.rotation,
+          rotation
         }
       }
       return node
     })
     reactFlowInstance.setNodes(newNodes)
-  }, [data.rotation])
+  }, [rotation])
 
   function handleDelete() {
     reactFlowInstance.deleteElements({ nodes: [{ id }]})

@@ -1,4 +1,4 @@
-import { NodeProps } from './types'
+import { BiquadFilterParam, BiquadFilterProps, NodeProps } from './types'
 import { ChangeEvent, useEffect, useMemo, useState } from 'react'
 import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
@@ -9,17 +9,20 @@ import { RangeInput } from '../inputs/RangeInput'
 import { NumberInput } from '../inputs/NumberInput'
 import { FlexContainer } from '../../styled'
 import { Select } from '../inputs/styled'
-import styled from 'styled-components'
 import { LogRangeInput } from '../inputs/LogRangeInput'
+import { useReactFlow } from 'reactflow'
 
-export function BiquadFilter({ id, data }: NodeProps) {
-  const [frequency, setFrequency] = useState(8000)
-  const [detune, setDetune] = useState(0)
-  const [Q, setQ] = useState(0)
-  const [gain, setGain] = useState(1)
-  const [type, setType] = useState<BiquadFilterType>('lowpass')
+export function BiquadFilter({ id, data }: BiquadFilterProps) {
+  const [frequency, setFrequency] = useState(data.frequency ?? 8000)
+  const [detune, setDetune] = useState(data.detune ?? 0)
+  const [Q, setQ] = useState(data.Q ?? 0)
+  const [gain, setGain] = useState(data.gain ?? 0)
+  const [type, setType] = useState<BiquadFilterType>(data.type ?? 'lowpass')
   const setInstance = useNodeStore(state => state.setInstance)
-  const instance = useMemo(() => new BiquadFilterNode(audio.context), [id])
+  const reactFlowInstance = useReactFlow()
+  const instance = useMemo(() => new BiquadFilterNode(audio.context, {
+    frequency, detune, Q, gain, type
+  }), [id])
 
   const audioId = `${id}-audio`
   const freqId = `${id}-freq`
@@ -93,18 +96,34 @@ export function BiquadFilter({ id, data }: NodeProps) {
     setInstance(gainId, instance.gain)
   }, [])
 
+  useEffect(() => {
+    const invalid = [frequency, detune, Q, gain].find(param => {
+      if (param === undefined || Number.isNaN(param)) return true
+    })
+
+    if (invalid) return
+
+    const newNodes = reactFlowInstance.getNodes().map((node) => {
+      if (node.id === id) {
+        node.data = { ...node.data, frequency, detune, Q, gain, type }
+      }
+      return node
+    })
+    reactFlowInstance.setNodes(newNodes)
+  }, [frequency, detune, Q, gain, type])
+
   function handleType(event: ChangeEvent<HTMLSelectElement>) {
     const type = event.target.value as BiquadFilterType
     setType(type)
     instance.type = type
   }
 
-  function handleLogFrequency(newValues: { position: number, value: number }) {
-    setFrequency(newValues.value)
-    setInstanceParam('frequency', newValues.value)
+  function handleLogParam(param: 'frequency' | 'Q', newValues: { position: number, value: number }) {
+    param === 'Q' ? setQ(newValues.value) : setFrequency(newValues.value)
+    setInstanceParam(param, newValues.value)
   }
 
-  function handleParam(param: Param, event: ChangeEvent<HTMLInputElement>) {
+  function handleParam(param: BiquadFilterParam, event: ChangeEvent<HTMLInputElement>) {
     const value = parseFloat(event.target.value)
     switch (param) {
       case 'frequency': setFrequency(value); break
@@ -115,8 +134,7 @@ export function BiquadFilter({ id, data }: NodeProps) {
     setInstanceParam(param, value)
   }
 
-  type Param = 'frequency' | 'detune' | 'Q' | 'gain'
-  function setInstanceParam(param: Param, value: any) {
+  function setInstanceParam(param: BiquadFilterParam, value: any) {
     if (value === undefined || Number.isNaN(value)) return
 
     instance[param].setValueAtTime(instance[param].value, audio.context.currentTime)
@@ -144,7 +162,7 @@ export function BiquadFilter({ id, data }: NodeProps) {
       <Parameter>
         <LogRangeInput
           maxval={22000}
-          onChange={handleLogFrequency} 
+          onChange={(newValues) => handleLogParam('frequency', newValues)} 
           value={frequency}
           />
         <NumberInput 
@@ -177,11 +195,12 @@ export function BiquadFilter({ id, data }: NodeProps) {
     <div>
       Q:
       <Parameter>
-        <RangeInput
+        <LogRangeInput
           disabled={['lowshelf', 'highshelf'].includes(type)}
-          onChange={(e) => handleParam('Q', e)} 
+          maxval={1000}
+          onChange={(newValues) => handleLogParam('Q', newValues)} 
           value={Q}
-          />
+        />
         <NumberInput 
           disabled={['lowshelf', 'highshelf'].includes(type)}
           onChange={(e) => handleParam('Q', e)} 
@@ -221,13 +240,4 @@ export function BiquadFilter({ id, data }: NodeProps) {
     />
   )
 }
-
-const Icon = styled.img`
-width: 16px;
-height: 16px;
-position: relative;
-left: -4px;
-bottom: 1px;
-image-rendering: pixelated;
-`
 

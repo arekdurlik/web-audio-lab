@@ -4,7 +4,7 @@ export const GlobalStyle = createGlobalStyle`
 
 * {
   font-family: 'Arial', sans-serif;
-  image-rendering: pixelated;
+  image-rendering: pixelated; image-rendering: crisp-edges;
 }
 
 .react-flow__minimap-node {
@@ -49,10 +49,11 @@ inset: 0;
 height: 100%;
 `
 
-export const FlexContainer = styled.div<{ direction?: string, justify?: string, align?: string, gap?: string | number }>`
+export const FlexContainer = styled.div<{ direction?: string, justify?: string, align?: string, gap?: string | number, width?: string }>`
   display: flex;
+  ${({ width }) => width !== undefined && `width: ${width};`}
   ${({ direction }) => direction && `flex-direction: ${direction};`}
   ${({ justify }) => justify && `justify-content: ${justify};`}
   ${({ align }) => align && `align-items: ${align};`}
-  ${({ gap }) => gap && `gap: ${gap}px;`}
+  ${({ gap }) => gap !== undefined && `gap: ${gap}px;`}
 `

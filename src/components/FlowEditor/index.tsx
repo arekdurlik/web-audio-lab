@@ -55,10 +55,10 @@ export function FlowEditor() {
         y: event.clientY - reactFlowBounds.top,
       });
       const newNode = {
-        id: String(new Date()),
+        id: String(Date.now()),
         type,
         position,
-        data: { label: `${type} node` },
+        data: {},
       }
 
       setNodes((nds) => nds.concat(newNode))
@@ -89,7 +89,7 @@ export function FlowEditor() {
       ...params, 
       type, 
       style: { stroke: `#000`, strokeWidth: 1 }, 
-      pathOptions: { borderRadius: 0, offset: 19, curvature: 0.5 }
+      pathOptions: { borderRadius: 0, offset: 17, curvature: 0.5 }
     } as any, edges)
   }), [setEdges])
 
