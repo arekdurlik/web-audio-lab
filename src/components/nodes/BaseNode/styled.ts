@@ -39,12 +39,12 @@ export const NodeContainer = styled.div<{ width?: number, height?: number }>`
     ${StyledLineHandle} {
       &.target {
         &:before {
-            background-color: #c00 !important;
+          background-color: #090 !important;
         }
       }
       &.source {
         &:before {
-            background-color: #090 !important;
+          background-color: #c00 !important;
         }
       }
     }
@@ -100,6 +100,9 @@ display: flex;
 gap: 5px;
 `
 
+export const ParameterName = styled.div`
+  white-space: nowrap;
+`
 export const Expand = styled.div`
 display: flex;
 svg {

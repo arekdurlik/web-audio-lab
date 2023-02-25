@@ -66,11 +66,6 @@ export function StereoPanner({ id, data }: StereoPannerProps) {
     instance.pan.linearRampToValueAtTime(pan, audio.context.currentTime + 0.03)
   }, [pan])
 
-  function handlePan(event: ChangeEvent<HTMLInputElement>) {
-    const value = parseFloat(event.target.value)
-    setPan(value)
-  }
-
   const Parameters = <FlexContainer direction='column' gap={8}>
     <div>
     Pan:
@@ -82,13 +77,13 @@ export function StereoPanner({ id, data }: StereoPannerProps) {
         <RangeInput
           min={-1}
           max={1}
-          onChange={handlePan} 
+          onChange={setPan} 
           value={pan}
           />
         <NumberInput 
           min={-1}
           max={1}
-          onChange={handlePan} 
+          onChange={setPan} 
           value={pan}
           />
       </Parameter>

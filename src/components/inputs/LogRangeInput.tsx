@@ -5,6 +5,7 @@ import Log from './log'
 type RangeInputProps = {
   value: number
   onChange: (newValues: { position: number, value: number }) => void
+  onBlur?: (newValues: { position: number, value: number }) => void
   label?: string
   defaultValue?: number
   disabled?: boolean
@@ -64,6 +65,7 @@ export function LogRangeInput({ value, label, disabled, minval = 1, maxval = 100
           dragging.current = false
         }}
         onChange={handleChange} 
+        onBlur={handleChange}
         onMouseDownCapture={(e) => e.stopPropagation()}
         onPointerDownCapture={(e) => {
           e.stopPropagation()

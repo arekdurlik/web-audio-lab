@@ -64,23 +64,18 @@ export function Delay({ id, data }: DelayProps) {
     instance.delayTime.linearRampToValueAtTime(time, audio.context.currentTime + 0.04)
   }, [time])
 
-  function handleTime(event: ChangeEvent<HTMLInputElement>) {
-    const value = parseFloat(event.target.value)
-    setTime(value)
-  }
-
   const Parameters = <>
     Time:
     <Parameter>
       <RangeInput
         max={maxDelay}
-        onChange={handleTime} 
+        onChange={setTime} 
         defaultValue={time}
         value={time}
       />
       <NumberInput 
         max={maxDelay}
-        onChange={handleTime} 
+        onChange={setTime} 
         value={time}
       />
     </Parameter>

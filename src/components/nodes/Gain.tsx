@@ -71,11 +71,6 @@ export function Gain({ id, data }: GainProps) {
     instance.gain.linearRampToValueAtTime(gain, audio.context.currentTime + 0.03)
   }, [gain])
 
-  function handleGain(event: ChangeEvent<HTMLInputElement>) {
-    const value = parseFloat(event.target.value)
-    setGain(value)
-  }
-
   const Parameters = <FlexContainer direction='column' gap={8}>
     <div>
     Gain:
@@ -87,12 +82,12 @@ export function Gain({ id, data }: GainProps) {
         <RangeInput
           min={min}
           max={max}
-          onChange={handleGain} 
+          onChange={setGain} 
           defaultValue={gain}
           value={gain}
           />
         <NumberInput 
-          onChange={handleGain} 
+          onChange={setGain} 
           value={gain}
           />
       </Parameter>
@@ -104,7 +99,7 @@ export function Gain({ id, data }: GainProps) {
         min:
         <NumberInput 
           width={50}
-          onChange={(e) => setMin(e.target.value)} 
+          onChange={setMin} 
           value={min}
         />
       </FlexContainer>
@@ -112,7 +107,7 @@ export function Gain({ id, data }: GainProps) {
         max:
         <NumberInput 
           width={50}
-          onChange={(e) => setMax(e.target.value)} 
+          onChange={setMax} 
           value={max}
         />
       </FlexContainer>

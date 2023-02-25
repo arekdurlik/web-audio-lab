@@ -13,6 +13,8 @@ async function createAudio() {
     out: new GainNode(actx)
   }
   const monoToStereo = createMonoToStereoConverter(actx)
+
+  await actx.audioWorklet.addModule('worklet/bit-crusher-processor.js')
   
   input.connect(monoToStereo.input)
   monoToStereo.output.connect(circuit.in)

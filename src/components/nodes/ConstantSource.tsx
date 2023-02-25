@@ -80,11 +80,6 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
     }
   }, [playing])
 
-  function handleOffset(event: ChangeEvent<HTMLInputElement>) {
-    const value = parseFloat(event.target.value)
-    setOffset(value)
-  }
-
   const Parameters = <FlexContainer direction='column' gap={8}>
     <FlexContainer gap={8}>
       <button onClick={playing ? () => setPlaying(false) : () => setPlaying(true)}>{playing ? 'Stop' : 'Start'}</button>
@@ -99,11 +94,11 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
         <RangeInput
           min={min}
           max={max}
-          onChange={handleOffset} 
+          onChange={setOffset} 
           value={offset}
           />
         <NumberInput 
-          onChange={handleOffset} 
+          onChange={setOffset} 
           value={offset}
           />
       </Parameter>
@@ -115,7 +110,7 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
         min:
         <NumberInput 
           width={50}
-          onChange={(e) => setMin(e.target.value)} 
+          onChange={setMin} 
           value={min}
         />
       </FlexContainer>
@@ -123,7 +118,7 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
         max:
         <NumberInput 
           width={50}
-          onChange={(e) => setMax(e.target.value)} 
+          onChange={setMax} 
           value={max}
         />
       </FlexContainer>

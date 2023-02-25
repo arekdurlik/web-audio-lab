@@ -42,6 +42,8 @@ export type OscillatorProps = NodeProps & {
     frequency?: number,
     detune?: number,
     type?: OscillatorType
+    real?: number[]
+    imag?: number[]
   }
 }
 
@@ -51,5 +53,40 @@ export type ConstantSourceProps = NodeProps & {
     offset?: number
     min?: number
     max?: number
+  }
+}
+
+export type AudioBufferSourceFile = 'white-noise' | 'pink-noise' | 'brownian-noise'
+export type AudioBufferSourceProps = {
+  id: string
+  data: {
+    rotation?: 0 | 1 | 2 | 3
+    source?: AudioBufferSourceFile
+    playing?: boolean
+    loop?: boolean
+  }
+}
+
+export type ConvolverType = 'file' | 'generate'
+export type ConvolverProps = {
+  id: string
+  data: {
+    rotation?: 0 | 1 | 2 | 3
+    type?: ConvolverType
+    source?: string
+    fadeInTime?: number
+    decayTime?: number
+    lpFreqStart?: number
+    lpFreqEnd?: number,
+    reverse?: boolean
+  }
+}
+
+export type BitcrusherProps = {
+  id: string
+  data: {
+    rotation?: 0 | 1 | 2 | 3
+    bitDepth?: number
+    sampleRateReduction?: number
   }
 }

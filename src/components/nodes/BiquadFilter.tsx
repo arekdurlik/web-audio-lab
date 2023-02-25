@@ -123,8 +123,7 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
     setInstanceParam(param, newValues.value)
   }
 
-  function handleParam(param: BiquadFilterParam, event: ChangeEvent<HTMLInputElement>) {
-    const value = parseFloat(event.target.value)
+  function handleParam(param: BiquadFilterParam, value: number) {
     switch (param) {
       case 'frequency': setFrequency(value); break
       case 'detune': setDetune(value); break
@@ -167,7 +166,7 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
           />
         <NumberInput 
           max={22000}
-          onChange={(e) => handleParam('frequency', e)} 
+          onChange={value => handleParam('frequency', value)} 
           unit='Hz'
           width={72}
           value={frequency}
@@ -180,13 +179,13 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
         <RangeInput
           min={-100}
           max={100}
-          onChange={(e) => handleParam('detune', e)} 
+          onChange={value => handleParam('detune', value)} 
           value={detune}
           />
         <NumberInput 
           min={-100}
           max={100}
-          onChange={(e) => handleParam('detune', e)} 
+          onChange={value => handleParam('detune', value)} 
           value={detune}
           unit='cents'
         />
@@ -203,7 +202,7 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
         />
         <NumberInput 
           disabled={['lowshelf', 'highshelf'].includes(type)}
-          onChange={(e) => handleParam('Q', e)} 
+          onChange={value => handleParam('Q', value)} 
           value={Q}
         />
       </Parameter>
@@ -213,12 +212,12 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
       <Parameter>
         <RangeInput
           disabled={['lowpass', 'highpass', 'bandpass', 'notch', 'allpass'].includes(type)}
-          onChange={(e) => handleParam('gain', e)} 
+          onChange={value => handleParam('gain', value)} 
           value={gain}
           />
         <NumberInput 
           disabled={['lowpass', 'highpass', 'bandpass', 'notch', 'allpass'].includes(type)}
-          onChange={(e) => handleParam('gain', e)} 
+          onChange={value => handleParam('gain', value)} 
           value={gain}
           min={-40}
           max={40}

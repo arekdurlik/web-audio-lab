@@ -87,18 +87,18 @@ export function Navbar() {
 }
 
 const Logo = styled.span`
-  font-size: 32px;
-  color: darkred;
-  font-weight: 600;
-  font-style: italic;
-  font-smoothing: none;
-  -webkit-font-smoothing: none;
-  display: flex;
-  gap: 10px;
-  text-shadow: 
-    3px 3px 2px #00000022;
-  position: relative;
-  padding: 5px;
+font-size: 32px;
+color: darkred;
+font-weight: 600;
+font-style: italic;
+font-smoothing: none;
+-webkit-font-smoothing: none;
+display: flex;
+gap: 10px;
+text-shadow: 
+  3px 3px 2px #00000022;
+position: relative;
+padding: 5px;
 `
 
 const Trademark = styled.span`

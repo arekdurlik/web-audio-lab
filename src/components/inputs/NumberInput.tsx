@@ -1,9 +1,10 @@
 import { ChangeEvent, KeyboardEvent } from 'react'
 import styled from 'styled-components'
+import { clamp } from '../../helpers'
 
 type NumberInputProps = {
   value?: number | string
-  onChange?: (event: ChangeEvent<HTMLInputElement>) => void
+  onChange?: (value: number) => void
   label?: string
   defaultValue?: number
   min?: number | string
@@ -15,32 +16,36 @@ type NumberInputProps = {
 }
 export function NumberInput({ label, value, min, max, step = 0.01, width = 60, unit, disabled, onChange }: NumberInputProps) {
 
-  function checkBounds(e: KeyboardEvent<HTMLInputElement>) {
+  function checkBounds(e: ChangeEvent<HTMLInputElement>) {
     const target = e.target as HTMLInputElement
     const value = parseFloat(target.value)
     
     const floatMin = typeof min === 'string' ? parseFloat(min) : min
     const floatMax = typeof max === 'string' ? parseFloat(max) : max
     
-   if (floatMax && value > floatMax) {
-    target.value = String(max)
-   } else if (floatMin && value < floatMin) {
-    target.value = String(min)
-   }
+    
+    if (value === undefined || Number.isNaN(value)) return
+    const clamped = clamp(value, floatMin, floatMax)
+    
+    if (typeof onChange === 'function') onChange(clamped)
   }
 
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+    const target = e.target as HTMLInputElement
+    const value = parseFloat(target.value)
+    if (typeof onChange === 'function') onChange(value)
+  }
   return (
     <Wrapper >
       {label && <span>{label}: </span>}
       <Input 
         type='number' 
         step={step} 
-        value={value}
+        value={String(value)}
         min={min}
         max={max}
         disabled={disabled}
-        onChange={onChange} 
-        onKeyUp={checkBounds}
+        onChange={handleChange} 
         onMouseDownCapture={(e) => e.stopPropagation()}
         onPointerDownCapture={(e) => e.stopPropagation()}
         width={width}

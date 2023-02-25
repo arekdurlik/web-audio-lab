@@ -89,7 +89,7 @@ export const Node: FC<NodeProps> = function({
         </HoverOptions>}
         {handles}
         <NodeTitle rotation={rotation}>{name}</NodeTitle>
-        <Value>{value}</Value>
+        <Value>{Number.isNaN(value) ? String(value) : value}</Value>
       </NodeContainer>
       {expanded && <Parameters 
         rotation={rotation}
@@ -108,4 +108,5 @@ bottom: 0;
 left: 0;
 padding: 1px 3px;
 font-size: 12px;
+width: 100%;
 `

@@ -1,32 +1,62 @@
-import { DragEvent } from 'react'
+import { useState, DragEvent } from 'react'
 import styled from 'styled-components'
 
 export function Sidebar() {
-  const options = [{
-      id: 'gainNode',
-      label: 'GainNode'
-    },
-    {
-      id: 'delayNode',
-      label: 'DelayNode'
-    },
-    {
-      id: 'filterNode',
-      label: 'BiquadFilterNode'
-    },
-    {
-      id: 'oscillatorNode',
-      label: 'OscillatorNode'
-    },
-    {
-      id: 'constantSourceNode',
-      label: 'ConstantSourceNode'
-    },
-    {
-      id: 'stereoPannerNode',
-      label: 'StereoPannerNode'
-    }
-  ]
+  const [options, setOptions] = useState([{
+    title: 'Base nodes',
+    active: true,
+    items: [
+      {
+        id: 'gainNode',
+        label: 'GainNode'
+      },
+      {
+        id: 'delayNode',
+        label: 'DelayNode'
+      },
+      {
+        id: 'convolverNode',
+        label: 'ConvolverNode'
+      },
+      {
+        id: 'filterNode',
+        label: 'BiquadFilterNode'
+      },
+      {
+        id: 'oscillatorNode',
+        label: 'OscillatorNode'
+      },
+      {
+        id: 'constantSourceNode',
+        label: 'ConstantSourceNode'
+      },
+      {
+        id: 'audioBufferSourceNode',
+        label: 'AudioBufferSourceNode'
+      },
+      {
+        id: 'stereoPannerNode',
+        label: 'StereoPannerNode'
+      }
+    ]
+  }, {
+    title: 'AudioWorklet nodes',
+    active: false,
+    items: [
+      {
+        id: 'bitcrusher',
+        label: 'Bitcrusher'
+      }
+    ]
+  }
+  ])
+
+  function handleTabClick(index: number) {
+    const newOptions = options.slice()
+    newOptions[index].active = !newOptions[index].active
+
+    setOptions(newOptions)
+  }
 
   function onDragStart(event: DragEvent, nodeType: string) {
     event.dataTransfer.setData('application/reactflow', nodeType)
@@ -37,26 +67,61 @@ export function Sidebar() {
   }
 
   return <Container>
-    {options.map((o, i) => 
-      <Option 
-        key={i} 
-        onDragStart={(event) => onDragStart(event, o.id)} 
+    {options.map((o, i) => <div key={i}>
+      <Tab onClick={(() => handleTabClick(i))}>{o.title}</Tab>
+      <Options active={options[i].active}>
+      {o.items.map((item, j) => <Option 
+        key={j} 
+        onDragStart={(event) => onDragStart(event, item.id)} 
         draggable
       >
-        {o.label}
-      </Option>
+        {item.label}
+      </Option>)}
+      </Options>
+    </div>
     )}
   </Container>
 }
 
+const Tab = styled.div`
+user-select: none;
+display: flex;
+align-items: center;
+padding: 5px 10px;
+border: 3px outset;
+font-weight: bold;
+gap: 5px;
+
+&:before {
+  content: '';
+  width: 0; 
+  height: 0; 
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+
+  border-left: 9px solid black;
+}
+
+&:hover {
+  background-color: #c8c6c0; 
+  cursor: pointer;
+}
+`
+
+const Options = styled.div<{ active: boolean }>`
+overflow: hidden;
+height: 0;
+${({ active }) => active && `height: auto;`}
+`
 const Option = styled.div`
-padding: 10px;
+padding: 10px 20px 10px 20px;
 border: 3px outset;
 
 background-color: #d7d5cf;
 
 &:hover {
   background-color: #c8c6c0; 
+  cursor: grab;
 }
 `
 const Container = styled.div`

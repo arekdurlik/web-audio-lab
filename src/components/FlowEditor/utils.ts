@@ -7,6 +7,9 @@ import { BiquadFilter } from '../nodes/BiquadFilter'
 import { Oscillator } from '../nodes/Oscillator'
 import { ConstantSource } from '../nodes/ConstantSource'
 import { StereoPanner } from '../nodes/StereoPanner'
+import { AudioBufferSource } from '../nodes/AudioBufferSource'
+import { Convolver } from '../nodes/Convolver'
+import { Bitcrusher } from '../nodes/Bitcrusher'
 
 export const propOptions = {
   hideAttribution: true
@@ -30,10 +33,14 @@ export const initialNodes: Node[] = [
 export const nodeTypes = {
   delayNode: Delay,
   gainNode: Gain,
+  convolverNode: Convolver,
   stereoPannerNode: StereoPanner,
   constantSourceNode: ConstantSource,
   filterNode: BiquadFilter,
   oscillatorNode: Oscillator,
+  audioBufferSourceNode: AudioBufferSource,
   liveInput: LiveInput,
-  destination: Destination
+  destination: Destination,
+
+  bitcrusher: Bitcrusher
 }
