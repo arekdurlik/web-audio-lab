@@ -87,11 +87,31 @@ export function Convolver({ id, data }: ConvolverProps) {
     
     if (invalid) return
 
-  
+    generateReverb(audio.context, { 
+      fadeInTime: fadeInTime as number,
+      decayTime: Math.max(0.01, decayTime as number),
+      lpFreqStart: lpFreqStart as number,
+      lpFreqEnd: lpFreqEnd as number,
+      numChannels: 1,
+      sampleRate: audio.context.sampleRate,
+    }, (buffer: AudioBuffer) => {
+      if (reverse) {
+        buffer.getChannelData(0).reverse()
+      }
+      instance.current.buffer = buffer
+    })
   }, [type, fadeInTime, decayTime, lpFreqStart, lpFreqEnd, reverse])
 
   async function fetchResponse() {
-   
+    try {
+      let response = await fetch(`responses/${source}`)
+      let arraybuffer = await response.arrayBuffer()
+      const buffer = await audio.context.decodeAudioData(arraybuffer)
+      setSourceBuffer(buffer)
+      instance.current.buffer = buffer
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   function handleParam(param: Param, value: number) {
