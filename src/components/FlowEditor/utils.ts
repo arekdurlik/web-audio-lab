@@ -1,4 +1,4 @@
-import { Edge, Node } from 'reactflow'
+import { Node } from 'reactflow'
 import { LiveInput } from '../nodes/LiveInput'
 import { Destination } from '../nodes/Destination'
 import { Delay } from '../nodes/Delay'
@@ -10,6 +10,10 @@ import { StereoPanner } from '../nodes/StereoPanner'
 import { AudioBufferSource } from '../nodes/AudioBufferSource'
 import { Convolver } from '../nodes/Convolver'
 import { Bitcrusher } from '../nodes/Bitcrusher'
+import { WaveShaper } from '../nodes/WaveShaper'
+import { Note } from '../nodes/Note'
+import { Text } from '../nodes/Text'
+import { SPDTFork, SPDTJoin } from '../switches/SPDT'
 
 export const propOptions = {
   hideAttribution: true
@@ -38,9 +42,28 @@ export const nodeTypes = {
   constantSourceNode: ConstantSource,
   filterNode: BiquadFilter,
   oscillatorNode: Oscillator,
+  waveShaperNode: WaveShaper,
   audioBufferSourceNode: AudioBufferSource,
   liveInput: LiveInput,
   destination: Destination,
 
-  bitcrusher: Bitcrusher
+  note: Note,
+  text: Text,
+
+  bitcrusher: Bitcrusher,
+
+  spdtFork: SPDTFork,
+  spdtJoin: SPDTJoin,
+}
+
+export type NodeType = keyof typeof nodeTypes
+
+type InitialData = {
+  [key in NodeType]?: {}
+}
+
+export const initialNodeData: InitialData = {
+  spdtJoin: {
+    rotation: 2
+  }
 }

@@ -1,5 +1,5 @@
 import { StereoPannerProps } from './types'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -8,7 +8,7 @@ import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
 import { NumberInput } from '../inputs/NumberInput'
-import { useReactFlow } from 'reactflow'
+import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 
 export function StereoPanner({ id, data }: StereoPannerProps) {
   const [pan, setPan] = useState(data.pan ?? 0)
@@ -16,7 +16,7 @@ export function StereoPanner({ id, data }: StereoPannerProps) {
   const panId = `${id}-pan`
   const [instance] = useState(new StereoPannerNode(audio.context))
   const setInstance = useNodeStore(state => state.setInstance)
-  const reactFlowInstance = useReactFlow()
+  const { updateNode } = useUpdateFlowNode(id)
   const sockets: Socket[] = [
     {
       id: audioId,
@@ -43,25 +43,14 @@ export function StereoPanner({ id, data }: StereoPannerProps) {
 
   useEffect(() => {
     instance.pan.value = pan
-    setInstance(audioId, instance)
-    setInstance(panId, instance.pan)
+    setInstance(audioId, instance, 'source')
+    setInstance(panId, instance.pan, 'param')
   }, [])
 
   useEffect(() => {
     if (pan === undefined || Number.isNaN(pan)) return
-
-    const newNodes = reactFlowInstance.getNodes().map((node) => {
-      if (node.id === id) {
-        node.data = { ...node.data, pan }
-      }
-      return node
-    })
-    reactFlowInstance.setNodes(newNodes)
-  }, [pan])
-
-  useEffect(() => {
-    if (pan === undefined || Number.isNaN(pan)) return
-
+    
+    updateNode(pan)
     instance.pan.setValueAtTime(instance.pan.value, audio.context.currentTime)
     instance.pan.linearRampToValueAtTime(pan, audio.context.currentTime + 0.03)
   }, [pan])

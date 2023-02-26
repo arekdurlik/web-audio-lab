@@ -1,5 +1,5 @@
-import { DelayProps, NodeProps } from './types'
-import { ChangeEvent, useEffect, useMemo, useState } from 'react'
+import { DelayProps } from './types'
+import { useEffect, useRef, useState } from 'react'
 import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -7,7 +7,7 @@ import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
 import { RangeInput } from '../inputs/RangeInput'
 import { NumberInput } from '../inputs/NumberInput'
-import { useReactFlow } from 'reactflow'
+import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 
 export function Delay({ id, data }: DelayProps) {
   const [time, setTime] = useState(data.time ?? 0.5)
@@ -15,10 +15,10 @@ export function Delay({ id, data }: DelayProps) {
   const audioId = `${id}-audio`
   const controlVoltageId = `${id}-cv`
   const setInstance = useNodeStore(state => state.setInstance)
-  const reactFlowInstance = useReactFlow()
-  const instance = useMemo(() => new DelayNode(audio.context, { 
+  const instance = useRef(new DelayNode(audio.context, { 
     maxDelayTime: maxDelay 
-  }), [maxDelay])
+  }))
+  const { updateNode } = useUpdateFlowNode(id)
   const sockets: Socket[] = [
     {
       id: audioId,
@@ -44,24 +44,17 @@ export function Delay({ id, data }: DelayProps) {
   ]
 
   useEffect(() => {
-    instance.delayTime.value = time
-    setInstance(audioId, instance)
-    setInstance(controlVoltageId, instance.delayTime)
+    instance.current.delayTime.value = time
+    setInstance(audioId, instance.current, 'source')
+    setInstance(controlVoltageId, instance.current.delayTime, 'param')
   }, [])
 
   useEffect(() => {
     if (time === undefined || Number.isNaN(time)) return
 
-    const newNodes = reactFlowInstance.getNodes().map((node) => {
-      if (node.id === id) {
-        node.data = { ...node.data, time }
-      }
-      return node
-    })
-    reactFlowInstance.setNodes(newNodes)
-
-    instance.delayTime.setValueAtTime(instance.delayTime.value, audio.context.currentTime)
-    instance.delayTime.linearRampToValueAtTime(time, audio.context.currentTime + 0.04)
+    updateNode({ time })
+    instance.current.delayTime.setValueAtTime(instance.current.delayTime.value, audio.context.currentTime)
+    instance.current.delayTime.linearRampToValueAtTime(time, audio.context.currentTime + 0.04)
   }, [time])
 
   const Parameters = <>

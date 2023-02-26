@@ -11,7 +11,7 @@ import ReactFlow, {
   useReactFlow,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
-import { initialNodes, nodeTypes, propOptions } from './utils'
+import { NodeType, initialNodeData, initialNodes, nodeTypes, propOptions } from './utils'
 import { FlowControls } from './Controls'
 import { useNodeStore } from '../../stores/nodeStore'
 import { useFlowStore } from '../../stores/flowStore'
@@ -33,9 +33,9 @@ export function FlowEditor() {
   }, [edges])
 
   const onDragOver = useCallback((event: DragEvent) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-  }, []);
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'move'
+  }, [])
 
   const onDrop = useCallback((event: DragEvent) => {
       if (reactFlowWrapper.current === null) return
@@ -43,28 +43,29 @@ export function FlowEditor() {
       event.preventDefault()
 
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect()
-      const type = event.dataTransfer.getData('application/reactflow')
+      const type = event.dataTransfer.getData('application/reactflow') as NodeType
 
       // check if the dropped element is valid
-      if (typeof type === 'undefined' || !type) {
-        return
-      }
+      if (typeof type === 'undefined' || !type) return
 
       const position = reactFlowInstance.project({
         x: event.clientX - reactFlowBounds.left,
         y: event.clientY - reactFlowBounds.top,
-      });
+      })
+
       const newNode = {
         id: String(Date.now()),
         type,
         position,
-        data: {},
+        data: {
+          ...initialNodeData[type]
+        }
       }
 
-      setNodes((nds) => nds.concat(newNode))
+      setNodes((nodes) => nodes.concat(newNode))
     },
     [reactFlowInstance]
-  );
+  )
 
   const onEdgeUpdateStart = useCallback(() => {
     edgeUpdateSuccessful.current = false

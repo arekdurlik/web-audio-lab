@@ -5,11 +5,11 @@ import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
-import { useReactFlow } from 'reactflow'
 import { NumberInput } from '../inputs/NumberInput'
 import { generateReverb } from '../../audio/generateReverb'
 import { Select } from '../inputs/styled'
 import { ConvolverProps, ConvolverType } from './types'
+import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 
 type Param = 'fade-in-time' | 'decay-time' | 'lp-freq-start' | 'lp-freq-end'
 
@@ -25,7 +25,7 @@ export function Convolver({ id, data }: ConvolverProps) {
   const audioId = `${id}-audio`
   const instance = useRef(new ConvolverNode(audio.context))
   const registerInstance = useNodeStore(state => state.setInstance)
-  const reactFlowInstance = useReactFlow()
+  const { updateNode } = useUpdateFlowNode(id)
   const sockets: Socket[] = [
     {
       id: audioId,
@@ -47,17 +47,11 @@ export function Convolver({ id, data }: ConvolverProps) {
   ]
 
   useEffect(() => {
-    registerInstance(audioId, instance.current)
+    registerInstance(audioId, instance.current, 'source')
   }, [])
 
   useEffect(() => {
-    const newNodes = reactFlowInstance.getNodes().map((node) => {
-      if (node.id === id) {
-        node.data = { ...node.data, type, source, fadeInTime, decayTime, lpFreqStart, lpFreqEnd, reverse }
-      }
-      return node
-    })
-    reactFlowInstance.setNodes(newNodes)
+    updateNode({ type, source, fadeInTime, decayTime, lpFreqStart, lpFreqEnd, reverse })
   }, [type, source, fadeInTime, decayTime, lpFreqStart, lpFreqEnd, reverse])
 
   // load file
@@ -127,11 +121,17 @@ export function Convolver({ id, data }: ConvolverProps) {
     setSource( event.target.value)
   }
 
-  const Parameters = <FlexContainer direction='column' gap={8}>
+  const Parameters = <FlexContainer 
+    direction='column' 
+    gap={8}
+  >
     <div>
       Type:
       <Parameter>
-        <Select onChange={(e) => setType(e.target.value as ConvolverType)} value={type}>
+        <Select 
+          value={type}
+          onChange={(e) => setType(e.target.value as ConvolverType)} 
+        >
           <option value='file'>File</option>
           <option value='generate'>Generate</option>
         </Select>
@@ -140,14 +140,17 @@ export function Convolver({ id, data }: ConvolverProps) {
     {type === 'file' ? <div>
       Source:
       <Parameter>
-        <Select onChange={handleSource} value={source}>
+        <Select 
+          value={source}
+          onChange={handleSource} 
+        >
           {responses.map((res, i) => <option key={i} value={res}>{res}</option>)}
         </Select>
       </Parameter>
     </div>
     : <>
       <div>
-      <ParameterName>Fade in time:</ParameterName>
+        <ParameterName>Fade in time:</ParameterName>
         <Parameter>
           <NumberInput 
             max={22000}
@@ -199,10 +202,15 @@ export function Convolver({ id, data }: ConvolverProps) {
           />
         </Parameter>
       </div>
+
       <div>
-      Reverse:
-      <input type='checkbox' checked={reverse} onChange={() => setReverse(!reverse)}/>
-    </div>
+        Reverse:
+        <input 
+          type='checkbox' 
+          checked={reverse} 
+          onChange={() => setReverse(!reverse)}
+        />
+      </div>
     </>}
   </FlexContainer>
 

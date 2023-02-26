@@ -22,7 +22,7 @@ export const NodeTitle = styled.span<{ rotation?: 0 | 1 | 2 | 3 }>`
   }}
 `
 
-export const NodeContainer = styled.div<{ width?: number, height?: number }>`
+export const NodeContainer = styled.div<{ width?: number, height?: number, rotation?: number, disableBackground?: boolean, disableBorder?: boolean }>`
   position: relative;
   box-sizing: border-box;
   background-color: white;
@@ -34,17 +34,28 @@ export const NodeContainer = styled.div<{ width?: number, height?: number }>`
   
   ${({ width }) => `width: ${width ? width : '120'}px;`}
   ${({ height }) => `height: ${height ? height : '60'}px;`}
+  ${({ disableBackground }) => disableBackground && 'background: none;' }
+  ${({ disableBorder }) => disableBorder && 'box-shadow: none;' }
 
+  ${({ rotation }) => {
+    switch (rotation) {
+      case 1: return 'transform: rotate(90deg);'
+      case 2: return 'transform: rotate(180deg);'
+      case 3: return 'transform: rotate(-90deg);'
+    }
+  }}
   &:hover {
     ${StyledLineHandle} {
       &.target {
         &:before {
-          background-color: #090 !important;
+          opacity: 1;
+          background-color: #090;
         }
       }
       &.source {
         &:before {
-          background-color: #c00 !important;
+          opacity: 1;
+          background-color: #c00;
         }
       }
     }
@@ -112,9 +123,11 @@ svg {
 
 export const Delete = styled(RiDeleteBin2Line)`
 cursor: pointer;
+z-index: 13;
 `
 export const Rotate = styled(GiClockwiseRotation)`
 cursor: pointer;
+z-index: 13;
 `
 
 export const LeftOptions = styled.div`

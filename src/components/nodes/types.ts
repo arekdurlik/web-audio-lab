@@ -57,10 +57,9 @@ export type ConstantSourceProps = NodeProps & {
 }
 
 export type AudioBufferSourceFile = 'white-noise' | 'pink-noise' | 'brownian-noise'
-export type AudioBufferSourceProps = {
+export type AudioBufferSourceProps = NodeProps & {
   id: string
   data: {
-    rotation?: 0 | 1 | 2 | 3
     source?: AudioBufferSourceFile
     playing?: boolean
     loop?: boolean
@@ -68,10 +67,8 @@ export type AudioBufferSourceProps = {
 }
 
 export type ConvolverType = 'file' | 'generate'
-export type ConvolverProps = {
-  id: string
+export type ConvolverProps = NodeProps & {
   data: {
-    rotation?: 0 | 1 | 2 | 3
     type?: ConvolverType
     source?: string
     fadeInTime?: number
@@ -82,11 +79,34 @@ export type ConvolverProps = {
   }
 }
 
-export type BitcrusherProps = {
-  id: string
+export type BitcrusherProps = NodeProps & {
   data: {
-    rotation?: 0 | 1 | 2 | 3
     bitDepth?: number
     sampleRateReduction?: number
+  }
+}
+
+export type WaveShaperProps = NodeProps & {
+  data: {
+    variable?: boolean
+    equation?: string
+    amount?: number
+    oversample?: OverSampleType
+  }
+}
+
+export type NoteProps = NodeProps & {
+  data: {
+    content?: string
+    size?: {
+      height: number
+      width: number
+    }
+  }
+}
+
+export type TextProps = NodeProps & {
+  data: {
+    content?: string
   }
 }

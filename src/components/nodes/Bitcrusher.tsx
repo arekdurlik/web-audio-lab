@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -7,8 +7,8 @@ import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
 import { NumberInput } from '../inputs/NumberInput'
-import { useReactFlow } from 'reactflow'
 import { BitcrusherProps } from './types'
+import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 
 export function Bitcrusher({ id, data }: BitcrusherProps) {
   const [bitDepth, setBitDepth] = useState(data.bitDepth ?? 16)
@@ -16,7 +16,7 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
   const audioId = `${id}-audio`
   const instance = useRef(new AudioWorkletNode(audio.context, 'bit-crusher-processor'))
   const setInstance = useNodeStore(state => state.setInstance)
-  const reactFlowInstance = useReactFlow()
+  const { updateNode } = useUpdateFlowNode(id)
   const sockets: Socket[] = [
     {
       id: audioId,
@@ -34,7 +34,7 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
   ]
 
   useEffect(() => {
-    setInstance(audioId, instance.current)
+    setInstance(audioId, instance.current, 'source')
   }, [])
 
   // update reactflow and audio instance
@@ -42,16 +42,10 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
     const invalid = [bitDepth, sampleRateReduction].find(param => {
       if (param === undefined || Number.isNaN(param)) return true
     })
+
     if (invalid) return
 
-    const newNodes = reactFlowInstance.getNodes().map((node) => {
-      if (node.id === id) {
-        node.data = { ...node.data, bitDepth, sampleRateReduction }
-      }
-      return node
-    })
-    reactFlowInstance.setNodes(newNodes)
-
+    updateNode({ bitDepth, sampleRateReduction })
     instance.current.parameters.get('bitDepth')?.setValueAtTime(bitDepth, audio.context.currentTime)
     instance.current.parameters.get('frequencyReduction')?.setValueAtTime(sampleRateReduction, audio.context.currentTime)
   }, [bitDepth, sampleRateReduction])

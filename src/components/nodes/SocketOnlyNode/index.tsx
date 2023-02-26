@@ -85,7 +85,7 @@ place-items: center;
   white-space: nowrap;
   font-size: 12px;
 `
-const CircleHandle = styled(Handle)<{ rotation: 0 | 1 | 2 | 3 }>`
+export const CircleHandle = styled(Handle)<{ rotation: 0 | 1 | 2 | 3 }>`
 display: grid;
 place-items: center;
 width: 2px;

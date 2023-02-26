@@ -9,7 +9,7 @@ export function Destination({id, data}: NodeProps) {
   const nodes = useNodeStore(state => state.nodes)
   
   useEffect(() => {
-    nodes.set('destination', audio.circuit.out)
+    nodes.set('destination', { instance: audio.circuit.out, type: 'target' })
   }, [])
 
   const socket ={

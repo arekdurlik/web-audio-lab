@@ -1,5 +1,5 @@
-import { ConstantSourceProps, NodeProps } from './types'
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { ConstantSourceProps } from './types'
+import { useEffect, useRef, useState } from 'react'
 import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -72,8 +72,8 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
       try { instance.current.stop() } catch {}
       instance.current = new ConstantSourceNode(audio.context, { offset })
 
-      setInstance(signalId, instance.current)
-      setInstance(offsetId, instance.current.offset)
+      setInstance(signalId, instance.current, 'source')
+      setInstance(offsetId, instance.current.offset, 'param')
       instance.current.start()
     } else {
       try { instance.current.stop() } catch {}

@@ -12,6 +12,7 @@ import { Select } from '../inputs/styled'
 import { LogRangeInput } from '../inputs/LogRangeInput'
 import { useReactFlow } from 'reactflow'
 import styled from 'styled-components'
+import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 
 export function Oscillator({ id, data }: OscillatorProps) {
   const [playing, setPlaying] = useState(data.playing ?? false)
@@ -24,6 +25,7 @@ export function Oscillator({ id, data }: OscillatorProps) {
   const setInstance = useNodeStore(state => state.setInstance)
   const reactFlowInstance = useReactFlow()
   const instance = useRef<OscillatorNode | null>()
+  const { updateNode } = useUpdateFlowNode(id)
 
   const audioId = `${id}-audio`
   const freqId = `${id}-freq`
@@ -76,13 +78,7 @@ export function Oscillator({ id, data }: OscillatorProps) {
 
     if (invalid) return
 
-    const newNodes = reactFlowInstance.getNodes().map((node) => {
-      if (node.id === id) {
-        node.data = { ...node.data, playing, frequency, detune, type }
-      }
-      return node
-    })
-    reactFlowInstance.setNodes(newNodes)
+    updateNode({ playing, frequency, detune, type })
   }, [playing, frequency, detune, type])
 
   // start or stop oscillator
@@ -96,9 +92,9 @@ export function Oscillator({ id, data }: OscillatorProps) {
         detune,
         ...(type === 'custom') && { periodicWave: audio.context.createPeriodicWave(real, imag) }
       })
-      setInstance(audioId, instance.current)
-      setInstance(freqId, instance.current.frequency)
-      setInstance(detuneId, instance.current.detune)
+      setInstance(audioId, instance.current, 'source')
+      setInstance(freqId, instance.current.frequency, 'param')
+      setInstance(detuneId, instance.current.detune, 'param')
       instance.current.start()
     } else {
       try { instance.current?.stop() } catch {}
@@ -123,7 +119,7 @@ export function Oscillator({ id, data }: OscillatorProps) {
       })
     }
   }, [customLength])
-  
+
   // if type is set to custom, set the periodic wave whenever the wavetable changes
   useEffect(() => {
     if (type !== 'custom' || !instance.current) return

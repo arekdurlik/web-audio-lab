@@ -11,7 +11,7 @@ export function Navbar() {
   const setAnimated = useFlowStore(state => state.setAnimated)
   const animated = useFlowStore(state => state.animated)
   const [saveName, setSaveName] = useState('')
-  const [saves, setSaves] = useState<{ id: string; obj: ReactFlowJsonObject }[]>([])
+  const [saves, setSaves] = useState<{ id: string, obj: ReactFlowJsonObject }[]>([])
   
   useEffect(() => {
     const saves = localStorage.getItem('saves')

@@ -9,6 +9,7 @@ import { useReactFlow } from 'reactflow'
 import { Select } from '../inputs/styled'
 import { createBrownianNoiseBuffer, createPinkNoiseBuffer, createWhiteNoiseBuffer } from '../../audio/utils'
 import { AudioBufferSourceFile, AudioBufferSourceProps } from './types'
+import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 
 export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
   const [source, setSource] = useState<AudioBufferSourceFile>(data.source ?? 'white-noise')
@@ -18,6 +19,7 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
   const instance = useRef<AudioBufferSourceNode | null>()
   const registerInstance = useNodeStore(state => state.setInstance)
   const reactFlowInstance = useReactFlow()
+  const { updateNode } = useUpdateFlowNode(id)
   const sockets: Socket[] = [
     {
       id: audioId,
@@ -34,13 +36,7 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
   }, [])
 
   useEffect(() => {
-    const newNodes = reactFlowInstance.getNodes().map((node) => {
-      if (node.id === id) {
-        node.data = { ...node.data, playing, source, loop }
-      }
-      return node
-    })
-    reactFlowInstance.setNodes(newNodes)
+    updateNode({ playing, source, loop })
   }, [playing, source, loop])
   
   useEffect(() => {
@@ -67,7 +63,7 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
   function startBuffer(type: AudioBufferSourceFile) {
     const buffer = getBuffer(type)
       instance.current = new AudioBufferSourceNode(audio.context, { buffer, loop })
-      registerInstance(audioId, instance.current)
+      registerInstance(audioId, instance.current, 'source')
       instance.current.start()
       instance.current.onended = () => {
         if (!loop) { 

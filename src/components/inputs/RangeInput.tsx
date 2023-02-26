@@ -1,10 +1,11 @@
-import { useEffect, ChangeEvent, KeyboardEvent } from 'react'
+import { useEffect, ChangeEvent, MouseEvent, KeyboardEvent } from 'react'
 import styled from 'styled-components'
 import { clamp } from '../../helpers'
 
 type RangeInputProps = {
   value: number
-  onChange: (value: number) => void
+  onChange?: (value: number) => void
+  onChangeEnd?: (value: number) => void
   label?: string
   defaultValue?: number
   min?: number | string
@@ -12,14 +13,16 @@ type RangeInputProps = {
   step?: number
   disabled?: boolean
 }
-export function RangeInput({ label, value, min, max, disabled, step = 0.01, onChange }: RangeInputProps) {
+export function RangeInput({ label, value, min, max, disabled, step = 0.01, onChange, onChangeEnd }: RangeInputProps) {
 
   useEffect(() => {
     const floatMin = typeof min === 'string' ? parseFloat(min) : min
     const floatMax = typeof max === 'string' ? parseFloat(max) : max
 
     const clamped = clamp(value, floatMin, floatMax)
-    onChange(clamped)
+
+    if (typeof onChange === 'function') onChange(clamped)
+    if (typeof onChangeEnd === 'function') onChangeEnd(clamped)
   }, [min, max])
   
   function checkBounds(e: KeyboardEvent<HTMLInputElement>) {
@@ -39,7 +42,15 @@ export function RangeInput({ label, value, min, max, disabled, step = 0.01, onCh
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const target = e.target as HTMLInputElement
     const value = parseFloat(target.value)
-    onChange(value)
+
+    if (typeof onChange === 'function') onChange(value)
+  }
+
+  function handleChangeEnd(e: MouseEvent<HTMLInputElement>) {
+    const target = e.target as HTMLInputElement
+    const value = parseFloat(target.value)
+
+    if (typeof onChangeEnd === 'function') onChangeEnd(value)
   }
 
   return (
@@ -53,6 +64,7 @@ export function RangeInput({ label, value, min, max, disabled, step = 0.01, onCh
         max={max}
         disabled={disabled}
         onChange={handleChange} 
+        onMouseUp={handleChangeEnd}
         onKeyUp={checkBounds}
         onMouseDownCapture={(e) => e.stopPropagation()}
         onPointerDownCapture={(e) => e.stopPropagation()}

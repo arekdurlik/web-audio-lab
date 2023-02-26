@@ -1,5 +1,5 @@
 import { BiquadFilterParam, BiquadFilterProps, NodeProps } from './types'
-import { ChangeEvent, useEffect, useMemo, useState } from 'react'
+import { useRef, ChangeEvent, useEffect, useState } from 'react'
 import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -10,7 +10,7 @@ import { NumberInput } from '../inputs/NumberInput'
 import { FlexContainer } from '../../styled'
 import { Select } from '../inputs/styled'
 import { LogRangeInput } from '../inputs/LogRangeInput'
-import { useReactFlow } from 'reactflow'
+import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 
 export function BiquadFilter({ id, data }: BiquadFilterProps) {
   const [frequency, setFrequency] = useState(data.frequency ?? 8000)
@@ -19,10 +19,10 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
   const [gain, setGain] = useState(data.gain ?? 0)
   const [type, setType] = useState<BiquadFilterType>(data.type ?? 'lowpass')
   const setInstance = useNodeStore(state => state.setInstance)
-  const reactFlowInstance = useReactFlow()
-  const instance = useMemo(() => new BiquadFilterNode(audio.context, {
+  const { updateNode } = useUpdateFlowNode(id)
+  const instance = useRef(new BiquadFilterNode(audio.context, {
     frequency, detune, Q, gain, type
-  }), [id])
+  }))
 
   const audioId = `${id}-audio`
   const freqId = `${id}-freq`
@@ -89,11 +89,11 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
   }
 
   useEffect(() => {
-    setInstance(audioId, instance)
-    setInstance(freqId, instance.frequency)
-    setInstance(detuneId, instance.detune)
-    setInstance(QId, instance.Q)
-    setInstance(gainId, instance.gain)
+    setInstance(audioId, instance.current, 'source')
+    setInstance(freqId, instance.current.frequency, 'param')
+    setInstance(detuneId, instance.current.detune, 'param')
+    setInstance(QId, instance.current.Q, 'param')
+    setInstance(gainId, instance.current.gain, 'param')
   }, [])
 
   useEffect(() => {
@@ -103,19 +103,13 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
 
     if (invalid) return
 
-    const newNodes = reactFlowInstance.getNodes().map((node) => {
-      if (node.id === id) {
-        node.data = { ...node.data, frequency, detune, Q, gain, type }
-      }
-      return node
-    })
-    reactFlowInstance.setNodes(newNodes)
+    updateNode({ frequency, detune, Q, gain, type })
   }, [frequency, detune, Q, gain, type])
 
   function handleType(event: ChangeEvent<HTMLSelectElement>) {
     const type = event.target.value as BiquadFilterType
     setType(type)
-    instance.type = type
+    instance.current.type = type
   }
 
   function handleLogParam(param: 'frequency' | 'Q', newValues: { position: number, value: number }) {
@@ -136,8 +130,8 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
   function setInstanceParam(param: BiquadFilterParam, value: any) {
     if (value === undefined || Number.isNaN(value)) return
 
-    instance[param].setValueAtTime(instance[param].value, audio.context.currentTime)
-    instance[param].linearRampToValueAtTime(value, audio.context.currentTime + 0.04)
+    instance.current[param].setValueAtTime(instance.current[param].value, audio.context.currentTime)
+    instance.current[param].linearRampToValueAtTime(value, audio.context.currentTime + 0.04)
   }
 
   const Parameters = <FlexContainer direction='column' gap={8}>

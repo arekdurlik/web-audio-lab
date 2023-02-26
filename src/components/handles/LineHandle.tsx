@@ -8,9 +8,11 @@ type HandleProps = {
   type: 'target' | 'source'
   position: Position
   offset: number
+  alwaysVisible?: boolean
+  disableColor?: boolean
 }
 
-export function LineHandle({ id, label, type, position, offset = 20 }: HandleProps) {
+export function LineHandle({ id, label, type, position, offset = 20, alwaysVisible, disableColor }: HandleProps) {
   const direction = (function getDirection() {
     switch(position) {
       case Position.Left:
@@ -35,6 +37,8 @@ export function LineHandle({ id, label, type, position, offset = 20 }: HandlePro
       direction={direction}
       position={position}
       offset={offset}
+      $disableColor={disableColor}
+      $alwaysVisible={alwaysVisible}
     >
       <Label position={position}>
         {label}
@@ -49,6 +53,8 @@ export const StyledLineHandle = styled(Handle)<{
   direction: 'right' | 'bottom' | 'left' | 'top', 
   type?: 'source' | 'target', 
   offset: number 
+  $alwaysVisible?: boolean
+  $disableColor?: boolean
 }>`
 display: grid;
 place-items: center;
@@ -60,6 +66,25 @@ min-height: 0;
 width: 1px;
 height: 1px;
 z-index: 3;
+&.target {
+  &:before {
+    ${({ $alwaysVisible }) => $alwaysVisible ? 'opacity: 1;' : 'opacity: 0;'}
+    ${({ $disableColor }) => $disableColor ? `
+      background-color: #fff;
+      box-shadow: 0px 0px 0px 1px #000;
+      ` : 'background-color: #090;'
+    }
+  }
+}
+&.source {
+  &:before {
+    ${({ $alwaysVisible }) => $alwaysVisible ? 'opacity: 1;' : 'opacity: 0;'}
+    ${({ $disableColor }) => $disableColor ? `
+      background-color: #fff;
+      box-shadow: 0px 0px 0px 1px #000;
+    ` : 'background-color: #c00;'}
+  }
+}
 
 ${({ position, offset }) => {
   switch(position) {

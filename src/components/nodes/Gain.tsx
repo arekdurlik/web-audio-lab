@@ -1,5 +1,5 @@
-import { GainProps, NodeProps } from './types'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { GainProps } from './types'
+import { useEffect, useState } from 'react'
 import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -8,7 +8,7 @@ import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
 import { NumberInput } from '../inputs/NumberInput'
-import { useReactFlow } from 'reactflow'
+import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 
 export function Gain({ id, data }: GainProps) {
   const [gain, setGain] = useState(data.gain ?? 1)
@@ -18,7 +18,7 @@ export function Gain({ id, data }: GainProps) {
   const controlVoltageId = `${id}-cv`
   const [instance] = useState(new GainNode(audio.context))
   const setInstance = useNodeStore(state => state.setInstance)
-  const reactFlowInstance = useReactFlow()
+  const { updateNode } = useUpdateFlowNode(id)
   const sockets: Socket[] = [
     {
       id: audioId,
@@ -45,8 +45,8 @@ export function Gain({ id, data }: GainProps) {
 
   useEffect(() => {
     instance.gain.value = gain
-    setInstance(audioId, instance)
-    setInstance(controlVoltageId, instance.gain)
+    setInstance(audioId, instance, 'source')
+    setInstance(controlVoltageId, instance.gain, 'param')
   }, [])
 
   useEffect(() => {
@@ -55,13 +55,7 @@ export function Gain({ id, data }: GainProps) {
     })
     if (invalid) return
 
-    const newNodes = reactFlowInstance.getNodes().map((node) => {
-      if (node.id === id) {
-        node.data = { ...node.data, gain, min, max }
-      }
-      return node
-    })
-    reactFlowInstance.setNodes(newNodes)
+    updateNode({ gain, min, max })
   }, [gain, max, min])
 
   useEffect(() => {

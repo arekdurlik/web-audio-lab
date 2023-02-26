@@ -37,6 +37,10 @@ export function Sidebar() {
       {
         id: 'stereoPannerNode',
         label: 'StereoPannerNode'
+      },
+      {
+        id: 'waveShaperNode',
+        label: 'WaveShaperNode'
       }
     ]
   }, {
@@ -46,6 +50,32 @@ export function Sidebar() {
       {
         id: 'bitcrusher',
         label: 'Bitcrusher'
+      }
+    ]
+  }, {
+    title: 'Switches',
+    active: false,
+    items: [
+      {
+        id: 'spdtFork',
+        label: 'SPDT Fork'
+      },
+      {
+        id: 'spdtJoin',
+        label: 'SPDT Join'
+      },
+    ]
+  }, {
+    title: 'Utils',
+    active: false,
+    items: [
+      {
+        id: 'note',
+        label: 'Note'
+      },
+      {
+        id: 'text',
+        label: 'Text'
       }
     ]
   }
@@ -68,7 +98,7 @@ export function Sidebar() {
 
   return <Container>
     {options.map((o, i) => <div key={i}>
-      <Tab onClick={(() => handleTabClick(i))}>{o.title}</Tab>
+      <Tab active={options[i].active} onClick={(() => handleTabClick(i))}>{o.title}</Tab>
       <Options active={options[i].active}>
       {o.items.map((item, j) => <Option 
         key={j} 
@@ -83,7 +113,7 @@ export function Sidebar() {
   </Container>
 }
 
-const Tab = styled.div`
+const Tab = styled.div<{ active: boolean }>`
 user-select: none;
 display: flex;
 align-items: center;
@@ -91,6 +121,8 @@ padding: 5px 10px;
 border: 3px outset;
 font-weight: bold;
 gap: 5px;
+
+${({ active }) => active && 'background-color: #bebbb2;'}
 
 &:before {
   content: '';

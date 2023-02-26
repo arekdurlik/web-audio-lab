@@ -9,7 +9,7 @@ export function LiveInput({ id, data }: NodeProps) {
   const nodes = useNodeStore(state => state.nodes)
   
   useEffect(() => {
-    nodes.set('liveInput', audio.circuit.in)
+    nodes.set('liveInput', { instance: audio.circuit.in, type: 'source' })
   }, [])
 
   const socket ={
