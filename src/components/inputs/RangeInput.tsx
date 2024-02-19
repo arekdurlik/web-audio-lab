@@ -19,10 +19,14 @@ export function RangeInput({ label, value, min, max, disabled, step = 0.01, onCh
     const floatMin = typeof min === 'string' ? parseFloat(min) : min
     const floatMax = typeof max === 'string' ? parseFloat(max) : max
 
-    const clamped = clamp(value, floatMin, floatMax)
+    let newValue = value
 
-    if (typeof onChange === 'function') onChange(clamped)
-    if (typeof onChangeEnd === 'function') onChangeEnd(clamped)
+    if (floatMin && floatMax) {
+      newValue = clamp(value, floatMin, floatMax)
+    } 
+
+    if (typeof onChange === 'function') onChange(newValue)
+    if (typeof onChangeEnd === 'function') onChangeEnd(newValue)
   }, [min, max])
   
   function checkBounds(e: KeyboardEvent<HTMLInputElement>) {

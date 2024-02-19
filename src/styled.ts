@@ -4,7 +4,9 @@ export const GlobalStyle = createGlobalStyle`
 
 * {
   font-family: 'Arial', sans-serif;
-  image-rendering: pixelated; image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 .react-flow__minimap-node {

@@ -25,8 +25,8 @@ export function Note({ id, data }: NoteProps) {
     if (!textarea.current) return
 
     if (data.size) {
-      textarea.current.style.width = data.size.width + 'px'
-      textarea.current.style.height = data.size.height + 'px'
+      textarea.current.style.width = data.size.width - 4 + 'px'
+      textarea.current.style.height = data.size.height - 4 + 'px'
     }
 
     resizeObserver.current.observe(textarea.current)
@@ -86,7 +86,7 @@ resize: none;
 `
 
 const Container = styled.div`
-background: beige;
+background: #faf0c8;
 min-width: 30px;
 min-height: 30px;
 box-shadow: 0px 0px 0px 1px darkkhaki inset;

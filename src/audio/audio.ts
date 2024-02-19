@@ -2,11 +2,11 @@ import { createMonoToStereoConverter } from './monoToStereo'
 import { getLiveAudio } from './utils'
 
 async function createAudio() {
+  let source: MediaStreamAudioSourceNode
   const actx = new AudioContext({
     latencyHint: 'interactive',
     sampleRate: 44100
   })
-  const input = new GainNode(actx)
   const destination = actx.destination
   const circuit = {
     in: new GainNode(actx),
@@ -16,15 +16,24 @@ async function createAudio() {
 
   await actx.audioWorklet.addModule('worklet/bit-crusher-processor.js')
   
-  input.connect(monoToStereo.input)
   monoToStereo.output.connect(circuit.in)
   circuit.out.connect(destination)
   
-  getLiveAudio(actx, input)
+  async function handleGetLive() {
+    try { source.disconnect() } catch {}
+    const live = await getLiveAudio(actx, monoToStereo.input)
+    if (live) {
+      source = live
+      source.connect(monoToStereo.input)
+    }
+  }
 
+  handleGetLive()
+  
   return {
     context: actx,
-    circuit
+    circuit,
+    getLive: () => handleGetLive()
   }
 }
 

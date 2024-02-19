@@ -9,15 +9,16 @@ export async function getLiveAudio(actx: AudioContext, output: AudioNode) {
         autoGainControl: false,
         noiseSuppression: false,
       }})
+      if (actx.state === 'suspended') await actx.resume()
+    
+      const source = actx.createMediaStreamSource(stream)
+      source.connect(output)
+    
+      return source
   } catch (err) {
     console.error(err)
-    return
+    return null
   }
-    
-  if (actx.state === 'suspended') await actx.resume()
-
-  const source = actx.createMediaStreamSource(stream)
-  source.connect(output)
 }
 
 // https://noisehack.com/generate-noise-web-audio-api/

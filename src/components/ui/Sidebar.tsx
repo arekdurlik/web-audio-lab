@@ -41,6 +41,10 @@ export function Sidebar() {
       {
         id: 'waveShaperNode',
         label: 'WaveShaperNode'
+      },
+      {
+        id: 'analyserNode',
+        label: 'AnalyserNode'
       }
     ]
   }, {
@@ -50,7 +54,7 @@ export function Sidebar() {
       {
         id: 'bitcrusher',
         label: 'Bitcrusher'
-      }
+      },
     ]
   }, {
     title: 'Switches',
@@ -122,22 +126,27 @@ border: 3px outset;
 font-weight: bold;
 gap: 5px;
 
-${({ active }) => active && 'background-color: #bebbb2;'}
-
 &:before {
   content: '';
   width: 0; 
   height: 0; 
-  border-top: 6px solid transparent;
-  border-bottom: 6px solid transparent;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
 
-  border-left: 9px solid black;
+  border-left: 7px solid black;
 }
 
 &:hover {
   background-color: #c8c6c0; 
   cursor: pointer;
 }
+
+${({ active }) => active && `
+  background-color: #bebbb2;
+  &:before {
+    transform: rotate(90deg);
+  }
+`}
 `
 
 const Options = styled.div<{ active: boolean }>`

@@ -3,7 +3,8 @@ import { useFlowStore } from '../../stores/flowStore'
 import { ReactFlowJsonObject, useReactFlow } from 'reactflow'
 import styled from 'styled-components'
 import { FlexContainer } from '../../styled'
-
+import { audio } from '../../main'
+import { presets } from '../../presets'
 export function Navbar() {
   const reactFlowInstance = useReactFlow()
   const edgeType = useFlowStore(state => state.edgeType)
@@ -50,7 +51,7 @@ export function Navbar() {
   }
 
   function handleLoad(event: ChangeEvent<HTMLSelectElement>) {
-    const index = saves.find(save => save.id === event.target.value)
+    const index = presets.find(save => save.id === event.target.value)
 
     if (!index) return
     reactFlowInstance.setEdges([])
@@ -62,6 +63,20 @@ export function Navbar() {
     })
   }
 
+  function handleReload() {
+    const edges = reactFlowInstance.getEdges()
+    const nodes = reactFlowInstance.getNodes()
+
+    reactFlowInstance.setEdges([])
+    reactFlowInstance.setNodes([])
+    setTimeout(() => {
+      reactFlowInstance.setEdges(edges)
+      reactFlowInstance.setNodes(nodes)
+    })
+
+    audio.getLive()
+  }
+
 
   return (
     <Wrapper>
@@ -70,14 +85,16 @@ export function Navbar() {
         <Logo>Web Audio Circuit Creator<Trademark>TM</Trademark></Logo>
         <Button onClick={() => setEdgeType(edgeType === 'smoothstep' ? 'default' : 'smoothstep')}>Edge type</Button>
         <Button onClick={() => setAnimated(animated ? false : true)}>Edge animation</Button>
-        Title:
+        <Button onClick={handleReload}>Reload</Button>
+        {/* Title:
         <Input type='text' value={saveName} onChange={(e) => setSaveName(e.target.value)} />
-        {saveName.length > 0 ? <Button onClick={handleSave}>Save</Button> : ''}
+        <Button onClick={handleSave}>Save</Button> */}
         </FlexContainer>
         <FlexContainer justify='flex-end' align='center' gap={10}>
         Load:
         <Select onChange={handleLoad}>
-          {saves.map((o, i) => <option key={i} value={o.id}>{o.id}</option>)}
+          <option key='null'></option>
+          {presets.map((o, i) => <option key={i} value={o.id}>{o.id}</option>)}
         </Select>
         </FlexContainer>
       </FlexContainer>

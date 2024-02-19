@@ -100,12 +100,12 @@ bottom: auto !important;
 ${({ rotation }) => {
   switch (rotation) {
     case 0: return `top: 0px;
-    left: -7px;`
-    case 1: return `top: -7px;
+    left: -5px;`
+    case 1: return `top: -5px;
     left: 0px;`
     case 2: return `top: 0px;
-    left: 3px;`
-    case 3: return `top: 3px;
+    left: 1px;`
+    case 3: return `top: 1px;
     left: 0px;`
   }
 }}
@@ -121,13 +121,13 @@ ${({ rotation }) => {
 
   ${({ rotation }) => {
     switch (rotation) {
-      case 0: return `left: 1px;
+      case 0: return `left: -1px;
       bottom: -4px;`
-      case 1: return `bottom: -9px;
+      case 1: return `bottom: -7px;
       left: -4px;`
       case 2: return `bottom: -4px;
-      left: -9px;`
-      case 3: return `top: -9px;
+      left: -7px;`
+      case 3: return `top: -7px;
       left: -4px;`
     }
   }}

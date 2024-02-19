@@ -82,8 +82,8 @@ ${({ position, offset }) => {
 }}
 
 ${({ position, type }) => type === 'target' 
-  ? `${position}: 3px;` 
-  : `${position}: 3px;`
+  ? `${position}: 1px;` 
+  : `${position}: 1px;`
 }
 `
 
@@ -98,16 +98,16 @@ ${({ direction }) => {
   switch(direction) {
     case 'bottom': return `
     transform: rotate(90deg);
-    top: -7px;`
+    top: -5px;`
     case 'left': return `
     transform: rotate(180deg);
-    left: -6px;
-    top: -7px;`
+    left: -8px;
+    top: -5px;`
     case 'top': return `
     transform: rotate(-90deg);
-    top: -6px;`
+    top: -8px;`
     case 'right': return `
-    left: -7px;
+    left: -5px;
     top: -7px;`
   }
 }}

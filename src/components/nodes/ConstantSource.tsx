@@ -92,6 +92,7 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
     >
       <Parameter>
         <RangeInput
+          step={0.00001}
           min={min}
           max={max}
           onChange={setOffset} 

@@ -58,6 +58,10 @@ padding: 5px;
 const Container = styled.div`
 min-width: 30px;
 min-height: 30px;
+
+&:hover {
+  box-shadow: inset 0px 0px 0px 1px #000;
+}
 `
 
 const Textarea = styled.textarea`
@@ -66,7 +70,7 @@ margin-right: 20px;
 background: none;
 border: none;
 outline: none;
-font-size: 21px;
+font-size: 12px;
 resize: none;
 
 &:hover, &:active {

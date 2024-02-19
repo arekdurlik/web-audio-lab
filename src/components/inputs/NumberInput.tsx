@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { clamp } from '../../helpers'
 
 type NumberInputProps = {
-  value?: number | string
+  value?: number
   onChange?: (value: number) => void
   label?: string
   defaultValue?: number

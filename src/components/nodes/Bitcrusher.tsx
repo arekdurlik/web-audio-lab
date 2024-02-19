@@ -61,6 +61,7 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
         <RangeInput
           min={2}
           max={16}
+          step={1}
           onChange={setBitDepth} 
           value={bitDepth}
           />
@@ -81,6 +82,7 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
         <RangeInput
           min={1}
           max={50}
+          step={1}
           onChange={setSampleRateReduction} 
           value={sampleRateReduction}
           />
