@@ -13,6 +13,16 @@ export type GainProps = NodeProps & {
   }
 }
 
+export type AnalyserType = 'oscilloscope' | 'analyser'
+export type AnalyserProps = NodeProps & {
+  data: {
+    type?: AnalyserType
+    width?: number
+    scale?: number
+    fitInScreen?: boolean
+  }
+}
+
 export type StereoPannerProps = NodeProps & {
   data: {
     pan?: number
@@ -63,6 +73,7 @@ export type AudioBufferSourceProps = NodeProps & {
     source?: AudioBufferSourceFile
     playing?: boolean
     loop?: boolean
+    playbackRate?: number
   }
 }
 

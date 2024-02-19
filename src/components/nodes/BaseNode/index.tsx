@@ -24,6 +24,12 @@ export const Node: FC<NodeProps> = function({
   disableRemoval,
   disableBackground,
   disableBorder,
+  background,
+  optionsColor,
+  valueFont,
+  valueColor,
+  valueUnit,
+  constantSize,
   onRotate
 }) {
   const [rotation, setRotation] = useState<0 | 1 | 2 | 3>(data.rotation ?? 0)
@@ -60,7 +66,7 @@ export const Node: FC<NodeProps> = function({
       label: socket.label,
       type: socket.type,
       position: positions[rotation][getEdgeIndex(socket.edge)],
-      offset: socket.offset,
+      offset: socket.offset instanceof Array ? socket.offset[rotation] : socket.offset,
     }
     switch (socket.visual) {
       case 'circle': return <LineHandle {...props} disableColor alwaysVisible />
@@ -76,12 +82,13 @@ export const Node: FC<NodeProps> = function({
       ref={activator}
     >
       <NodeContainer 
-        width={rotation === 0 || rotation === 2 ? mulWidth : mulHeight} 
-        height={rotation === 0 || rotation === 2 ? mulHeight : mulWidth}
+        width={rotation === 0 || rotation === 2 || constantSize ? mulWidth : mulHeight} 
+        height={rotation === 0 || rotation === 2 || constantSize ? mulHeight : mulWidth}
         disableBackground={disableBackground}
         disableBorder={disableBorder}
       >
-        {active && <HoverOptions>
+        {background && <Background>{background}</Background>}
+        {active && <HoverOptions color={optionsColor}>
           <LeftOptions>
             {parameters && <Expand onClick={handleExpand}>
               {expanded ? <IoChevronUpSharp /> : <IoChevronDownSharp />}
@@ -92,7 +99,12 @@ export const Node: FC<NodeProps> = function({
         </HoverOptions>}
         {handles}
         <NodeTitle rotation={rotation}>{name}</NodeTitle>
-        <Value>{Number.isNaN(value) ? String(value) : value}</Value>
+        <Value 
+          color={valueColor}
+          font={valueFont}
+        >
+          {Number.isNaN(value) ? String(value) : value}{valueUnit}
+        </Value>
         {children}
       </NodeContainer>
       {expanded && <Parameters 
@@ -106,11 +118,19 @@ export const Node: FC<NodeProps> = function({
   )
 }
 
-const Value = styled.div`
+const Value = styled.div<{ color?: string, font?: string }>`
 position: absolute;
 bottom: 0;
 left: 0;
 padding: 1px 3px;
 font-size: 12px;
 width: 100%;
+
+${({ color }) => color && `color: ${color};`}
+${({ font }) => font && `font-family: '${font}';`}
+`
+const Background = styled.div`
+position: absolute;
+inset: 0;
+border: 1px black solid;
 `

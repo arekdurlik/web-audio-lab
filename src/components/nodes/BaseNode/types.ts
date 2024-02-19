@@ -6,7 +6,7 @@ export type Socket = {
   visual?: 'line' | 'triangle' | 'circle',
   type: 'target' | 'source',
   edge: Edge,
-  offset: number
+  offset: number | [number, number, number, number]
 }
 export type Edge = 'left' | 'top' | 'right' | 'bottom'
 
@@ -27,6 +27,12 @@ export type NodeProps = {
   disableRemoval?: boolean
   disableBackground?: boolean
   disableBorder?: boolean
+  background?: ReactNode
+  optionsColor?: string
+  valueFont?: string
+  valueColor?: string
+  valueUnit?: string
+  constantSize?: boolean
 
   onRotate?: (value?: Rotation) => any
 }

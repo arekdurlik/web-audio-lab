@@ -14,6 +14,7 @@ import { WaveShaper } from '../nodes/WaveShaper'
 import { Note } from '../nodes/Note'
 import { Text } from '../nodes/Text'
 import { SPDTFork, SPDTJoin } from '../switches/SPDT'
+import { Analyser } from '../nodes/Analyser'
 
 export const propOptions = {
   hideAttribution: true
@@ -44,6 +45,7 @@ export const nodeTypes = {
   oscillatorNode: Oscillator,
   waveShaperNode: WaveShaper,
   audioBufferSourceNode: AudioBufferSource,
+  analyserNode: Analyser,
   liveInput: LiveInput,
   destination: Destination,
 

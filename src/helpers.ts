@@ -19,3 +19,12 @@ export function lerp(x: number, y: number, a: number) {
 export function invlerp(x: number, y: number, a: number) {
   return clamp((a - x) / (y - x))
 }
+
+export const normalize = (val: number, min: number, max: number) => {
+  return (val - min) / (max - min)
+}
+
+export const curve = (val: number, min: number, max: number, curve: number) => { 
+  const clamped = clamp(val, min, max)
+  return (max - min) * (normalize(clamped, min, max) ** curve) + min
+}

@@ -135,7 +135,7 @@ display: flex;
 gap: 1px;
 `
 
-export const HoverOptions = styled.div`
+export const HoverOptions = styled.div<{ color?: string }>`
 box-sizing: border-box;
 position: absolute;
 top: 4px;
@@ -145,6 +145,7 @@ width: calc(100% - 8px);
 display: flex;
 justify-content: space-between;
 z-index: 1;
+${({ color }) => color && `color: ${color};`}
 
 & > div {
   display: flex;
