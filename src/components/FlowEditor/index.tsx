@@ -48,9 +48,9 @@ export function FlowEditor() {
       // check if the dropped element is valid
       if (typeof type === 'undefined' || !type) return
 
-      const position = reactFlowInstance.project({
-        x: event.clientX - reactFlowBounds.left,
-        y: event.clientY - reactFlowBounds.top,
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
       })
 
       const newNode = {

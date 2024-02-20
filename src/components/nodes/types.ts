@@ -13,13 +13,14 @@ export type GainProps = NodeProps & {
   }
 }
 
-export type AnalyserType = 'oscilloscope' | 'analyser'
+export type AnalyserType = 'oscilloscope' | 'analyser' | 'vu-meter'
 export type AnalyserProps = NodeProps & {
   data: {
     type?: AnalyserType
     width?: number
     scale?: number
     fitInScreen?: boolean
+    resolution?: number
   }
 }
 

@@ -11,19 +11,21 @@ import { Parameter } from './BaseNode/styled'
 import { RangeInput } from '../inputs/RangeInput'
 import { NumberInput } from '../inputs/NumberInput'
 import { Select } from '../inputs/styled'
-import { curve } from '../../helpers'
+import { convertFloatArrayToUint8, curve, invlerp } from '../../helpers'
 
 export function Analyser({ id, data }: AnalyserProps) {
-  const [type, setType] = useState(data.type ?? 'oscilloscope')
-  const [width, setWidth] = useState(data.width ?? 1)
+  const [type, setType] = useState(data.type ?? 'vu-meter')
+  const [width, setWidth] = useState(data.width ?? 4)
   const widthRef = useRef(width)
+  const [resolution, setResolution] = useState(data.resolution ?? 2)
+  const resolutionRef = useRef(resolution)
   const [fitInScreen, setFitInScreen] = useState(data.fitInScreen ?? false)
   const fitInScreenRef = useRef(fitInScreen)
   const [scale, setScale] = useState(data.scale ?? 1)
   const scaleRef = useRef(scale)
   const audioId = `${id}-audio`
-  const [instance] = useState(new AnalyserNode(audio.context, { smoothingTimeConstant: 0, fftSize: 1024 }))
-  const [dataArray] = useState(new Uint8Array(instance.frequencyBinCount))
+  const [instance] = useState(new AnalyserNode(audio.context, { smoothingTimeConstant: 0, fftSize: 2048 }))
+  const [dataArray] = useState(new Float32Array(instance.frequencyBinCount))
   const setInstance = useNodeStore(state => state.setInstance)
   const { updateNode } = useUpdateFlowNode(id)
   const canvas = useRef<HTMLCanvasElement | null>(null)
@@ -34,7 +36,7 @@ export function Analyser({ id, data }: AnalyserProps) {
   const [y,setY] = useState(150)
   const xRef = useRef(x)
   const yRef = useRef(y)
-  let fps = 30, fpsInterval: number, now, then: number, elapsed
+  let fps = 75, fpsInterval: number, now, then: number, elapsed
 
   const sockets: Socket[] = [
     {
@@ -42,6 +44,13 @@ export function Analyser({ id, data }: AnalyserProps) {
       label: '',
       type: 'target',
       edge: 'left',
+      offset: [24, 24 * width, 24, 24 * width]
+    },
+    {
+      id: audioId,
+      label: '',
+      type: 'source',
+      edge: 'right',
       offset: [24, 24 * width, 24, 24 * width]
     }
   ]
@@ -52,7 +61,6 @@ export function Analyser({ id, data }: AnalyserProps) {
 
     setC(canvas.current.getContext('2d'))
   }, [canvas])
-
 
   // setup canvas
   useEffect(() => {
@@ -95,20 +103,39 @@ export function Analyser({ id, data }: AnalyserProps) {
   function startDrawing() {
     fpsInterval = 1000 / fps
     then = Date.now()
-    type === 'oscilloscope' ? drawOscilloscope() : drawAnalyser()
+    
+    switch(type) {
+      case 'oscilloscope':
+        drawOscilloscope()
+        break
+      case 'analyser':
+        drawAnalyser()
+        break
+      case 'vu-meter':
+        drawVuMeter()
+    }
+  }
+
+  // check fps
+  function checkFramePassed() {
+    now = Date.now()
+    elapsed = now - then
+    if (elapsed < fpsInterval) {
+      return false
+    } else {
+      then = now
+      return true
+    }
   }
 
   function drawOscilloscope() {
     if (!canvas.current || !c) return
     rafID.current = requestAnimationFrame(drawOscilloscope)
 
-    // check fps
-    now = Date.now()
-    elapsed = now - then
-    if (elapsed < fpsInterval) return
-    then = now
+    if (!checkFramePassed()) return
 
-    instance.getByteTimeDomainData(dataArray)
+    instance.getFloatTimeDomainData(dataArray)
+    const dbArray = convertFloatArrayToUint8(dataArray, [-1,1])
 
     const segmentWidth = canvas.current.width / instance.frequencyBinCount * (fitInScreenRef.current ? widthRef.current : 4)
     c.fillRect(0, 0, canvas.current.width, canvas.current.height)
@@ -142,7 +169,7 @@ export function Analyser({ id, data }: AnalyserProps) {
 
     for (let i = 1; i < instance.frequencyBinCount; i += 1) {
       let x = i * segmentWidth / widthRef.current
-      let v = ((dataArray[i]) / (128 / scaleRef.current)) - (scaleRef.current - 1)
+      let v = ((dbArray[i]) / (128 / scaleRef.current)) - (scaleRef.current - 1)
       let y = (v * canvas.current.height) / 2
       c.lineTo(x, y)
     }
@@ -155,19 +182,17 @@ export function Analyser({ id, data }: AnalyserProps) {
     if (!canvas.current || !c) return
     rafID.current = requestAnimationFrame(drawAnalyser)
     
-    // check fps
-    now = Date.now()
-    elapsed = now - then
-    if (elapsed < fpsInterval) return
-    then = now
+    if (!checkFramePassed()) return
 
-    instance.getByteFrequencyData(dataArray)
-    const bars = 20
-    const gap = 2
+    instance.getFloatFrequencyData(dataArray)
+    let dbArray = convertFloatArrayToUint8(dataArray, [instance.minDecibels, instance.maxDecibels])
+
+    const bars = 5 * (resolutionRef.current) * widthRef.current
+    const gap = 1
 
     const cwidth = canvas.current.width
     const cheight = canvas.current.height
-    const meterWidth = (cwidth / bars) - 1.9
+    const meterWidth = (cwidth / bars) - 0.9
 
     const gradient = c.createLinearGradient(0, 0, 0, 100)
     gradient.addColorStop(1, `rgb(0, 255, 0)`)
@@ -179,22 +204,94 @@ export function Analyser({ id, data }: AnalyserProps) {
     c.fillRect(0, 0, cwidth, cheight)
 
     // get samples logarithmically
-    const length = dataArray.length
+    const length = dbArray.length
     const values = []
 
     for (let i = 0; i < length; i++) {
-      values.push(Math.floor(curve(i, 0 , length, xRef.current)))
+      values.push(Math.floor(curve(i, 0 , length, 30)))
     }
 
     const unique = [...new Set(values)]
 
     // draw bars
     for (let i = 0; i < bars; i++) {
-      const value = dataArray[unique[Math.floor(i*(length/yRef.current))]]
+      const value = dbArray[unique[Math.floor(i*(length/(7.5*bars)))]]
       
       c.fillStyle = gradient
-      c.fillRect(i * meterWidth + (i*gap), cheight, meterWidth, cheight - value + 20); //the meter
+      c.fillRect(i * meterWidth + (i*gap), cheight, meterWidth, cheight - value + 20)
     }
+  }
+
+  function drawVuMeter() {
+    if (!canvas.current || !c) return
+    rafID.current = requestAnimationFrame(drawVuMeter)
+    
+    if (!checkFramePassed()) return
+
+    instance.getFloatTimeDomainData(dataArray)
+    
+    let sumOfSquares = 0
+    for (let i = 0; i < dataArray.length; i++) {
+      sumOfSquares += dataArray[i] ** 2
+    }
+    const avgPowerDecibels = 10 * Math.log10(sumOfSquares / dataArray.length)
+    const cwidth = canvas.current.width
+    const cheight = canvas.current.height
+
+    c.fillStyle = '#000000'
+    c.fillRect(0, 0, cwidth, cheight)
+
+    c.font = '24px PixelMono'
+    c.fillStyle = '#aaa'
+    const h = cheight - 3
+    switch (widthRef.current) {
+      case 1:
+        c.fillText('-30', cwidth * 0.001, h)
+        c.fillText('0', cwidth * 0.82, h)
+
+        c.fillStyle = '#777'
+        c.fillRect(cwidth * 0.82 + 3.5, 0, 3, cheight - 20)
+        break
+      case 2:
+        c.fillText('-30', cwidth * 0.001, h)
+        c.fillText('-15', cwidth * 0.30, h)
+        c.fillText('-7', cwidth * 0.6, h)
+        c.fillText('0', cwidth * 0.85, h)
+
+        c.fillStyle = '#777'
+        c.fillRect(cwidth * 0.85 + 3.5, 0, 3, cheight - 20)
+        break
+      case 3:
+        c.fillText('-30', cwidth * 0.001, h)
+        c.fillText('-20', cwidth * 0.225, h)
+        c.fillText('-10', cwidth * 0.53, h)
+        c.fillText('-5', cwidth * 0.69, h)
+        c.fillText('0', cwidth * 0.865, h)
+        c.fillText('dB', cwidth * 0.92, h)
+        
+        c.fillStyle = '#777'
+        c.fillRect(cwidth * 0.865 + 3.5, 0, 3, cheight - 20)
+        break
+      case 4:
+        c.fillText('-30', cwidth * 0.001, h)
+        c.fillText('-20', cwidth * 0.245, h)
+        c.fillText('-10', cwidth * 0.545,h)
+        c.fillText('-5', cwidth * 0.7, h)
+        c.fillText('0', cwidth * 0.87, h)
+        c.fillText('dB', cwidth * 0.94, h)
+
+        c.fillStyle = '#777'
+        c.fillRect(cwidth * 0.87 + 3.5, 0, 3, cheight - 20)
+        break
+    }
+
+    const gradient = c.createLinearGradient(cwidth, 0, 0, 0)
+    gradient.addColorStop(1, `rgb(0, 255, 0)`)
+    gradient.addColorStop(0.119, `rgb(0, 255, 0)`)
+    gradient.addColorStop(0.118, `rgb(255, 0, 0)`)
+    gradient.addColorStop(0, `rgb(255, 0, 0)`)
+    c.fillStyle = gradient
+    c.fillRect(0, 0, cwidth * invlerp(-30, 4, avgPowerDecibels), cheight - 20)
   }
 
   const Parameters = <FlexContainer direction='column' gap={8}>
@@ -207,6 +304,7 @@ export function Analyser({ id, data }: AnalyserProps) {
       >
         <option value='oscilloscope'>Oscilloscope</option>
         <option value='analyser'>Spectrum analyser</option>
+        <option value='vu-meter'>VU Meter</option>
       </Select>
       </Parameter>
     </div>
@@ -231,6 +329,31 @@ export function Analyser({ id, data }: AnalyserProps) {
             step={0.01}
             value={scale}
             onChange={v => { setScale(v); scaleRef.current = v }} 
+            />
+        </Parameter>
+      </FlexContainer>
+    </div>}
+    {type === 'analyser' && <div>
+      Resolution:
+      <FlexContainer
+        direction='column'
+        gap={8}
+      >
+        <Parameter>
+          <RangeInput
+            min={1}
+            max={4}
+            step={1}
+            defaultValue={1}
+            value={resolution}
+            onChange={v => { setResolution(v); resolutionRef.current = v }} 
+            />
+          <NumberInput 
+            min={1}
+            max={4}
+            step={1}
+            value={resolution}
+            onChange={v => { setResolution(v); resolutionRef.current = v }} 
             />
         </Parameter>
       </FlexContainer>
@@ -273,16 +396,16 @@ export function Analyser({ id, data }: AnalyserProps) {
         <Parameter>
           <RangeInput
             min={0}
-            max={40}
-            step={0.01}
+            max={512}
+            step={1}
             defaultValue={1}
             value={x}
             onChange={v => { setX(v); xRef.current = v }} 
             />
           <NumberInput 
             min={0}
-            max={40}
-            step={0.01}
+            max={512}
+            step={1}
             value={x}
             onChange={v => { setX(v); xRef.current = v }} 
             />
@@ -298,7 +421,7 @@ export function Analyser({ id, data }: AnalyserProps) {
         <Parameter>
           <RangeInput
             min={0}
-            max={200}
+            max={2200}
             step={0.01}
             defaultValue={1}
             value={y}
@@ -306,7 +429,7 @@ export function Analyser({ id, data }: AnalyserProps) {
             />
           <NumberInput 
             min={0}
-            max={200}
+            max={2200}
             step={0.01}
             value={y}
             onChange={v => { setY(v); yRef.current = v }} 
@@ -326,8 +449,8 @@ export function Analyser({ id, data }: AnalyserProps) {
       parameters={Parameters}
       optionsColor='white'
       constantSize
-      valueFont='Pixel'
-      valueColor='#00ffff'
+      valueFont='PixelMono'
+      valueColor={type === 'oscilloscope' ? '#00ffff' : '#ff0000'}
       value={type === 'oscilloscope' ? scale : undefined}
       valueUnit={type === 'oscilloscope' ? 'x' : undefined}
       width={width * 3}
