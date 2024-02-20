@@ -24,6 +24,12 @@ export type AnalyserProps = NodeProps & {
   }
 }
 
+export type AnalyserTypeProps = AnalyserProps & {
+  type: AnalyserType,
+  startExpanded?: boolean,
+  onTypeChange: (type: AnalyserType) => void
+}
+
 export type StereoPannerProps = NodeProps & {
   data: {
     pan?: number

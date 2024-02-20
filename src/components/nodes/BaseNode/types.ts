@@ -24,6 +24,7 @@ export type NodeProps = {
   }
   sockets: Socket[]
 
+  startExpanded?: boolean
   disableRemoval?: boolean
   disableBackground?: boolean
   disableBorder?: boolean
