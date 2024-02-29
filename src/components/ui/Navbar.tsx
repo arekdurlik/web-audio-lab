@@ -1,25 +1,18 @@
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useFlowStore } from '../../stores/flowStore'
-import { ReactFlowJsonObject, useReactFlow } from 'reactflow'
+import { useReactFlow } from 'reactflow'
 import styled from 'styled-components'
 import { FlexContainer } from '../../styled'
 import { audio } from '../../main'
 import { presets } from '../../presets'
+
 export function Navbar() {
   const reactFlowInstance = useReactFlow()
   const edgeType = useFlowStore(state => state.edgeType)
   const setEdgeType = useFlowStore(state => state.setEdgeType)
   const setAnimated = useFlowStore(state => state.setAnimated)
   const animated = useFlowStore(state => state.animated)
-  const [saveName, setSaveName] = useState('')
-  const [saves, setSaves] = useState<{ id: string, obj: ReactFlowJsonObject }[]>([])
   
-  useEffect(() => {
-    const saves = localStorage.getItem('saves')
-    if (!saves) return
-
-    setSaves(JSON.parse(saves))
-  }, [])
   useEffect(() => {
     const newEdges = reactFlowInstance.getEdges().map((edge) => {
       edge.type = edgeType
@@ -29,28 +22,7 @@ export function Navbar() {
     reactFlowInstance.setEdges(newEdges)
   }, [edgeType, animated])
 
-  async function handleSave() {
-    if (saveName === '') return
-
-    const saves = localStorage.getItem('saves')
-
-    const saveObj = {
-      id: saveName,
-      obj: reactFlowInstance.toObject()
-    }
-    
-    if (!saves) {
-      localStorage.setItem('saves', JSON.stringify([saveObj]))
-      setSaves([saveObj])
-    } else {
-      const parsed = await JSON.parse(saves)
-      parsed.push(saveObj)
-      setSaves(parsed)
-      localStorage.setItem('saves', JSON.stringify(parsed))
-    }
-  }
-
-  function handleLoad(event: ChangeEvent<HTMLSelectElement>) {
+  function handleLoadPreset(event: ChangeEvent<HTMLSelectElement>) {
     const index = presets.find(save => save.id === event.target.value)
 
     if (!index) return
@@ -77,22 +49,70 @@ export function Navbar() {
     audio.getLive()
   }
 
+  async function handleSave() {
+    const saveObj = JSON.stringify(reactFlowInstance.toObject())
+
+    const handle = await showSaveFilePicker({
+      suggestedName: 'circuit.json',
+      types: [{
+          accept: { 'application/json': ['.json'] },
+      }],
+    })
+  
+    const blob = new Blob([saveObj])
+    
+    const writableStream = await handle.createWritable()
+    await writableStream.write(blob)
+    await writableStream.close()
+  }
+
+  async function handleLoad() {
+    const [fileHandle] = await window.showOpenFilePicker({
+      types: [{
+        accept: { 'application/json': ['.json'] },
+      }],
+      excludeAcceptAllOption: true,
+      multiple: false,
+    })
+
+    const file = await fileHandle.getFile()
+
+      const fileReader = new FileReader()
+
+      fileReader.onload = function(e: ProgressEvent<FileReader>) {
+        if (e.target === null) return
+
+        const result = e.target.result
+
+        if (typeof result !== 'string') return
+
+        const obj = JSON.parse(result)
+
+        reactFlowInstance.setEdges([])
+        reactFlowInstance.setNodes([])
+        setTimeout(() => {
+          reactFlowInstance.setEdges(obj.edges)
+          reactFlowInstance.setNodes(obj.nodes)
+          reactFlowInstance.setViewport(obj.viewport)
+        })
+      }
+      fileReader.readAsText(file)
+  }
 
   return (
     <Wrapper>
       <FlexContainer justify='space-between' width='100%'>
         <FlexContainer align='center' gap={10}>
         <Logo>Web Audio Circuit Creator<Trademark>TM</Trademark></Logo>
+        <Button onClick={handleSave}>Save</Button>
+        <Button onClick={handleLoad}>Load</Button>
         <Button onClick={() => setEdgeType(edgeType === 'smoothstep' ? 'default' : 'smoothstep')}>Edge type</Button>
         <Button onClick={() => setAnimated(animated ? false : true)}>Edge animation</Button>
         <Button onClick={handleReload}>Reload</Button>
-        {/* Title:
-        <Input type='text' value={saveName} onChange={(e) => setSaveName(e.target.value)} />
-        <Button onClick={handleSave}>Save</Button> */}
         </FlexContainer>
         <FlexContainer justify='flex-end' align='center' gap={10}>
-        Load:
-        <Select onChange={handleLoad}>
+        Load preset:
+        <Select onChange={handleLoadPreset}>
           <option key='null'></option>
           {presets.map((o, i) => <option key={i} value={o.id}>{o.id}</option>)}
         </Select>
