@@ -1,4 +1,4 @@
-import { WaveShaperProps } from './types'
+import { WaveShaperProps, WaveShaperType } from './types'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
@@ -12,19 +12,19 @@ import { Select } from '../inputs/styled'
 import { NumberInput } from '../inputs/NumberInput'
 import { RangeInput } from '../inputs/RangeInput'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
+import { TextInput } from '../inputs/TextInput'
 
 export function WaveShaper({ id, data }: WaveShaperProps) {
-  const [variable, setVariable] = useState(data.variable ?? false)
-  const [amount, setAmount] = useState(data.amount ?? 30)
+  const [type, setType] = useState(data.type ?? 'array')
+  const [array, setArray] = useState(data.array ?? '-1,0,1')
   const [equation, setEquation] = useState(data.equation ?? '(3 + 20) * x * 57 * (Math.PI / 180) / (Math.PI + 20 * Math.abs(x))')
   const [oversample, setOversample] = useState<OverSampleType>(data.oversample ?? 'none')
-  const [error, setError] = useState(false)
+  const [arrayError, setArrayError] = useState(false)
+  const [equationError, setEquationError] = useState(false)
 
   const audioId = `${id}-audio`
   const instance = useRef(new WaveShaperNode(audio.context, { oversample: data.oversample }))
-  const input = useRef<HTMLInputElement | null>(null)
   const setInstance = useNodeStore(state => state.setInstance)
-  const reactFlowInstance = useReactFlow()
   const { updateNode } = useUpdateFlowNode(id)
   const sockets: Socket[] = [
     {
@@ -48,16 +48,10 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
     handleApply()
   }, [])
 
-  // update curve in variable mode whenever amount changed
-  useEffect(() => {
-    if (!variable) return
-    instance.current.curve = makeDistortionCurve()
-  }, [amount])
-
   // update reactflow data
   useEffect(() => {
-    updateNode({ oversample, variable, amount, equation })
-  }, [oversample, variable, amount, equation])
+    updateNode({ type, array, oversample, equation })
+  }, [type, array, equation, oversample])
 
   function makeDistortionCurve() {
     const nSamples = audio.context.sampleRate
@@ -68,47 +62,47 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
 
       let newEquation = equation.slice().replaceAll('x', String(x))
 
-      if (variable) {
-        equation.replaceAll('a', String(amount))
-      }
-      
-      // TODO: evaln't
-      let a = amount
-      curve[i] = eval(newEquation)
+      const func = new Function('x', `return ${newEquation}`)
+      const num = func()
+      curve[i] = num
     }
     return curve
   }
 
   function handleApply() {
+    type === 'array' ? applyArray() : applyEquation()
+  }
+
+  function applyArray() {
+    const re = /^-?\d*\.?\d+(?:[ ]?,[ ]?-?\d*\.?\d+)*$/
+    const correct = re.test(array)
+    
+    if (!correct) {
+      setArrayError(true)
+      return
+    }
+    
+    setArrayError(false)
+    const values = array.split(',').map(v => Number(v))
+    instance.current.curve = new Float32Array(values)
+  }
+
+  function applyEquation() {
     try {
       const slice = equation.slice()
       
-      if (variable) {
-        slice.replaceAll('a', String(amount))
-      }
+      const func = new Function('x', `return ${slice}`)
+      const num = func()
 
-      let x, a
-      const num = eval(slice)
       // throw if equation doesn't return number
       num.toFixed(1)
 
-      setError(false)
+      setEquationError(false)
       instance.current.curve = makeDistortionCurve()
     } catch (e) {
       console.error(e)
-      setError(true)
+      setEquationError(true)
     }
-  }
-
-  function handleEquation(event: ChangeEvent<HTMLInputElement>) {
-    const value = event.target.value
-    setEquation(value)
-  }
-
-  function handleOversample(event: ChangeEvent<HTMLSelectElement>) {
-    const value = event.target.value as OverSampleType
-    setOversample(value)
-    instance.current.oversample = value
   }
 
   const Parameters = <FlexContainer 
@@ -120,7 +114,7 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
         <Parameter>
         <Select 
           value={oversample}
-          onChange={handleOversample} 
+          onChange={e => setOversample(e.target.value as OverSampleType)} 
         >
           <option value='none'>None</option>
           <option value='2x'>2x</option>
@@ -129,46 +123,50 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
         </Parameter>
       </div>
       <div>
-        Variable:
-        <input 
-          type='checkbox' 
-          checked={variable} 
-          onChange={() => setVariable(!variable)}
-        />
+        Type:
+        <Parameter>
+        <Select 
+          value={type}
+          onChange={e => setType(e.target.value as WaveShaperType)} 
+        >
+          <option value='array'>Array</option>
+          <option value='equation'>Equation</option>
+        </Select>
+        </Parameter>
       </div>
-    {variable ? <div>
-      Amount:
-      <Parameter>
-        <RangeInput
-          max={1000}
-          onChange={setAmount}
-          value={amount}
-          />
-        <NumberInput 
-          max={1000}
-          onChange={setAmount} 
-          value={amount}
-        />
-      </Parameter>
-    </div> : ''}
     <div>
-    Equation:
-    {variable ? <><br/>Let <b>a</b> be the amount of distortion.</> : ''}
-    <FlexContainer
-      direction='column'
-      gap={8}
-    >
-      <Parameter>
-        <EquationInput
-          value={equation}
-          onChange={handleEquation} 
-          error={error}
-          ref={input}
-          onPointerDownCapture={e => { e.stopPropagation() }}
-          onMouseDownCapture={e => { e.stopPropagation() }}
-          />
-      </Parameter>
-    </FlexContainer>
+      {type === 'array' ? <>
+        Array:
+        <FlexContainer
+          direction='column'
+          gap={8}
+        >
+          <Parameter>
+            <TextInput 
+              value={array} 
+              onChange={setArray}
+              error={arrayError}
+              errorMessage='Comma separated list of values required.'
+            />
+          </Parameter>
+        </FlexContainer>
+      </> : <>
+        Equation:
+        <FlexContainer
+          direction='column'
+          gap={8}
+        >
+          <Parameter>
+            <TextInput
+              value={equation}
+              onChange={setEquation} 
+              error={equationError}
+              errorMessage='Invalid equation.'
+              width={400}
+              />
+          </Parameter>
+        </FlexContainer>
+      </>}
     </div>
     <FlexContainer>
       <button onClick={handleApply}>Apply</button>

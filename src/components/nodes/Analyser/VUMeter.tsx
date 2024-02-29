@@ -145,7 +145,7 @@ export function VUMeter({ id, data, startExpanded, type, onTypeChange }: Analyse
         c.fillText('0', cwidth * 0.85, h)
 
         c.fillStyle = '#777'
-        c.fillRect(cwidth * 0.85 + 3.5, 0, 3, cheight - 20)
+        c.fillRect(cwidth * 0.85 + 3, 0, 3, cheight - 20)
         break
       case 3:
         c.fillText('-30', cwidth * 0.001, h)

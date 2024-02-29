@@ -104,11 +104,12 @@ export type BitcrusherProps = NodeProps & {
   }
 }
 
+export type WaveShaperType = 'array' | 'equation'
 export type WaveShaperProps = NodeProps & {
   data: {
-    variable?: boolean
+    type?: WaveShaperType
+    array?: string
     equation?: string
-    amount?: number
     oversample?: OverSampleType
   }
 }
