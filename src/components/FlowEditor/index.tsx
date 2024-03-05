@@ -16,6 +16,7 @@ import { FlowControls } from './Controls'
 import { useNodeStore } from '../../stores/nodeStore'
 import { useFlowStore } from '../../stores/flowStore'
 import styled from 'styled-components'
+import { EdgeController } from './EdgeController'
 
 export function FlowEditor() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
@@ -25,7 +26,6 @@ export function FlowEditor() {
   const setConnections = useNodeStore(state => state.setConnections)
   const edgeUpdateSuccessful = useRef(true)
   const getEdgeType = useFlowStore(state => state.getEdgeType)
-  const isAnimated = useFlowStore(state => state.isAnimated)
 
   useEffect(() => {
     const connections = edges.map(edge => ({ source: edge.sourceHandle, target: edge.targetHandle }))
@@ -39,10 +39,8 @@ export function FlowEditor() {
 
   const onDrop = useCallback((event: DragEvent) => {
       if (reactFlowWrapper.current === null) return
-
       event.preventDefault()
 
-      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect()
       const type = event.dataTransfer.getData('application/reactflow') as NodeType
 
       // check if the dropped element is valid
@@ -90,7 +88,7 @@ export function FlowEditor() {
       ...params, 
       type, 
       style: { stroke: `#000`, strokeWidth: 1 }, 
-      pathOptions: { borderRadius: 0, offset: 17, curvature: 0.5 }
+      pathOptions: { borderRadius: 0, offset: 16.5, curvature: 0.5 }
     } as any, edges)
   }), [setEdges])
 
@@ -99,6 +97,7 @@ export function FlowEditor() {
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
+      zoomOnScroll={false}
       snapToGrid
       snapGrid={[8, 8]}
       connectionLineType={ConnectionLineType.Straight}
@@ -110,13 +109,11 @@ export function FlowEditor() {
       onConnect={onConnect}
       onDrop={onDrop}
       onDragOver={onDragOver}
-      defaultEdgeOptions={{
-        animated: isAnimated()
-      }}
       proOptions={propOptions}
     >
       <FlowControls />
-      <Background gap={16} />
+      <Background gap={16} size={1} color='#000' />
+      <EdgeController edges={edges} />
     </ReactFlow>
   </Wrapper>
 }
