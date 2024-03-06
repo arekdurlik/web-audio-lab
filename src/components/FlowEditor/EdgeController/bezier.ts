@@ -105,8 +105,8 @@ exit:
       }
       xx = x0; x0 = x3; x3 = xx; sx = -sx; xb = -xb;             /* swap legs */
       yy = y0; y0 = y3; y3 = yy; sy = -sy; yb = -yb; x1 = x2;
-   } while (leg--);                                          /* try other end */       /* remaining part in case of cusp or crunode */
-   bline(x0,y0, x3,y3, setPixel);       /* remaining part in case of cusp or crunode */
+   } while (leg--);                                          /* try other end */
+   bline(x0,y0, x3,y3, setPixel);/* remaining part in case of cusp or crunode */
 }
 
 export function plotCubicBezier(x0, y0, x1, y1, x2, y2, x3, y3, setPixel)

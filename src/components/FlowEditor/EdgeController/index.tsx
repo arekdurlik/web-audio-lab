@@ -1,13 +1,12 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
-import { useReactFlow, useViewport, Edge as EdgeType } from 'reactflow'
+import { useViewport, Edge } from 'reactflow'
 import { plotCubicBezier } from './bezier'
 import { range } from '../../../helpers'
 import { useFlowStore } from '../../../stores/flowStore'
 
 const NAVBAR_HEIGHT = 47
 
-export function EdgeController({ edges }: {edges: any }) {
-  const { getEdges } = useReactFlow()
+export function EdgeController({ edges }: { edges: Edge[] }) {
   const [, forceUpdate] = useReducer(x => x + 1, 0)
   const [resizeObserver, setResizeObserver] = useState<ResizeObserver | null>(null)
   const { getEdgeType } = useFlowStore()
@@ -27,11 +26,17 @@ export function EdgeController({ edges }: {edges: any }) {
   }, [edges])
 
   return <>
-    {getEdgeType() === 'default' && getEdges().map((edge, i) => <Edge key={i} edge={edge} resizeObserver={resizeObserver} />)}
+    {getEdgeType() === 'default' && edges.map(edge => 
+      <BezierEdge 
+        key={edge.id}
+        edge={edge} 
+        resizeObserver={resizeObserver} 
+      />
+    )}
   </>
 }
 
-function Edge({ edge, resizeObserver }: { edge: EdgeType<any>, resizeObserver: ResizeObserver | null }) {
+function BezierEdge({ edge, resizeObserver }: { edge: Edge<any>, resizeObserver: ResizeObserver | null }) {
   const [canvas, setCanvas] = useState(document.createElement('canvas'))
   const [ctx, setCtx] = useState<CanvasRenderingContext2D  | null>(null)
   const [el, setEl] = useState<Element | null>(null)
@@ -97,8 +102,8 @@ function Edge({ edge, resizeObserver }: { edge: EdgeType<any>, resizeObserver: R
     setupCanvas()  
 
     return (() => {
+      // TODO: unobserve edge element before it's removed
       canvas.remove()
-      if (el) resizeObserver?.unobserve(el)
     })
   }, [])
 
