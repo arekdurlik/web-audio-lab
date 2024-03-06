@@ -17,6 +17,7 @@ import { useNodeStore } from '../../stores/nodeStore'
 import { useFlowStore } from '../../stores/flowStore'
 import styled from 'styled-components'
 import { EdgeController } from './EdgeController'
+import { ZoomController } from './ZoomController'
 
 export function FlowEditor() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
@@ -114,6 +115,7 @@ export function FlowEditor() {
       <FlowControls />
       <Background gap={16} size={1} color='#000' />
       <EdgeController edges={edges} />
+      <ZoomController />
     </ReactFlow>
   </Wrapper>
 }
