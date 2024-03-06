@@ -18,6 +18,8 @@ import { useFlowStore } from '../../stores/flowStore'
 import styled from 'styled-components'
 import { EdgeController } from './EdgeController'
 import { ZoomController } from './ZoomController'
+import { CustomBackground } from './CustomBackground'
+import { RoundViewport } from './RoundViewport'
 
 export function FlowEditor() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
@@ -113,9 +115,10 @@ export function FlowEditor() {
       proOptions={propOptions}
     >
       <FlowControls />
-      <Background gap={16} size={1} color='#000' />
       <EdgeController edges={edges} />
       <ZoomController />
+      <CustomBackground />
+      <RoundViewport />
     </ReactFlow>
   </Wrapper>
 }

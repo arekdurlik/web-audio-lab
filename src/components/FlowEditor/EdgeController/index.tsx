@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { useViewport, Edge } from 'reactflow'
 import { plotCubicBezier } from './bezier'
-import { range } from '../../../helpers'
+import { range, waitForElement } from '../../../helpers'
 import { useFlowStore } from '../../../stores/flowStore'
 
 const NAVBAR_HEIGHT = 47
@@ -46,26 +46,6 @@ function BezierEdge({ edge, resizeObserver }: { edge: Edge<any>, resizeObserver:
   const targetHandle = useRef<Element | null>(null)
   const imgData = useRef(new Uint8ClampedArray())
   const { x, y, zoom } = useViewport()
-
-  function waitForElement(selector: string): Promise<Element | null> {
-    return new Promise(resolve => {
-      if (document.querySelector(selector)) {
-        return resolve(document.querySelector(selector))
-      }
-
-      const observer = new MutationObserver(() => {
-        if (document.querySelector(selector)) {
-          observer.disconnect()
-          resolve(document.querySelector(selector))
-        }
-      })
-
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      })
-    })
-  }
 
   async function setupCanvas() {
     const el = await waitForElement(`.react-flow__edge-default[data-testid="rf__edge-${edge.id}"]`)
@@ -112,7 +92,7 @@ function BezierEdge({ edge, resizeObserver }: { edge: Edge<any>, resizeObserver:
     var n = (y * width + x) * 4
     imgData.current[n] = 0
     imgData.current[n + 1] = 0
-    imgData.current[n + 2] = 0
+    imgData.current[n + 2] = 0  
     imgData.current[n + 3] = 255
   }
 
@@ -121,8 +101,11 @@ function BezierEdge({ edge, resizeObserver }: { edge: Edge<any>, resizeObserver:
 
     const { width, height, left, top } = el.getBoundingClientRect()
     
-    canvas.width = width + 1
-    canvas.height = height + 1
+    canvas.width = (width + 1) / zoom
+    canvas.height = (height + 1) / zoom
+    canvas.style.width = width + 1 + 'px'
+    canvas.style.height = height + 1 + 'px'
+    
     canvas.style.position = 'absolute'
     canvas.style.left = -1 + left + 'px'
     canvas.style.top = (Math.floor(- 1 + top - NAVBAR_HEIGHT)) + 'px'
