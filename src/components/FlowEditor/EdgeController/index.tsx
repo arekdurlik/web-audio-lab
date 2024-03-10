@@ -8,15 +8,15 @@ const NAVBAR_HEIGHT = 47
 
 export function EdgeController({ edges }: { edges: Edge[] }) {
   const [, forceUpdate] = useReducer(x => x + 1, 0)
-  const [resizeObserver, setResizeObserver] = useState<ResizeObserver | null>(null)
+  const [mutationObserver, setMutationObserver] = useState<MutationObserver | null>(null)
   const { getEdgeType } = useFlowStore()
 
   useEffect(() => {
     // @ts-ignore Property 'handleResize' does not exist on type 'Element' duhh
-    Element.prototype.handleResize = function() {}
-    setResizeObserver(new ResizeObserver(function roDispatchCallback(entries) {
+    Element.prototype.handleMutation = function() {}
+    setMutationObserver(new MutationObserver(function moDispatchCallback(entries) {
       for (const e of entries)
-        (e.target as HTMLElement & { handleResize: Function }).handleResize(e)
+        (e.target as HTMLElement & { handleMutation: Function }).handleMutation(e)
     }))
   }, [])
 
@@ -30,13 +30,13 @@ export function EdgeController({ edges }: { edges: Edge[] }) {
       <BezierEdge 
         key={edge.id}
         edge={edge} 
-        resizeObserver={resizeObserver} 
+        mutationObserver={mutationObserver} 
       />
     )}
   </>
 }
 
-function BezierEdge({ edge, resizeObserver }: { edge: Edge<any>, resizeObserver: ResizeObserver | null }) {
+function BezierEdge({ edge, mutationObserver }: { edge: Edge<any>, mutationObserver: MutationObserver | null }) {
   const [canvas, setCanvas] = useState(document.createElement('canvas'))
   const [ctx, setCtx] = useState<CanvasRenderingContext2D  | null>(null)
   const [el, setEl] = useState<Element | null>(null)
@@ -53,17 +53,20 @@ function BezierEdge({ edge, resizeObserver }: { edge: Edge<any>, resizeObserver:
     const rf = document.querySelector('.react-flow')
     const ctx = canvas.getContext('2d', { willReadFrequently: true })
 
-    if (!ctx || !rf || !el || !resizeObserver) return
+    if (!ctx || !rf || !el || !mutationObserver) return
+
+    const path = el.querySelector('path')
+    if (!path) return
 
     //@ts-ignore
-    el.handleResize = function() {
+    path.handleMutation = function() {
       if (!sourceHandle.current || !targetHandle.current) return
 
       setSourceRect(sourceHandle.current.getBoundingClientRect())
       setTargetRect(targetHandle.current.getBoundingClientRect())
     }
     
-    resizeObserver.observe(el)
+    mutationObserver.observe(path, { attributeFilter: ['d'] })
 
     const source = document.querySelector(`.source[data-handleid="${edge.sourceHandle}"]`)
     const target = document.querySelector(`.target[data-handleid="${edge.targetHandle}"]`)
@@ -107,8 +110,8 @@ function BezierEdge({ edge, resizeObserver }: { edge: Edge<any>, resizeObserver:
     canvas.style.height = height + 1 + 'px'
     
     canvas.style.position = 'absolute'
-    canvas.style.left = -1 + left + 'px'
-    canvas.style.top = (Math.floor(- 1 + top - NAVBAR_HEIGHT)) + 'px'
+    canvas.style.left = left + 'px'
+    canvas.style.top = (Math.floor(top - NAVBAR_HEIGHT)) + 'px'
     
     let imageData: ImageData
     try { 
@@ -164,7 +167,7 @@ function BezierEdge({ edge, resizeObserver }: { edge: Edge<any>, resizeObserver:
       (x: number, y: number) => { setPixel(x, y, canvas.width) }
     )
     ctx.putImageData(imageData, 0, 0)
-  }, [x, y, zoom, el, edge, canvas, ctx, sourceRect, targetRect])
+  }, [x, y, zoom, el, sourceRect, targetRect])
     
   return null
 }
