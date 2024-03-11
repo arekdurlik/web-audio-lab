@@ -5,10 +5,15 @@ import { getEdgeIndex, positions } from '../utils'
 import { useReactFlow, useUpdateNodeInternals } from 'reactflow'
 import { NodeProps } from './types'
 import { useOutsideClick } from '../../../hooks/useOutsideClick'
-import { TriangleHandle } from '../../handles/TriangleHandle'
+import { ParamHandle } from '../../handles/ParamHandle'
 import { LineHandle } from '../../handles/LineHandle'
 import styled from 'styled-components'
 import { useUpdateFlowNode } from '../../../hooks/useUpdateFlowNode'
+import NodeDelete from '/svg/node_delete.svg'
+import NodeRotate from '/svg/node_rotate.svg'
+import NodeExpand from '/svg/node_expand.svg'
+import SVG from 'react-inlinesvg'
+import { useFlowStore } from '../../../stores/flowStore'
 
 export const Node: FC<NodeProps> = function({ 
   id, 
@@ -21,6 +26,8 @@ export const Node: FC<NodeProps> = function({
   parameters, 
   value,
   parameterPositions = ['bottom', 'right', 'bottom', 'right'],
+  parameterOffset = 0,
+  parametersWidth,
   startExpanded = false,
   disableRemoval,
   disableBackground,
@@ -31,6 +38,7 @@ export const Node: FC<NodeProps> = function({
   valueColor,
   valueUnit,
   constantSize,
+  optionsStyle,
   onRotate
 }) {
   const [rotation, setRotation] = useState<0 | 1 | 2 | 3>(data.rotation ?? 0)
@@ -40,9 +48,10 @@ export const Node: FC<NodeProps> = function({
   const updateNodeInternals = useUpdateNodeInternals()
   const { updateNode, deleteNode } = useUpdateFlowNode(id)
   const activator = useOutsideClick(() => setActive(false))
+  const { editMode } = useFlowStore()
   const gridSize = 16
-  const mulWidth = width * gridSize
-  const mulHeight = height * gridSize
+  const mulWidth = width * gridSize + 1
+  const mulHeight = height * gridSize + 1
 
   useEffect(() => {
     updateNode({ rotation })
@@ -67,12 +76,12 @@ export const Node: FC<NodeProps> = function({
       label: socket.label,
       type: socket.type,
       position: positions[rotation][getEdgeIndex(socket.edge)],
-      offset: socket.offset instanceof Array ? socket.offset[rotation] : socket.offset,
+      offset: socket.offset instanceof Array ? socket.offset[rotation] + 0.5 : socket.offset + 0.5,
     }
     switch (socket.visual) {
-      case 'circle': return <LineHandle {...props} disableColor alwaysVisible />
-      case 'triangle': return <TriangleHandle {...props} />
-      default: return <LineHandle {...props} />
+      case 'circle': return <LineHandle {...props} alwaysVisible color={active} />
+      case 'param': return <ParamHandle {...props} />
+      default: return <LineHandle {...props} color />
     }
   })
 
@@ -87,16 +96,17 @@ export const Node: FC<NodeProps> = function({
         height={rotation === 0 || rotation === 2 || constantSize ? mulHeight : mulWidth}
         disableBackground={disableBackground}
         disableBorder={disableBorder}
+        active={expanded}
       >
-        {background && <Background>{background}</Background>}
-        {active && <HoverOptions color={optionsColor}>
+        {background && <Background disableBorder={disableBorder}>{background}</Background>}
+        {active && <HoverOptions color={optionsColor} style={optionsStyle}>
           <LeftOptions>
             {parameters && <Expand onClick={handleExpand}>
-              {expanded ? <IoChevronUpSharp /> : <IoChevronDownSharp />}
+              <Option title={`${expanded ? 'Hide' : 'Show'} parameters`} src={NodeExpand} width={8} height={8} $rotate={!expanded} /> 
             </Expand>}
-            <Rotate onClick={handleRotate} />
+            {editMode && <Option title='Rotate node' src={NodeRotate} onClick={handleRotate}  width={8} height={8}/>}
           </LeftOptions>
-          {!disableRemoval && <Delete onClick={deleteNode}/>}
+          {(!disableRemoval && editMode) && <Option title='Delete node' src={NodeDelete} width={8} height={8} onClick={deleteNode}/>}
         </HoverOptions>}
         {handles}
         <NodeTitle rotation={rotation}>{name}</NodeTitle>
@@ -111,7 +121,9 @@ export const Node: FC<NodeProps> = function({
       {expanded && <Parameters 
         rotation={rotation}
         positions={parameterPositions}
+        offset={parameterOffset}
         onClick={(e) => e.stopPropagation()}
+        style={{ minWidth: parametersWidth }}
       >
         {parameters}
       </Parameters>}
@@ -124,14 +136,23 @@ position: absolute;
 bottom: 0;
 left: 0;
 padding: 1px 3px;
-font-size: 12px;
+font-size: 11px;
 width: 100%;
 
 ${({ color }) => color && `color: ${color};`}
 ${({ font }) => font && `font-family: '${font}';`}
 `
-const Background = styled.div`
+const Background = styled.div<{ disableBorder?: boolean }>`
 position: absolute;
 inset: 0;
-border: 1px black solid;
+${({ disableBorder }) => !disableBorder && 'border: 1px black solid;'}
+`
+
+const Option = styled(SVG)<{ $rotate?: boolean }>`
+&:hover {
+  cursor: pointer;
+  color: #999;
+}
+
+${({ $rotate }) => $rotate && 'transform: rotate(180deg);'}
 `

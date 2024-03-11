@@ -12,8 +12,8 @@ import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 
 export function Gain({ id, data }: GainProps) {
   const [gain, setGain] = useState(data.gain ?? 1)
-  const [min, setMin] = useState<string | number>(data.min ?? -2)
-  const [max, setMax] = useState<string | number>(data.max ?? 2)
+  const [min, setMin] = useState<number>(data.min ?? -2)
+  const [max, setMax] = useState<number>(data.max ?? 2)
   const audioId = `${id}-audio`
   const controlVoltageId = `${id}-cv`
   const [instance] = useState(new GainNode(audio.context))
@@ -30,7 +30,7 @@ export function Gain({ id, data }: GainProps) {
     {
       id: controlVoltageId,
       label: 'g',
-      visual: 'triangle',
+      visual: 'param',
       type: 'target',
       edge: 'top',
       offset: 48

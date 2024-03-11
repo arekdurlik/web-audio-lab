@@ -1,4 +1,4 @@
-import { useEffect, ChangeEvent, MouseEvent, KeyboardEvent } from 'react'
+import { useEffect, ChangeEvent, MouseEvent, KeyboardEvent, CSSProperties } from 'react'
 import styled from 'styled-components'
 import { clamp } from '../../helpers'
 
@@ -12,8 +12,9 @@ type RangeInputProps = {
   max?: number | string
   step?: number
   disabled?: boolean
+  style?: CSSProperties
 }
-export function RangeInput({ label, value, min, max, disabled, step = 0.01, onChange, onChangeEnd }: RangeInputProps) {
+export function RangeInput({ label, value, min, max, disabled, step = 0.01, onChange, onChangeEnd, style }: RangeInputProps) {
 
   useEffect(() => {
     const floatMin = typeof min === 'string' ? parseFloat(min) : min
@@ -57,24 +58,20 @@ export function RangeInput({ label, value, min, max, disabled, step = 0.01, onCh
     if (typeof onChangeEnd === 'function') onChangeEnd(value)
   }
 
-  return (
-    <Wrapper>
-      {label && <span>{label}: </span>}
-      <input 
-        type='range' 
-        step={step} 
-        value={String(value)}
-        min={min}
-        max={max}
-        disabled={disabled}
-        onChange={handleChange} 
-        onMouseUp={handleChangeEnd}
-        onKeyUp={checkBounds}
-        onMouseDownCapture={(e) => e.stopPropagation()}
-        onPointerDownCapture={(e) => e.stopPropagation()}
-      />
-    </Wrapper>
-  )
+  return <input 
+    type='range' 
+    step={step} 
+    value={String(value)}
+    min={min}
+    max={max}
+    disabled={disabled}
+    onChange={handleChange} 
+    onMouseUp={handleChangeEnd}
+    onKeyUp={checkBounds}
+    onMouseDownCapture={(e) => e.stopPropagation()}
+    onPointerDownCapture={(e) => e.stopPropagation()}
+    style={style}
+  />
 }
 
 const Wrapper = styled.div`

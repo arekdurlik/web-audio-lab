@@ -40,7 +40,7 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
     {
       id: freqId,
       label: 'f',
-      visual: 'triangle',
+      visual: 'param',
       type: 'target',
       edge: 'top',
       offset: 32
@@ -48,7 +48,7 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
     {
       id: detuneId,
       label: 'd',
-      visual: 'triangle',
+      visual: 'param',
       type: 'target',
       edge: 'top',
       offset: 64
@@ -56,7 +56,7 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
     {
       id: QId,
       label: 'Q',
-      visual: 'triangle',
+      visual: 'param',
       type: 'target',
       edge: 'bottom',
       offset: 64
@@ -64,7 +64,7 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
     {
       id: gainId,
       label: 'g',
-      visual: 'triangle',
+      visual: 'param',
       type: 'target',
       edge: 'bottom',
       offset: 32

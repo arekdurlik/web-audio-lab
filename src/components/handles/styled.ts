@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 export const Label = styled.span<{ position: Position }>`
 position: absolute;
-font-size: 12px;
+font-size: 11px;
 
 ${({ position }) => {
   switch (position) {

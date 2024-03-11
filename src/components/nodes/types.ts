@@ -129,3 +129,14 @@ export type TextProps = NodeProps & {
     content?: string
   }
 }
+
+export type KnobProps = NodeProps & {
+  data: {
+    value?: number
+    min?: number
+    max?: number
+    label?: string
+    step?: number
+    ramp?: number
+  }
+}

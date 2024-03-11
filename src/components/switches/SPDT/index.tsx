@@ -6,6 +6,8 @@ import { useReactFlow } from 'reactflow'
 import { Socket } from '../../nodes/BaseNode/types'
 import { Node } from '../../nodes/BaseNode'
 import { ConnectionLine, ConnectionWrapper } from './styled'
+import SVG from 'react-inlinesvg'
+import up from '/svg/spdt_up.svg'
 
 export function SPDTFork({ id, data }: SPDTProps) {
   return SPDT({ id, data }, 'fork')
@@ -39,14 +41,14 @@ export function SPDT({ id, data }: SPDTProps, spdtType: 'fork' | 'join') {
       type: spdtType === 'fork' ? 'source' : 'target',
       visual: 'circle',
       edge: 'right',
-      offset: 32
+      offset: 16
     },
     {
       id: outputBId,
       type: spdtType === 'fork' ? 'source' : 'target',
       visual: 'circle',
       edge: 'right',
-      offset: 48
+      offset: 32
     },
   ]
 
@@ -88,7 +90,7 @@ export function SPDT({ id, data }: SPDTProps, spdtType: 'fork' | 'join') {
       id={id}
       data={data}
       width={3}
-      height={4}
+      height={3}
       sockets={sockets}
       parameterPositions={['bottom', 'left', 'top', 'right']}
       disableBackground
@@ -99,7 +101,8 @@ export function SPDT({ id, data }: SPDTProps, spdtType: 'fork' | 'join') {
         rotation={data.rotation} 
         onClick={() => setState(state === 'A' ? 'B' : 'A')}
       >
-        <ConnectionLine />
+        {state === 'A' && <ConnectionLine />}
+        {state === 'B' && <SVG src={up} />}
       </ConnectionWrapper>
     </Node>
   )

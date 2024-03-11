@@ -7,7 +7,6 @@ margin-top: 5px;
 outline: none;
 `
 export const Select = styled.select`
-border: 1px solid #000;
 border-radius: 0;
 outline: none;
 `

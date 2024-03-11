@@ -14,7 +14,7 @@ type NumberInputProps = {
   disabled?: boolean
   unit?: string
 }
-export function NumberInput({ label, value, min, max, step = 0.01, width = 60, unit, disabled, onChange }: NumberInputProps) {
+export function NumberInput({ label, value, min, max, step = 0.01, width = 38, unit, disabled, onChange }: NumberInputProps) {
 
   function checkBounds(e: ChangeEvent<HTMLInputElement>) {
     const target = e.target as HTMLInputElement
@@ -68,4 +68,10 @@ border: 1px solid #000;
 outline: none;
 z-index: 500;
 max-width: ${({ width }) => width }px;
+min-width: ${({ width }) => width }px;
+
+&::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 `

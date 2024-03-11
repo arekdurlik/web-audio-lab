@@ -54,6 +54,7 @@ const DeleteWrapper = styled.div`
 position: absolute;
 right: 0;
 padding: 5px;
+font-size: 11px;
 `
 const Container = styled.div`
 min-width: 30px;
@@ -70,7 +71,7 @@ margin-right: 20px;
 background: none;
 border: none;
 outline: none;
-font-size: 12px;
+font-size: 11px;
 resize: none;
 
 &:hover, &:active {

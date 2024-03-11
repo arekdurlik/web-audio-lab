@@ -3,7 +3,7 @@ import { ReactNode } from 'react'
 export type Socket = {
   id: string,
   label?: string,
-  visual?: 'line' | 'triangle' | 'circle',
+  visual?: 'line' | 'param' | 'circle',
   type: 'target' | 'source',
   edge: Edge,
   offset: number | [number, number, number, number]
@@ -19,6 +19,8 @@ export type NodeProps = {
   children?: ReactNode
   parameters?: ReactNode
   parameterPositions?: ('bottom' | 'left' | 'top' | 'right')[]
+  parameterOffset?: number
+  parametersWidth?: number
   data: {
     rotation?: Rotation
   }
@@ -34,6 +36,9 @@ export type NodeProps = {
   valueColor?: string
   valueUnit?: string
   constantSize?: boolean
+  optionsStyle?: {
+    [x:string]: string
+  }
 
   onRotate?: (value?: Rotation) => any
 }

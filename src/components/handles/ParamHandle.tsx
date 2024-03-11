@@ -1,7 +1,9 @@
 import { Handle, Position } from 'reactflow'
 import styled from 'styled-components'
 import { Label } from './styled'
-import {GoTriangleRight } from 'react-icons/go'
+import param from '/icons/param.svg'
+import SVG from 'react-inlinesvg'
+
 type HandleProps = {
   id: string
   label?: string
@@ -10,8 +12,8 @@ type HandleProps = {
   offset: number
 }
 
-export function TriangleHandle({ id, label, type, position, offset = 20 }: HandleProps) {
-  const direction = (function getDirection() {
+export function ParamHandle({ id, label, type, position, offset = 20 }: HandleProps) {
+  const direction = (function() {
     switch(position) {
       case Position.Left:
         if (type === 'target') return 'right'
@@ -27,7 +29,15 @@ export function TriangleHandle({ id, label, type, position, offset = 20 }: Handl
           else return 'bottom'
     }
   })()
-  
+
+  const points = (function() {
+    switch(direction) {
+      case 'left': return   '0.5,5.5  7,-1  7,11'
+      case 'top': return    '5.5,0.5  -1,7  11,7'
+      case 'right': return  '1,0      1,10  6.5,5.5'
+      case 'bottom': return '5,6  0,1   10,1'
+    }
+  })()
   return (
     <StyledHandle
       id={id}
@@ -36,13 +46,44 @@ export function TriangleHandle({ id, label, type, position, offset = 20 }: Handl
       position={position}
       offset={offset}
     >
-      <Triangle direction={direction} />
+      <Triangle direction={direction} src={param}>
+      </Triangle>
       <Label position={position}>
         {label}
       </Label>
     </StyledHandle>
   )
 }
+
+const Triangle = styled(SVG)<{ direction: 'right' | 'bottom' | 'left' | 'top' }>`
+position: absolute;
+top: -5px;
+font-size: 15px;
+width: 11px;
+height: 6px;
+fill: #fff;
+stroke: #000;
+stroke-width: 1px;
+
+${({ direction }) => {
+  switch(direction) {
+    case 'bottom': return `
+    top: 0px;
+    `
+    case 'left': return `
+    transform: rotate(90deg);
+    left: -6.5px;
+    top: -2px;`
+    case 'top': return `
+    transform: rotate(180deg);
+    top: -4px;`
+    case 'right': return `
+    transform: rotate(-90deg);
+    left: -2.5px;
+    top: -2px;`
+  }
+}}
+`
 
 const StyledHandle = styled(Handle)<{ 
   direction: 'right' | 'bottom' | 'left' | 'top', 
@@ -81,34 +122,5 @@ ${({ position, offset }) => {
   }
 }}
 
-${({ position, type }) => type === 'target' 
-  ? `${position}: 1px;` 
-  : `${position}: 1px;`
-}
-`
-
-const Triangle = styled(GoTriangleRight)<{ direction: 'right' | 'bottom' | 'left' | 'top' }>`
-position: absolute;
-top: -4px;
-font-size: 15px;
-fill: #fff;
-stroke: #000;
-stroke-width: 1px;
-${({ direction }) => {
-  switch(direction) {
-    case 'bottom': return `
-    transform: rotate(90deg);
-    top: -5px;`
-    case 'left': return `
-    transform: rotate(180deg);
-    left: -8px;
-    top: -5px;`
-    case 'top': return `
-    transform: rotate(-90deg);
-    top: -8px;`
-    case 'right': return `
-    left: -5px;
-    top: -7px;`
-  }
-}}
+${({ position, type }) => `${position}: 1px;`}
 `

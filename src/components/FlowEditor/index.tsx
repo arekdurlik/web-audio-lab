@@ -28,7 +28,7 @@ export function FlowEditor() {
   const reactFlowInstance = useReactFlow()
   const setConnections = useNodeStore(state => state.setConnections)
   const edgeUpdateSuccessful = useRef(true)
-  const getEdgeType = useFlowStore(state => state.getEdgeType)
+  const { getEdgeType, editMode }= useFlowStore()
 
   useEffect(() => {
     const connections = edges.map(edge => ({ source: edge.sourceHandle, target: edge.targetHandle }))
@@ -113,6 +113,10 @@ export function FlowEditor() {
       onDrop={onDrop}
       onDragOver={onDragOver}
       proOptions={propOptions}
+      
+      nodesDraggable={editMode}
+      edgesFocusable={editMode}
+      nodesConnectable={editMode}
     >
       <FlowControls />
       <EdgeController edges={edges} />

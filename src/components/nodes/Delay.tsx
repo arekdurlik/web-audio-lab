@@ -30,7 +30,7 @@ export function Delay({ id, data }: DelayProps) {
     {
       id: controlVoltageId,
       label: 't',
-      visual: 'triangle',
+      visual: 'param',
       type: 'target',
       edge: 'top',
       offset: 48

@@ -1,6 +1,7 @@
 import { Handle, Position } from 'reactflow'
 import styled from 'styled-components'
 import { Label } from './styled'
+import { useFlowStore } from '../../stores/flowStore'
 
 type HandleProps = {
   id: string
@@ -10,9 +11,11 @@ type HandleProps = {
   offset: number
   alwaysVisible?: boolean
   disableColor?: boolean
+  color?: boolean
 }
 
-export function LineHandle({ id, label, type, position, offset = 20, alwaysVisible, disableColor }: HandleProps) {
+export function LineHandle({ id, label, type, position, offset = 20, alwaysVisible, color }: HandleProps) {
+  const { editMode } = useFlowStore()
   const direction = (function getDirection() {
     switch(position) {
       case Position.Left:
@@ -37,8 +40,9 @@ export function LineHandle({ id, label, type, position, offset = 20, alwaysVisib
       direction={direction}
       position={position}
       offset={offset}
-      $disableColor={disableColor}
+      $color={color}
       $alwaysVisible={alwaysVisible}
+      $visible={editMode}
     >
       <Label position={position}>
         {label}
@@ -54,7 +58,8 @@ export const StyledLineHandle = styled(Handle)<{
   type?: 'source' | 'target', 
   offset: number 
   $alwaysVisible?: boolean
-  $disableColor?: boolean
+  $color?: boolean
+  $visible?: boolean
 }>`
 display: grid;
 place-items: center;
@@ -63,26 +68,22 @@ background: none !important;
 border-radius: 0;
 min-width: 0;
 min-height: 0;
-width: 1px;
-height: 1px;
+width: 2px;
+height: 2px;
 z-index: 3;
+
+${({ $visible }) => !$visible && `
+  pointer-events: none !important;
+`}
+
 &.target {
   &:before {
     ${({ $alwaysVisible }) => $alwaysVisible ? 'opacity: 1;' : 'opacity: 0;'}
-    ${({ $disableColor }) => $disableColor ? `
-      background-color: #fff;
-      box-shadow: 0px 0px 0px 1px #000;
-      ` : 'background-color: #090;'
-    }
   }
 }
 &.source {
   &:before {
     ${({ $alwaysVisible }) => $alwaysVisible ? 'opacity: 1;' : 'opacity: 0;'}
-    ${({ $disableColor }) => $disableColor ? `
-      background-color: #fff;
-      box-shadow: 0px 0px 0px 1px #000;
-    ` : 'background-color: #c00;'}
   }
 }
 
@@ -94,7 +95,7 @@ ${({ position, offset }) => {
     `
     case Position.Right: return `
       top: auto;
-      bottom: ${offset - 1}px;
+      bottom: ${offset - 2}px;
     `
     case Position.Bottom: return `
       right: auto;
@@ -103,7 +104,7 @@ ${({ position, offset }) => {
 
     case Position.Top: return `
       left: auto;
-      right: ${offset - 1}px;
+      right: ${offset - 2}px;
     `
   }
 }}
@@ -121,43 +122,44 @@ ${({ position, type }) => type === 'target'
   width: 1px;
   height: 1px;
   background-color: transparent;
-  height: 7px !important;
-  width: 7px !important; 
   border-radius: 100%;
 
   ${({ position }) => {
-  switch(position) {
-    case Position.Left: return `
-      top: -3px;
+    switch(position) {
+      case Position.Left: return `
+        top: -5px;
+        left: -5px;
+      `
+      case Position.Right: return `
+        left: -3px;
+        top: -5px;
+      `
+      case Position.Bottom: return `
       left: -4px;
-    `
-    case Position.Right: return `
-      left: -2px;
       top: -3px;
-    `
-    case Position.Bottom: return `
-    left: -3px;
-    top: -2px;
-    `
-    case Position.Top: return `
-      left: -3px;
-      top: -4px;
-    `
+      `
+      case Position.Top: return `
+        left: -4px;
+        top: -5px;
+      `
+    }
+  }}
+
+}
+
+&.source {
+  &:before {
+    content: url('icons/sockets/source.png');
+    ${({ $color }) => {
+      return !$color && `filter: saturate(0) brightness(10);`
+    }}
+    
   }
-}}
-
-  
-
-  ${({ direction, type }) => type === 'target' 
-  ? `${direction}: -2px;`
-  : `${direction}: -4px;` }
-
-  ${({ direction }) => direction === 'bottom' 
-  ? 'transform: rotate(90deg);' 
-  : direction === 'left'
-  ? 'transform: rotate(180deg);'
-  : direction === 'top'
-  ? 'transform: rotate(-90deg);' : ''
+}
+&.target {
+  &:before {
+    content: url('icons/sockets/target.png');
+    ${({ $color }) => !$color && `filter: saturate(0) brightness(10);`}
   }
 }
 `

@@ -2,9 +2,10 @@ import { GiClockwiseRotation } from 'react-icons/gi'
 import { RiDeleteBin2Line } from 'react-icons/ri'
 import styled from 'styled-components'
 import { LineHandle, StyledLineHandle } from '../../handles/LineHandle'
+import { outsetBorder, surface } from '../../../98'
 
 export const NodeTitle = styled.span<{ rotation?: 0 | 1 | 2 | 3 }>`
-  font-size: 12px;
+  font-size: 11px;
   text-align: center;
   display: flex;
   align-items: center;
@@ -22,7 +23,7 @@ export const NodeTitle = styled.span<{ rotation?: 0 | 1 | 2 | 3 }>`
   }}
 `
 
-export const NodeContainer = styled.div<{ width?: number, height?: number, rotation?: number, disableBackground?: boolean, disableBorder?: boolean }>`
+export const NodeContainer = styled.div<{ width?: number, height?: number, rotation?: number, disableBackground?: boolean, disableBorder?: boolean, active?: boolean }>`
   position: relative;
   box-sizing: border-box;
   background-color: white;
@@ -36,6 +37,7 @@ export const NodeContainer = styled.div<{ width?: number, height?: number, rotat
   ${({ height }) => `height: ${height ? height : '60'}px;`}
   ${({ disableBackground }) => disableBackground && 'background: none;' }
   ${({ disableBorder }) => disableBorder && 'box-shadow: none;' }
+  ${({ active }) => active && 'z-index: 999;' }
 
   ${({ rotation }) => {
     switch (rotation) {
@@ -49,13 +51,11 @@ export const NodeContainer = styled.div<{ width?: number, height?: number, rotat
       &.target {
         &:before {
           opacity: 1;
-          background-color: #090;
         }
       }
       &.source {
         &:before {
           opacity: 1;
-          background-color: #c00;
         }
       }
     }
@@ -78,30 +78,33 @@ export const NodeContainer = styled.div<{ width?: number, height?: number, rotat
 export const Parameters = styled.div<{ 
   rotation?: 0 | 1 | 2 | 3, 
   positions?: ('left' | 'top' | 'right' | 'bottom')[] 
+  offset?: number
 }>
 `
-font-size: 12px;
-background-color: #fff;
-border: 1px solid #000;
+${outsetBorder}
+font-size: 11px;
+background-color: ${surface};
 padding: 5px;
-z-index: 4;
+width: max-content;
 
-${({ rotation = 0, positions = ['bottom', 'right', 'bottom', 'right'] }) => {
+${({ rotation = 0, positions = ['bottom', 'right', 'bottom', 'right'], offset = 0 }) => {
   switch(positions[rotation]) {
     case 'bottom': return `
       position: absolute;
-      top: calc(100% - 1px);`
+      top: 100%;
+      left: ${offset}px;`
     case 'right': return `
       position: absolute;
-      top: 0;
-      left: calc(100% - 1px);`
+      top: ${offset}px;
+      left: 100%;`
     case 'top': return `
       position: absolute;
-      bottom: calc(100% - 1px);`
+      bottom: 100%;
+      left: ${offset}px;`
     case 'left': return `
       position: absolute;
-      top: 0;
-      right: calc(100% - 1px);`
+      top: ${offset}px;
+      right: 100%;`
 }
 }}
 `
@@ -152,6 +155,6 @@ ${({ color }) => color && `color: ${color};`}
 }
 
 svg {
-  font-size: 12px;
+  font-size: 11px;
 }
 `

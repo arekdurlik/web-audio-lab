@@ -74,11 +74,13 @@ const DeleteWrapper = styled.div`
 position: absolute;
 right: 0;
 padding: 5px;
+font-size: 11px;
 `
 
 const Textarea = styled.textarea`
 margin: 5px; 
 margin-right: 20px;
+font-size: 11px;
 background: none;
 border: none;
 outline: none;

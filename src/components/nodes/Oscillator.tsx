@@ -34,7 +34,7 @@ export function Oscillator({ id, data }: OscillatorProps) {
     {
       id: freqId,
       label: 'f',
-      visual: 'triangle',
+      visual: 'param',
       type: 'target',
       edge: 'bottom',
       offset: 48
@@ -42,7 +42,7 @@ export function Oscillator({ id, data }: OscillatorProps) {
     {
       id: detuneId,
       label: 'd',
-      visual: 'triangle',
+      visual: 'param',
       type: 'target',
       edge: 'top',
       offset: 48

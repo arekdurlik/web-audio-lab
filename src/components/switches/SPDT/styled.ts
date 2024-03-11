@@ -1,4 +1,6 @@
 import styled from 'styled-components'
+import up from '/svg/up.svg'
+import SVG from "react-inlinesvg"
 
 export const ConnectionWrapper = styled.div<{ state?: 'A' | 'B', rotation?: 0 | 1 | 2 | 3 | undefined }>`
 position: absolute;
@@ -11,59 +13,53 @@ ${({ state, rotation }) => {
     switch (rotation) {
       case 1:
         return state === 'A' ? `
-          width: 2px;
-          height: 100%;
-          top: -7px;
-          left: 26px; 
+          transform: rotate(90deg);
+          left: -12.5px; 
+          top: 16px;
         ` : `
-          width: 2px;
-          height: 100%;
-          top: -8px;
-          left: 33px; 
-          transform: rotate(-19deg);
+          transform: rotate(90deg);
+          left: -1.5px;
+          top: 12.5px;
       `
       case 2:
         return state === 'A' ? `
-          top: 26px; 
+          top: 11px; 
           left: -6px;
           width: 100%;
           height: 2px;
         ` : `
-          top: 34px; 
-          left: -6px; 
-          width: 100%;
-          height: 2px;
-          transform: rotate(-20deg);
+          top: 10px;
+          left: 0;
+          transform: rotate(180deg);
         `
       case 3:
         return state === 'A' ? `
-          width: 2px;
-          height: 100%;
-          top: -3px;
-          left: 26px; 
+          transform: rotate(-90deg);
+          left: 3.5px;
+          top: 20px;
         ` : `
-          width: 2px;
-          height: 100%;
-          top: -2px;
-          left: 19px; 
-          transform: rotate(-19deg);
+          left: 1.5px;
+          top: 12.5px;
+          transform: rotate(-90deg);
       `
       default:
         return state === 'A' ? `
-          top: 26px; left: -6px;
+          top: 27px; 
+          left: 0px;
           width: 100%;
-          height: 2px;
+          height: 1px;
         ` : `
-          top: 18px; left: -6px; transform: rotate(-20deg);
+          top: 13px; 
+          left: 0px; 
           width: 100%;
-          height: 2px;
+          height: 1px;
         `
       
     }
   }}
 `
 export const ConnectionLine = styled.div`
-width: 100%;
-height: 100%;
+width: 48px;
+height: 1px;
 background-color: #000;
 `

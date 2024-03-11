@@ -7,9 +7,11 @@ export function FlowControls() {
   const reactFlowInstance = useReactFlow()
 
   return <>
-    <MiniMap />
+    {/* <MiniMap pannable nodeBorderRadius={0} nodeColor='#000' zoomStep={10} zoomable /> */}
     <Controls 
       showInteractive={false} 
+      showFitView={false}
+      showZoom={false}
       position='bottom-right' 
       onZoomIn={() => {
         const newZoom = Math.min(4, zoom + 1)

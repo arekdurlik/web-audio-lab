@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react'
 import { FlowEditor } from './components/FlowEditor'
-import { FlowWrapper, Fullscreen, GlobalStyle } from './styled'
 import { ReactFlowProvider, useReactFlow } from 'reactflow'
 import { Navbar } from './components/ui/Navbar'
 import { Sidebar } from './components/ui/Sidebar'
+import { FlowWrapper, Fullscreen, GlobalStyle } from './styled'
+import { useFlowStore } from './stores/flowStore'
+
+function Style() {
+  const { editMode } = useFlowStore()
+
+  return <GlobalStyle editMode={editMode}/>
+}
 
 function App() {
   return (
     <Fullscreen>
       <ReactFlowProvider>
         <Navbar />
-        <GlobalStyle />
+        <Style />
         <FlowWrapper>
           <Sidebar />
           <FlowEditor />

@@ -1,6 +1,8 @@
 import { useState, DragEvent } from 'react'
 import styled from 'styled-components'
-
+import triangle from '/svg/triangle.svg'
+import SVG from 'react-inlinesvg'
+import { outsetBorder, surface } from '../../98'
 export function Sidebar() {
   const [options, setOptions] = useState([{
     title: 'Base nodes',
@@ -8,47 +10,47 @@ export function Sidebar() {
     items: [
       {
         id: 'gainNode',
-        label: 'GainNode'
+        label: 'Gain'
       },
       {
         id: 'delayNode',
-        label: 'DelayNode'
+        label: 'Delay'
       },
       {
         id: 'convolverNode',
-        label: 'ConvolverNode'
+        label: 'Convolver'
       },
       {
         id: 'filterNode',
-        label: 'BiquadFilterNode'
+        label: 'Biquad filter'
       },
       {
         id: 'oscillatorNode',
-        label: 'OscillatorNode'
+        label: 'Oscillator'
       },
       {
         id: 'constantSourceNode',
-        label: 'ConstantSourceNode'
+        label: 'Constant source'
       },
       {
         id: 'audioBufferSourceNode',
-        label: 'AudioBufferSourceNode'
+        label: 'Audio buffer source'
       },
       {
         id: 'stereoPannerNode',
-        label: 'StereoPannerNode'
+        label: 'Stereo panner'
       },
       {
         id: 'waveShaperNode',
-        label: 'WaveShaperNode'
+        label: 'Wave shaper'
       },
       {
         id: 'analyserNode',
-        label: 'AnalyserNode'
+        label: 'Analyser'
       }
     ]
   }, {
-    title: 'AudioWorklet nodes',
+    title: 'AudioWorklet',
     active: false,
     items: [
       {
@@ -80,7 +82,7 @@ export function Sidebar() {
       {
         id: 'text',
         label: 'Text'
-      }
+      },
     ]
   }
   ])
@@ -102,7 +104,10 @@ export function Sidebar() {
 
   return <Container>
     {options.map((o, i) => <div key={i}>
-      <Tab active={options[i].active} onClick={(() => handleTabClick(i))}>{o.title}</Tab>
+      <Tab active={options[i].active} onClick={(() => handleTabClick(i))}>
+        <Triangle src={triangle} />
+        {o.title}
+      </Tab>
       <Options active={options[i].active}>
       {o.items.map((item, j) => <Option 
         key={j} 
@@ -117,61 +122,69 @@ export function Sidebar() {
   </Container>
 }
 
+const Triangle = styled(SVG)`
+  width: 7px;
+  height: 4px;
+  transform: rotate(90deg);
+`
+
 const Tab = styled.div<{ active: boolean }>`
+${outsetBorder}
+position: relative;
 user-select: none;
 display: flex;
 align-items: center;
-padding: 5px 10px;
-border: 3px outset;
-font-weight: bold;
+padding: 2px 15px 3px 5px;
 gap: 5px;
-
-&:before {
-  content: '';
-  width: 0; 
-  height: 0; 
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-
-  border-left: 7px solid black;
-}
+background-color: ${surface};
 
 &:hover {
-  background-color: #c8c6c0; 
+  background-color: lightgray; 
   cursor: pointer;
 }
 
-${({ active }) => active && `
-  background-color: #bebbb2;
-  &:before {
-    transform: rotate(90deg);
-  }
+${({ active }) => active && `${Triangle} {
+  transform: rotate(180deg);
 `}
+
 `
 
 const Options = styled.div<{ active: boolean }>`
 overflow: hidden;
-height: 0;
-${({ active }) => active && `height: auto;`}
-`
-const Option = styled.div`
-padding: 10px 20px 10px 20px;
-border: 3px outset;
+border-right: 1px outset;
 
-background-color: #d7d5cf;
+height: 0;
+${({ active }) => active ? `
+  height: auto;
+` : `
+  border-bottom: none !important;
+`}
 
 &:hover {
-  background-color: #c8c6c0; 
   cursor: grab;
 }
 `
-const Container = styled.div`
+const Option = styled.div`
+padding: 5px;
 
+background-color: ${surface};
+
+&:hover {
+  background-color: lightgray; 
+}
+`
+
+const Container = styled.div`
+background-color: ${surface};
+box-sizing: border-box;
+overflow: hidden;
+min-width: 100px;
+max-height: 100%;
 position: absolute;
-top: 0;
-bottom: 0;
-left: 0;
-background-color: #d7d5cf;
-z-index: 1000;
-border-right: 1px solid #000;
+z-index: 999;
+
+& > div:last-child > ${Options}:last-child {
+  border-bottom: 1px outset;
+}
+  
 `

@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import { HoverOptions, Rotate } from '../BaseNode/styled'
 import { Edge } from '../BaseNode/types'
 import { getEdgeIndex, positions } from '../utils'
+import SocketIcon from '/icons/socket_only.png'
 
 type SocketOnlyProps = {
   id: string
@@ -64,7 +65,7 @@ display: flex;
 position: relative;
 bottom: 30px;
 right: 25px;
-padding: 5px;
+padding: 10px;
 `
 
 const Label = styled.span<{ rotation: 0 | 1 | 2 | 3 }>`
@@ -74,23 +75,24 @@ place-items: center;
   position: absolute;
   ${({ rotation }) => {
   switch (rotation) {
-    case 0: return `left: -50px;
-    top: -12px;`
+    case 0: return `left: -45px;
+    top: -2px;`
     case 1:
     case 2:
-    case 3: return `left: 6px;
-    top: -12px;`
+    case 3: return `left: 7px;
+    top: -2px;`
   }
 }}
   white-space: nowrap;
-  font-size: 12px;
+  font-size: 11px;
 `
 export const CircleHandle = styled(Handle)<{ rotation: 0 | 1 | 2 | 3 }>`
 display: grid;
 place-items: center;
 width: 2px;
 height: 2px;
-background-color: transparent !important;
+background-color: black;
+border: none;
 min-width: 0;
 min-height: 0;
 position: relative;
@@ -99,43 +101,33 @@ bottom: auto !important;
 
 ${({ rotation }) => {
   switch (rotation) {
-    case 0: return `top: 0px;
-    left: -5px;`
-    case 1: return `top: -5px;
-    left: 0px;`
-    case 2: return `top: 0px;
+    case 0: return `top: 8.5px;
+    left: -2px;`
+    case 1: return `top: 6px;
+    left: 0.5px;`
+    case 2: return `top: 8.5px;
     left: 1px;`
-    case 3: return `top: 1px;
-    left: 0px;`
+    case 3: return `top: 9px;
+    left: 0.5px;`
   }
 }}
 
 &:before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 100%;
-  background-color: #fff;
-  border: 1px solid #000;
-  position: absolute;
+  content: url('icons/sockets/socket_only.png');
+  opacity: 1;
+  position: relative;
 
   ${({ rotation }) => {
     switch (rotation) {
-      case 0: return `left: -1px;
-      bottom: -4px;`
-      case 1: return `bottom: -7px;
-      left: -4px;`
-      case 2: return `bottom: -4px;
-      left: -7px;`
-      case 3: return `top: -7px;
-      left: -4px;`
+      case 0: return `left: -3px;
+      bottom: 4.5px;`
+      case 1: return `bottom: 3px;
+      left: -4.5px;`
+      case 2: return `bottom: 4.5px;
+      left: -6px;`
+      case 3: return `top: -6px;
+      left: -4.5px;`
     }
   }}
 }
-`
-
-const Title = styled.div`
-display: flex;
-gap: 5px;
-align-items: center;
 `

@@ -30,7 +30,7 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
     {
       id: offsetId,
       label: 'o',
-      visual: 'triangle',
+      visual: 'param',
       type: 'target',
       edge: 'top',
       offset: 48

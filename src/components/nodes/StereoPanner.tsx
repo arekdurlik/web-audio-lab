@@ -28,7 +28,7 @@ export function StereoPanner({ id, data }: StereoPannerProps) {
     {
       id: panId,
       label: 'p',
-      visual: 'triangle',
+      visual: 'param',
       type: 'target',
       edge: 'top',
       offset: 48
