@@ -144,10 +144,10 @@ function BezierEdge({ edge, mutationObserver }: { edge: Edge<any>, mutationObser
     const [p_tx2, p_ty2] = path[2].split(',').map(v => Math.round(Number(v)))
 
     // canvas bezier curve start and end points
-    const sx = range(left,  left + width, 0,  canvas.width - 1,   sourceXPos)
-    const sy = range(top,   top + height, 0,  canvas.height - 1,  sourceYPos)
-    const tx = range(left,  left + width, 0,  canvas.width - 1,   targetXPos)
-    const ty = range(top,   top + height, 0,  canvas.height - 1,  targetYPos)
+    const sx = range(sourceXPos, left,  left + width, 0,  canvas.width - 1)
+    const sy = range(sourceYPos, top,   top + height, 0,  canvas.height - 1)
+    const tx = range(targetXPos, left,  left + width, 0,  canvas.width - 1)
+    const ty = range(targetYPos, top,   top + height, 0,  canvas.height - 1)
 
     // canvas bezier curve control points
     const sx2 = sx + (p_sx2 - p_sx)

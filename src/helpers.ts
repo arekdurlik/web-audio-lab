@@ -29,8 +29,12 @@ export function curve (val: number, min: number, max: number, curve: number) {
   return (max - min) * (normalize(clamped, min, max) ** curve) + min
 }
 
-export function range (x1: number, y1: number, x2: number, y2: number, a: number) {
-  return lerp(x2, y2, invlerp(x1, y1, a))
+export function range (x: number, inMin: number, inMax: number, outMin: number, outMax: number) {
+  return lerp(outMin, outMax, invlerp(inMin, inMax, x))
+}
+
+export function degToRad(value: number) {
+  return value * (Math.PI/180)
 }
 
 export function convertFloatArrayToUint8(floatArray: Float32Array, inputRange: [number, number], outputRange = [0, 255]) {

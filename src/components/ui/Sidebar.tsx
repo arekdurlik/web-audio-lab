@@ -83,6 +83,10 @@ export function Sidebar() {
         id: 'text',
         label: 'Text'
       },
+      {
+        id: 'knob',
+        label: 'Knob'
+      }
     ]
   }
   ])

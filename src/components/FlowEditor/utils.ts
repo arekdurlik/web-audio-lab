@@ -15,6 +15,7 @@ import { Note } from '../nodes/Note'
 import { Text } from '../nodes/Text'
 import { SPDTFork, SPDTJoin } from '../switches/SPDT'
 import { Analyser } from '../nodes/Analyser'
+import { Knob } from '../nodes/Knob'
 
 export const propOptions = {
   hideAttribution: true
@@ -51,6 +52,7 @@ export const nodeTypes = {
 
   note: Note,
   text: Text,
+  knob: Knob,
 
   bitcrusher: Bitcrusher,
 
