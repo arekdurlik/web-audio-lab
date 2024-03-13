@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
-import { NumberInput } from '../inputs/NumberInput'
 import { BitcrusherProps } from './types'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 
@@ -50,50 +48,27 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
     instance.current.parameters.get('frequencyReduction')?.setValueAtTime(sampleRateReduction, audio.context.currentTime)
   }, [bitDepth, sampleRateReduction])
 
-  const Parameters = <FlexContainer direction='column' gap={8}>
-    <div>
-    Bit depth:
-    <FlexContainer
-      direction='column'
-      gap={8}
-    >
-      <Parameter>
-        <RangeInput
-          min={2}
-          max={16}
-          step={1}
-          onChange={setBitDepth} 
-          value={bitDepth}
-          />
-        <NumberInput 
-          onChange={setBitDepth} 
-          value={bitDepth}
-          />
-      </Parameter>
+  const Parameters = 
+    <FlexContainer direction='column' gap={8}>
+      <RangeInput
+        label='Bit depth:'
+        value={bitDepth}
+        min={2}
+        max={16}
+        step={1}
+        onChange={setBitDepth}
+        numberInput
+      />
+      <RangeInput
+        label='Sample rate reduction:'
+        value={sampleRateReduction}
+        min={1}
+        max={50}
+        step={1}
+        onChange={setSampleRateReduction}
+        numberInput
+      />
     </FlexContainer>
-    </div>
-    <div>
-    Sample rate reduction:
-    <FlexContainer
-      direction='column'
-      gap={8}
-    >
-      <Parameter>
-        <RangeInput
-          min={1}
-          max={50}
-          step={1}
-          onChange={setSampleRateReduction} 
-          value={sampleRateReduction}
-          />
-        <NumberInput 
-          onChange={setSampleRateReduction} 
-          value={sampleRateReduction}
-          />
-      </Parameter>
-    </FlexContainer>
-    </div>
-  </FlexContainer>
 
   return (
     <Node 

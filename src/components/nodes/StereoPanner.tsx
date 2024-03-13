@@ -1,13 +1,10 @@
 import { StereoPannerProps } from './types'
 import { useEffect, useState } from 'react'
-import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
-import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
-import { NumberInput } from '../inputs/NumberInput'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 
 export function StereoPanner({ id, data }: StereoPannerProps) {
@@ -55,30 +52,15 @@ export function StereoPanner({ id, data }: StereoPannerProps) {
     instance.pan.linearRampToValueAtTime(pan, audio.context.currentTime + 0.03)
   }, [pan])
 
-  const Parameters = <FlexContainer direction='column' gap={8}>
-    <div>
-    Pan:
-    <FlexContainer
-      direction='column'
-      gap={8}
-    >
-      <Parameter>
-        <RangeInput
-          min={-1}
-          max={1}
-          onChange={setPan} 
-          value={pan}
-          />
-        <NumberInput 
-          min={-1}
-          max={1}
-          onChange={setPan} 
-          value={pan}
-          />
-      </Parameter>
-    </FlexContainer>
-    </div>
-  </FlexContainer>
+  const Parameters = 
+    <RangeInput
+      label='Pan:'
+      value={pan}
+      min={-1}
+      max={1}
+      onChange={setPan}
+      numberInput
+    />
 
   return (
     <Node 

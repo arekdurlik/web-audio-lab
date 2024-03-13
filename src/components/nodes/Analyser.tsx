@@ -9,10 +9,9 @@ import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
 import { bline } from '../FlowEditor/EdgeController/bezier'
 import { RangeInput } from '../inputs/RangeInput'
-import { NumberInput } from '../inputs/NumberInput'
 import { FlexContainer } from '../../styled'
-import { Parameter } from './BaseNode/styled'
-import { Select } from '../inputs/styled'
+import { SelectInput } from '../inputs/SelectInput'
+import { CheckboxInput } from '../inputs/CheckboxInput'
 
 export function Analyser({ id, data }: AnalyserProps) {
   const [type, setType] = useState(data.type ?? 'oscilloscope')
@@ -120,11 +119,11 @@ export function Analyser({ id, data }: AnalyserProps) {
 
   function setPixel(x: number, y: number) {
     if (canvas.current === null) return
-      var n = (y * canvas.current.width + x) * 4;
-      imgData.current[n] = 0;
-      imgData.current[n + 1] = 255;
-      imgData.current[n + 2] = 0;
-      imgData.current[n + 3] = 255;
+      var n = (y * canvas.current.width + x) * 4
+      imgData.current[n] = 0
+      imgData.current[n + 1] = 255
+      imgData.current[n + 2] = 0
+      imgData.current[n + 3] = 255
   }
 
   function drawOscilloscope() {
@@ -304,127 +303,40 @@ export function Analyser({ id, data }: AnalyserProps) {
   }
 
   const Parameters = <FlexContainer direction='column' gap={8}>
-    <div>
-      Type:
-      <Parameter>
-      <Select 
-        value={type}
-        onChange={e => setType(e.target.value as AnalyserType)} 
-      >
-        <option value='oscilloscope'>Oscilloscope</option>
-        <option value='analyser'>Spectrum analyser</option>
-        <option value='vu-meter'>VU Meter</option>
-      </Select>
-      </Parameter>
-    </div>
-    {type === 'oscilloscope' && <div>
-      Scale:
-      <FlexContainer
-        direction='column'
-        gap={8}
-      >
-        <Parameter>
-          <RangeInput
-            min={0}
-            max={10}
-            step={0.01}
-            defaultValue={1}
-            value={scale}
-            onChange={v => { setScale(v); scaleRef.current = v }} 
-            style={{ flex: 1 }}
-            />
-          <NumberInput 
-            min={0}
-            max={10}
-            step={0.01}
-            value={scale}
-            onChange={v => { setScale(v); scaleRef.current = v }} 
-            />
-        </Parameter>
-      </FlexContainer>
-    </div>}
-    <div>
-      Width:
-      <FlexContainer
-        direction='column'
-        gap={8}
-      >
-        <Parameter>
-          <RangeInput
-            min={1}
-            max={4}
-            step={1}
-            defaultValue={1}
-            value={width}
-            onChange={v => { setWidth(v); widthRef.current = v }} 
-            style={{ flex: 1 }}
-            />
-          <NumberInput 
-            min={1}
-            max={4}
-            step={1}
-            value={width}
-            onChange={v => { setWidth(v); widthRef.current = v }} 
-            />
-        </Parameter>
-      </FlexContainer>
-    </div>
-    {type === 'oscilloscope' && <div>
-      <input type="checkbox" id="example1" checked={fitInScreen} onChange={() => { setFitInScreen(!fitInScreen); fitInScreenRef.current = !fitInScreen }} />
-      <label for="example1">Fit in screen</label>
-    </div>}
-    {/* <div>
-      x:
-      <FlexContainer
-        direction='column'
-        gap={8}
-      >
-        <Parameter>
-          <RangeInput
-            min={0}
-            max={512}
-            step={1}
-            defaultValue={1}
-            value={x}
-            onChange={v => { setX(v); xRef.current = v }} 
-            />
-          <NumberInput 
-            min={0}
-            max={512}
-            step={1}
-            value={x}
-            onChange={v => { setX(v); xRef.current = v }} 
-            />
-        </Parameter>
-      </FlexContainer>
-    </div>
-    <div>
-      y:
-      <FlexContainer
-        direction='column'
-        gap={8}
-      >
-        <Parameter>
-          <RangeInput
-            min={0}
-            max={2200}
-            step={0.01}
-            defaultValue={1}
-            value={y}
-            onChange={v => { setY(v); yRef.current = v }} 
-            />
-          <NumberInput 
-            min={0}
-            max={2200}
-            step={0.01}
-            value={y}
-            onChange={v => { setY(v); yRef.current = v }} 
-            />
-        </Parameter>
-      </FlexContainer>
-    </div> */}
+    <SelectInput
+      label='Type:'
+      value={type}
+      onChange={e => setType(e.target.value as AnalyserType)} 
+    >
+      <option value='oscilloscope'>Oscilloscope</option>
+      <option value='analyser'>Spectrum analyser</option>
+      <option value='vu-meter'>VU Meter</option>
+    </SelectInput>
+    {type === 'oscilloscope' && <RangeInput
+      label='Scale:'
+      value={scale}
+      onChange={v => { setScale(v); scaleRef.current = v }}
+      min={0}
+      max={10}
+      step={0.01}
+      numberInput
+      />}
+    <RangeInput
+      label='Width:'
+      value={width}
+      onChange={v => { setWidth(v); widthRef.current = v }} 
+      min={1}
+      max={4}
+      step={1}
+      numberInput
+    />
+    {type === 'oscilloscope' && <CheckboxInput 
+      id={`${id}-fit`}
+      label='Fit in screen' 
+      value={fitInScreen} 
+      onChange={() => { setFitInScreen(!fitInScreen); fitInScreenRef.current = !fitInScreen }} 
+    />}
   </FlexContainer>
-
 
   return (
     <Node 

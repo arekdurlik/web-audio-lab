@@ -1,7 +1,7 @@
 import { Handle, Position } from 'reactflow'
 import styled from 'styled-components'
 import { Label } from './styled'
-import param from '/icons/param.svg'
+import param from '/svg/param.svg'
 import SVG from 'react-inlinesvg'
 
 type HandleProps = {

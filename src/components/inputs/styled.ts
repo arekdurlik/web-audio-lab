@@ -1,5 +1,16 @@
 import styled from 'styled-components'
 
+export const InputWrapper = styled.div`
+flex-direction: column;
+gap: 1px;
+justify-content: space-between;
+`
+
+export const InputLabel = styled.span`
+display: block;
+margin-bottom: 1px;
+`
+
 export const ParamInput = styled.input`
 border: 1px solid #000;
 border-radius: 0;

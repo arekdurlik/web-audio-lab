@@ -14,14 +14,14 @@ type TextInputProps = {
 }
 export function TextInput({ label, value, width, disabled, error, errorMessage, onChange }: TextInputProps) {
 
-
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const target = e.target as HTMLInputElement
     const value = target.value
     if (typeof onChange === 'function') onChange(value)
   }
+
   return (
-    <Wrapper >
+    <Wrapper>
       {label && <span>{label}: </span>}
       <Input 
         type='text' 

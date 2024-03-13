@@ -1,80 +1,125 @@
-import { useEffect, ChangeEvent, MouseEvent, KeyboardEvent, CSSProperties } from 'react'
+import { useEffect, ChangeEvent, MouseEvent, KeyboardEvent, CSSProperties, useState } from 'react'
 import styled from 'styled-components'
-import { clamp } from '../../helpers'
+import { clamp, countDecimals } from '../../helpers'
+import { InputLabel, InputWrapper } from './styled'
+import { NumberInput } from './NumberInput'
+import { FlexContainer } from '../../styled'
+import Log from './log'
 
 type RangeInputProps = {
   value: number
   onChange?: (value: number) => void
-  onChangeEnd?: (value: number) => void
+  onMaxChange?: (value: number) => void
+  onMinChange?: (value: number) => void
   label?: string
   defaultValue?: number
-  min?: number | string
-  max?: number | string
+  min?: number
+  max?: number
   step?: number
   disabled?: boolean
   style?: CSSProperties
+  logarithmic?: boolean
+  adjustableBounds?: boolean
+  numberInput?: boolean
+  numberInputWidth?: number
 }
-export function RangeInput({ label, value, min, max, disabled, step = 0.01, onChange, onChangeEnd, style }: RangeInputProps) {
+export function RangeInput({ value, min = 0, max = 100, label, disabled, step = 0.01, numberInput, numberInputWidth, adjustableBounds, logarithmic, onChange, onMinChange, onMaxChange, style }: RangeInputProps) {
+  const [internalValue, setInternalValue] = useState(value)
+  const log = new Log({ minval: Math.max(1, min), maxval: max })
 
   useEffect(() => {
-    const floatMin = typeof min === 'string' ? parseFloat(min) : min
-    const floatMax = typeof max === 'string' ? parseFloat(max) : max
+    if (logarithmic) {
+      const pos = log.position(value)
+      setInternalValue(pos)
+    } else {
+      setInternalValue(value)
+    }
+  }, [value])
 
-    let newValue = value
-
-    if (floatMin && floatMax) {
-      newValue = clamp(value, floatMin, floatMax)
-    } 
+  useEffect(() => {
+    const newValue = clamp(value, min, max)
 
     if (typeof onChange === 'function') onChange(newValue)
-    if (typeof onChangeEnd === 'function') onChangeEnd(newValue)
   }, [min, max])
-  
-  function checkBounds(e: KeyboardEvent<HTMLInputElement>) {
-    const target = e.target as HTMLInputElement
-    const value = parseFloat(target.value)
-    
-    const floatMin = typeof min === 'string' ? parseFloat(min) : min
-    const floatMax = typeof max === 'string' ? parseFloat(max) : max
-    
-    if (floatMax && value > floatMax) {
-      target.value = String(max)
-    } else if (floatMin && value < floatMin) {
-      target.value = String(min)
-    }
-  }
-  
-  function handleChange(e: ChangeEvent<HTMLInputElement>) {
-    const target = e.target as HTMLInputElement
-    const value = parseFloat(target.value)
 
+  function handleNumberChange(value: number) {
     if (typeof onChange === 'function') onChange(value)
   }
 
-  function handleChangeEnd(e: MouseEvent<HTMLInputElement>) {
-    const target = e.target as HTMLInputElement
-    const value = parseFloat(target.value)
+  function calculateValue(pos: number) {
+    if (pos === 0) return 0
+    if (pos === 1) return 1
 
-    if (typeof onChangeEnd === 'function') onChangeEnd(value)
+    const decimals = countDecimals(step.toString())
+    const value = log.value(pos).toFixed(decimals)
+    return Number(value)
   }
 
-  return <input 
-    type='range' 
-    step={step} 
-    value={String(value)}
-    min={min}
-    max={max}
-    disabled={disabled}
-    onChange={handleChange} 
-    onMouseUp={handleChangeEnd}
-    onKeyUp={checkBounds}
-    onMouseDownCapture={(e) => e.stopPropagation()}
-    onPointerDownCapture={(e) => e.stopPropagation()}
-    style={style}
-  />
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+
+    if (logarithmic) {
+      const newPosition = Number(e.target.value)
+      setInternalValue(newPosition)
+
+      if (typeof onChange === 'function') onChange(calculateValue(newPosition))
+    } else {
+      const target = e.target as HTMLInputElement
+      const value = Number(target.value)
+
+      if (typeof onChange === 'function') onChange(value)
+    }
+  }
+
+  return <RangeInputWrapper>
+      {label && <InputLabel>{label}</InputLabel>}
+      <FlexContainer gap={4}>
+        <input 
+          type='range' 
+          step={step} 
+          value={internalValue}
+          min={logarithmic ? 0 : min}
+          max={logarithmic ? 100 : max}
+          disabled={disabled}
+          onChange={handleChange} 
+          onMouseDownCapture={(e) => e.stopPropagation()}
+          onPointerDownCapture={(e) => e.stopPropagation()}
+          style={style}
+        />
+        {numberInput && <NumberInput 
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          disabled={disabled}
+          onChange={handleNumberChange} 
+          width={numberInputWidth}
+        />}
+      </FlexContainer>
+      {adjustableBounds && <FlexContainer
+        justify='flex-end'
+        gap={8}
+        style={{ marginTop: 8 }}
+    >
+      <FlexContainer gap={2} align='center'>
+        min:
+        <NumberInput 
+          width={50}
+          onChange={onMinChange} 
+          value={min}
+        />
+      </FlexContainer>
+      <FlexContainer gap={2} align='center'>
+        max:
+        <NumberInput 
+          width={50}
+          onChange={onMaxChange}
+          value={max}
+        />
+      </FlexContainer>
+    </FlexContainer>}
+    </RangeInputWrapper>
 }
 
-const Wrapper = styled.div`
-display: flex;
-gap: 10px;
+const RangeInputWrapper = styled(InputWrapper)`
+flex: 1;
 `

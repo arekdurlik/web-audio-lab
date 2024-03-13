@@ -1,20 +1,18 @@
 import { ConstantSourceProps } from './types'
 import { useEffect, useRef, useState } from 'react'
-import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
-import { NumberInput } from '../inputs/NumberInput'
 import { useReactFlow } from 'reactflow'
 
 export function ConstantSource({ id, data }: ConstantSourceProps) {
   const [playing, setPlaying] = useState(data.playing ?? false)
   const [offset, setOffset] = useState(data.offset ?? 0)
-  const [min, setMin] = useState<string | number>(data.min ?? 0)
-  const [max, setMax] = useState<string | number>(data.max ?? 1)
+  const [min, setMin] = useState(data.min ?? 0)
+  const [max, setMax] = useState(data.max ?? 1)
   const signalId = `${id}-signal`
   const offsetId = `${id}-offset`
   const instance = useRef(new ConstantSourceNode(audio.context, { offset: offset }))
@@ -84,48 +82,17 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
     <FlexContainer gap={8}>
       <button onClick={playing ? () => setPlaying(false) : () => setPlaying(true)}>{playing ? 'Stop' : 'Start'}</button>
     </FlexContainer>
-    <div>
-    Offset:
-    <FlexContainer
-      direction='column'
-      gap={8}
-    >
-      <Parameter>
-        <RangeInput
-          step={0.00001}
-          min={min}
-          max={max}
-          onChange={setOffset} 
-          value={offset}
-          />
-        <NumberInput 
-          onChange={setOffset} 
-          value={offset}
-          />
-      </Parameter>
-      <FlexContainer
-        justify='flex-end'
-        gap={8}
-      >
-      <FlexContainer gap={2}>
-        min:
-        <NumberInput 
-          width={50}
-          onChange={setMin} 
-          value={min}
-        />
-      </FlexContainer>
-      <FlexContainer gap={2}>
-        max:
-        <NumberInput 
-          width={50}
-          onChange={setMax} 
-          value={max}
-        />
-      </FlexContainer>
-      </FlexContainer>
-    </FlexContainer>
-    </div>
+    <RangeInput
+      label='Offset:'
+      value={offset}
+      min={min}
+      max={max}
+      onChange={setOffset}
+      numberInput
+      adjustableBounds
+      onMinChange={setMin}
+      onMaxChange={setMax}
+    />
   </FlexContainer>
 
   return (

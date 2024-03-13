@@ -105,7 +105,7 @@ export function Knob({ id, data }: KnobProps) {
     const deg = (rotation.current * 135) - 90
     const r = 16
     const [x, y] = [r * Math.cos(deg * Math.PI / 180), r * Math.sin(deg * Math.PI / 180)]
-    bline(Math.round(r), Math.round(r), Math.round(16 +x), Math.round(16+ y), setPixel);
+    bline(Math.round(r), Math.round(r), Math.round(16 +x), Math.round(16+ y), setPixel)
     c.putImageData(imageData, 0, 0)
   }
 
@@ -180,70 +180,49 @@ export function Knob({ id, data }: KnobProps) {
   const Parameters = <FlexContainer direction='column' gap={8}>
     <FlexContainer
       direction='column'
-      gap={2}
+      gap={8}
     >
-      <Fieldset>
-        <legend>Value: {Math.round(value * 100) / 100}</legend>
+        Value: {Math.round(value * 100) / 100}
         <FlexContainer
-          justify='flex-end'
-          gap={8}
-        >
-          <FlexContainer gap={2} align='center'>
-            min:
-            <NumberInput 
-              width={50}
-              onChange={setMin} 
-              value={min}
-            />
-          </FlexContainer>
-          <FlexContainer gap={2} align='center'>
-            max:
-            <NumberInput 
-              width={50}
-              onChange={setMax} 
-              value={max}
-            />
-          </FlexContainer>
-        </FlexContainer>
-      </Fieldset>
-      <>
-        Step:
-        <FlexContainer
-          direction='column'
-          gap={8}
-        >
-            <NumberInput
-              value={step}
-              onChange={setStep} 
-              />
-        </FlexContainer>
-      </>
-      <>
-        Ramp:
-        <FlexContainer
-          direction='column'
           gap={8}
         >
           <NumberInput
-            value={ramp}
-            onChange={setRamp} 
-            />
+            label='min:'
+            width={50}
+            onChange={setMin} 
+            value={min}
+          />
+          <NumberInput
+            label='max:'
+            width={50}
+            onChange={setMax} 
+            value={max}
+          />
         </FlexContainer>
-      </>
-      <>
-        <div>
+      <FlexContainer direction='column' justify='space-between' gap={8}>
+        <NumberInput
+        label='Step:'
+        value={step}
+        onChange={setStep} 
+        />
+        <NumberInput
+          label='Ramp:'
+          value={ramp}
+          onChange={setRamp} 
+        />
+      </FlexContainer>
+      <div>
         Label:
         <FlexContainer
           direction='column'
           gap={8}
         >
-            <TextInput
-              value={label}
-              onChange={setLabel} 
-              />
+          <TextInput
+            value={label}
+            onChange={setLabel} 
+          />
         </FlexContainer>
-        </div>
-      </>
+      </div>
     </FlexContainer>
   </FlexContainer>
 

@@ -1,56 +1,112 @@
-import { ChangeEvent, KeyboardEvent } from 'react'
+import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { clamp } from '../../helpers'
+import { clamp, countDecimals } from '../../helpers'
 
 type NumberInputProps = {
   value?: number
   onChange?: (value: number) => void
   label?: string
   defaultValue?: number
-  min?: number | string
-  max?: number | string
+  min?: number
+  max?: number
   step?: number
   width?: number
   disabled?: boolean
   unit?: string
 }
-export function NumberInput({ label, value, min, max, step = 0.01, width = 38, unit, disabled, onChange }: NumberInputProps) {
 
+export function NumberInput({ label, value = 0, min = -Infinity, max = Infinity, step = 0.01, width = 38, disabled, onChange }: NumberInputProps) {
+  const [internalValue, setInternalValue] = useState(value.toString())
+  const ref = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    // e.g. value 1 overwriting internal value 1.0
+    if (Number(internalValue) === value) return
+
+    setInternalValue(value.toString())
+  }, [value])
+  
   function checkBounds(e: ChangeEvent<HTMLInputElement>) {
     const target = e.target as HTMLInputElement
-    const value = parseFloat(target.value)
     
-    const floatMin = typeof min === 'string' ? parseFloat(min) : min
-    const floatMax = typeof max === 'string' ? parseFloat(max) : max
+    const regex = /(?<=^|)\d+(\.\d+)?(?=$| )/
+    if (!regex.test(target.value)) {
+      setInternalValue(target.value)
+      return
+    }
     
+    const numberValue = Number(target.value)
+    if (Number.isNaN(numberValue)) return
     
-    if (value === undefined || Number.isNaN(value)) return
-    const clamped = clamp(value, floatMin, floatMax)
+    // check out of bounds
+    if (ref.current && (numberValue < min || numberValue > max)) {
+      ref.current.classList.remove('error')
+      setTimeout(() => {
+        ref.current!.classList.add('error')
+      }, 50)
+    }
     
-    if (typeof onChange === 'function') onChange(clamped)
+    const clamped = clamp(Number(numberValue), min, max)
+    
+    // clamp value decimals to step decimals
+    const stepDecimals = countDecimals(step.toString())
+    const valueDecimals = countDecimals(target.value)
+    const rounded = clamped.toFixed(Math.min(stepDecimals, valueDecimals))
+    
+    setInternalValue(rounded)
+    if (typeof onChange === 'function') onChange(Number(rounded))
   }
 
-  function handleChange(e: ChangeEvent<HTMLInputElement>) {
-    const target = e.target as HTMLInputElement
-    const value = parseFloat(target.value)
-    if (typeof onChange === 'function') onChange(value)
+  function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      changeValue('increment')
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      changeValue('decrement')
+    }
   }
+
+  function changeValue(type: 'increment' | 'decrement') {
+    const newValue =  type === 'increment' ? Number(internalValue) + step : Number(internalValue) - step
+
+    if (ref.current && (newValue < min || newValue > max)) {
+      ref.current.classList.remove('error')
+      setTimeout(() => {
+        ref.current!.classList.add('error')
+      }, 50)
+      return
+    }
+
+    // clamp value decimals to step decimals
+    const stepDecimals = countDecimals(step.toString())
+    const numberRounded = Number(newValue.toFixed(stepDecimals))
+
+    const valueDecimals = countDecimals(numberRounded.toString())
+    const rounded = newValue.toFixed(Math.min(stepDecimals, valueDecimals))
+
+    setInternalValue(rounded)
+
+    if (typeof onChange === 'function') onChange(Number(rounded))
+  }
+
   return (
-    <Wrapper >
-      {label && <span>{label}: </span>}
+    <Wrapper>
+      {label && <span>{label}</span>}
       <Input 
-        type='number' 
+        ref={ref}
+        type='text' 
         step={step} 
-        value={String(value)}
+        value={internalValue}
         min={min}
         max={max}
         disabled={disabled}
-        onChange={handleChange} 
+        onChange={checkBounds} 
         onMouseDownCapture={(e) => e.stopPropagation()}
         onPointerDownCapture={(e) => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
         width={width}
       />
-      {unit}
     </Wrapper>
   )
 }
@@ -69,6 +125,25 @@ outline: none;
 z-index: 500;
 max-width: ${({ width }) => width }px;
 min-width: ${({ width }) => width }px;
+
+@keyframes error {
+  0% {background-color:  #f99;}
+  24% {background-color: #f99;}
+
+  25% {background-color: #fff;}
+  49% {background-color: #fff;}
+
+  50% {background-color: #f99;}
+  74% {background-color: #f99;}
+
+  75% {background-color: #fff;}
+  99% {background-color: #fff;}
+}
+
+&.error {
+  animation-name: error;
+  animation-duration: 0.25s;
+}
 
 &::-webkit-inner-spin-button {
   -webkit-appearance: none;

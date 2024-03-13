@@ -1,5 +1,5 @@
-import { NodeProps, OscillatorProps } from './types'
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { OscillatorProps } from './types'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { Parameter, ParameterName } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -9,10 +9,11 @@ import { RangeInput } from '../inputs/RangeInput'
 import { NumberInput } from '../inputs/NumberInput'
 import { FlexContainer } from '../../styled'
 import { Select } from '../inputs/styled'
-import { LogRangeInput } from '../inputs/LogRangeInput'
-import { useReactFlow } from 'reactflow'
 import styled from 'styled-components'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
+import { SelectInput } from '../inputs/SelectInput'
+
+const NUMBER_INPUT_WIDTH = 52
 
 export function Oscillator({ id, data }: OscillatorProps) {
   const [playing, setPlaying] = useState(data.playing ?? false)
@@ -23,7 +24,6 @@ export function Oscillator({ id, data }: OscillatorProps) {
   const [real, setReal] = useState<number[]>(data.real ?? [0, 1])
   const [imag, setImag] = useState<number[]>(data.imag ?? [0, 0])
   const setInstance = useNodeStore(state => state.setInstance)
-  const reactFlowInstance = useReactFlow()
   const instance = useRef<OscillatorNode | null>()
   const { updateNode } = useUpdateFlowNode(id)
 
@@ -106,7 +106,7 @@ export function Oscillator({ id, data }: OscillatorProps) {
     if (customLength > real.length) {
       setReal(state => [...state, 0])
       setImag(state => [...state, 0])
-    } else {
+    } else if (customLength < real.length) {
       setReal(state => {
         const newState = [...state]
         newState.pop()
@@ -145,11 +145,6 @@ export function Oscillator({ id, data }: OscillatorProps) {
     }
   }
 
-  function handleLogFrequency(newValues: { position: number, value: number }) {
-    setFrequency(newValues.value)
-    setParam('frequency', newValues.value)
-  }
-
   function handleParam(param: Param, value: number) {
     switch(param) {
       case 'frequency': setFrequency(value); break
@@ -170,54 +165,36 @@ export function Oscillator({ id, data }: OscillatorProps) {
     <FlexContainer gap={8}>
       <button onClick={playing ? () => setPlaying(false) : () => setPlaying(true)}>{playing ? 'Stop' : 'Start'}</button>
     </FlexContainer>
-    <div>
-      Type:
-      <Parameter>
-        <Select onChange={handleType} value={type}>
-          <option value='sine'>Sine</option>
-          <option value='square'>Square</option>
-          <option value='sawtooth'>Sawtooth</option>
-          <option value='triangle'>Triangle</option>
-          <option value='custom'>Custom</option>
-        </Select>
-      </Parameter>
-    </div>
-    <div>
-      Frequency:
-      <Parameter>
-        <LogRangeInput
-          maxval={22000}
-          onChange={handleLogFrequency} 
-          value={frequency}
-        />
-        <NumberInput 
-          max={22000}
-          onChange={value => handleParam('frequency', value)} 
-          unit='Hz'
-          width={72}
-          value={frequency}
-        />
-      </Parameter>
-    </div>
-    <div>
-      Detune:
-      <Parameter>
-        <RangeInput
-          min={-1200}
-          max={1200}
-          step={0.1}
-          onChange={value => handleParam('detune', value)} 
-          value={detune}
-          />
-        <NumberInput 
-          min={-1200}
-          max={1200}
-          unit='cents'
-          onChange={value => handleParam('detune', value)} 
-          value={detune}
-        />
-      </Parameter>
-    </div>
+    <SelectInput
+      label='Type:'
+      value={type}
+      onChange={handleType}
+    >
+      <option value='sine'>Sine</option>
+      <option value='square'>Square</option>
+      <option value='sawtooth'>Sawtooth</option>
+      <option value='triangle'>Triangle</option>
+      <option value='custom'>Custom</option>
+    </SelectInput>
+    <RangeInput
+      logarithmic
+      label='Frequency (Hz):'
+      value={frequency}
+      max={22000}
+      onChange={value => handleParam('frequency', value)}
+      numberInput
+      numberInputWidth={NUMBER_INPUT_WIDTH}
+    />
+    <RangeInput
+      label='Detune (cents):'
+      value={detune}
+      min={-1200}
+      max={1200}
+      step={0.1}
+      onChange={value => handleParam('detune', value)} 
+      numberInput
+      numberInputWidth={NUMBER_INPUT_WIDTH}
+    />
     {type === 'custom' ? <div>
       <ParameterName>Length:</ParameterName>
       <Parameter>
@@ -242,22 +219,22 @@ export function Oscillator({ id, data }: OscillatorProps) {
               newState[i] = newValue
               return newState
             })}
-          />)}
+            />)}
       </WaveTable>
       <ParameterName>Imaginary:</ParameterName>
       <WaveTable>
         {Array(customLength).fill(0).map((_, i) => 
           <NumberInput 
-            key={i}
-            min={-1} 
-            max={1} 
-            step={0.001} 
-            value={imag[i]}
-            onChange={newValue => setImag(state => {
-              const newState = [...state]
-              newState[i] = newValue
-              return newState
-            })}
+          key={i}
+          min={-1} 
+          max={1} 
+          step={0.001} 
+          value={imag[i]}
+          onChange={newValue => setImag(state => {
+            const newState = [...state]
+            newState[i] = newValue
+            return newState
+          })}
           />)}
       </WaveTable>
     </div> : ''}

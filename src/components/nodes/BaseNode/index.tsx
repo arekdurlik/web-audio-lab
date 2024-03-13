@@ -1,6 +1,5 @@
 import { useEffect, useState, FC, MouseEvent } from 'react'
-import { Delete, Expand, HoverOptions, LeftOptions, NodeContainer, NodeTitle, Parameters, Rotate } from './styled'
-import { IoChevronDownSharp, IoChevronUpSharp } from 'react-icons/io5'
+import { Expand, HoverOptions, LeftOptions, NodeContainer, NodeTitle, Parameters } from './styled'
 import { getEdgeIndex, positions } from '../utils'
 import { useReactFlow, useUpdateNodeInternals } from 'reactflow'
 import { NodeProps } from './types'

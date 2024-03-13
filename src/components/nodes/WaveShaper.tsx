@@ -1,24 +1,21 @@
 import { WaveShaperProps, WaveShaperType } from './types'
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
-import { useReactFlow } from 'reactflow'
-import styled from 'styled-components'
-import { Select } from '../inputs/styled'
-import { NumberInput } from '../inputs/NumberInput'
-import { RangeInput } from '../inputs/RangeInput'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 import { TextInput } from '../inputs/TextInput'
+import { SelectInput } from '../inputs/SelectInput'
 
+// (1 + 20) * x * 50 * (Math.PI / 180) / (Math.PI + 20 / Math.cos(x * 7.5))
 export function WaveShaper({ id, data }: WaveShaperProps) {
   const [type, setType] = useState(data.type ?? 'array')
   const [array, setArray] = useState(data.array ?? '-1,0,1')
   const [equation, setEquation] = useState(data.equation ?? '(3 + 20) * x * 57 * (Math.PI / 180) / (Math.PI + 20 * Math.abs(x))')
-  const [oversample, setOversample] = useState<OverSampleType>(data.oversample ?? 'none')
+  const [oversample, setOversample] = useState(data.oversample ?? 'none')
   const [arrayError, setArrayError] = useState(false)
   const [equationError, setEquationError] = useState(false)
 
@@ -108,32 +105,24 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
   const Parameters = <FlexContainer 
     direction='column' 
     gap={8}
-  >
-      <div>
-        Oversample:
-        <Parameter>
-        <Select 
-          value={oversample}
-          onChange={e => setOversample(e.target.value as OverSampleType)} 
-        >
-          <option value='none'>None</option>
-          <option value='2x'>2x</option>
-          <option value='4x'>4x</option>
-        </Select>
-        </Parameter>
-      </div>
-      <div>
-        Type:
-        <Parameter>
-        <Select 
-          value={type}
-          onChange={e => setType(e.target.value as WaveShaperType)} 
-        >
-          <option value='array'>Array</option>
-          <option value='equation'>Equation</option>
-        </Select>
-        </Parameter>
-      </div>
+  > 
+    <SelectInput
+      label='Oversample:'
+      value={oversample}
+      onChange={e => setOversample(e.target.value as OverSampleType)}
+    >
+      <option value='none'>None</option>
+      <option value='2x'>2x</option>
+      <option value='4x'>4x</option>
+    </SelectInput>
+    <SelectInput
+      label='Type:'
+      value={type}
+      onChange={e => setType(e.target.value as WaveShaperType)} 
+    >
+      <option value='array'>Array</option>
+      <option value='equation'>Equation</option>
+    </SelectInput>
     <div>
       {type === 'array' ? <>
         Array:
@@ -184,13 +173,3 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
     />
   )
 }
-
-const EquationInput = styled.input<{ error: boolean}>`
-min-width: 400px;
-border: 1px solid #000;
-border-radius: 0;
-margin-top: 5px;
-outline: none;
-
-${({ error }) => error && 'border-color: red;'}
-`

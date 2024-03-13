@@ -1,16 +1,15 @@
-import { BiquadFilterParam, BiquadFilterProps, NodeProps } from './types'
+import { BiquadFilterParam, BiquadFilterProps } from './types'
 import { useRef, ChangeEvent, useEffect, useState } from 'react'
-import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
 import { RangeInput } from '../inputs/RangeInput'
-import { NumberInput } from '../inputs/NumberInput'
 import { FlexContainer } from '../../styled'
-import { Select } from '../inputs/styled'
-import { LogRangeInput } from '../inputs/LogRangeInput'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
+import { SelectInput } from '../inputs/SelectInput'
+
+const NUMBER_INPUT_WIDTH = 52
 
 export function BiquadFilter({ id, data }: BiquadFilterProps) {
   const [frequency, setFrequency] = useState(data.frequency ?? 8000)
@@ -112,11 +111,6 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
     instance.current.type = type
   }
 
-  function handleLogParam(param: 'frequency' | 'Q', newValues: { position: number, value: number }) {
-    param === 'Q' ? setQ(newValues.value) : setFrequency(newValues.value)
-    setInstanceParam(param, newValues.value)
-  }
-
   function handleParam(param: BiquadFilterParam, value: number) {
     switch (param) {
       case 'frequency': setFrequency(value); break
@@ -135,90 +129,56 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
   }
 
   const Parameters = <FlexContainer direction='column' gap={8}>
-    <div>
-      Type:
-      <Parameter>
-        <Select onChange={handleType} value={type}>
-          <option value='lowpass'>Low pass</option>
-          <option value='highpass'>High pass</option>
-          <option value='allpass'>All pass</option>
-          <option value='bandpass'>Band pass</option>
-          <option value='lowshelf'>Low shelf</option>
-          <option value='highshelf'>High shelf</option>
-          <option value='peaking'>Peaking</option>
-          <option value='notch'>Notch</option>
-        </Select>
-      </Parameter>
-    </div>
-    <div>
-      Frequency:
-      <Parameter>
-        <LogRangeInput
-          maxval={22000}
-          onChange={(newValues) => handleLogParam('frequency', newValues)} 
-          value={frequency}
-          />
-        <NumberInput 
-          max={22000}
-          onChange={value => handleParam('frequency', value)} 
-          unit='Hz'
-          width={72}
-          value={frequency}
-        />
-      </Parameter>
-    </div>
-    <div>
-      Detune:
-      <Parameter>
-        <RangeInput
-          min={-100}
-          max={100}
-          onChange={value => handleParam('detune', value)} 
-          value={detune}
-          />
-        <NumberInput 
-          min={-100}
-          max={100}
-          onChange={value => handleParam('detune', value)} 
-          value={detune}
-          unit='cents'
-        />
-      </Parameter>
-    </div>
-    <div>
-      Q:
-      <Parameter>
-        <LogRangeInput
-          disabled={['lowshelf', 'highshelf'].includes(type)}
-          maxval={1000}
-          onChange={(newValues) => handleLogParam('Q', newValues)} 
-          value={Q}
-        />
-        <NumberInput 
-          disabled={['lowshelf', 'highshelf'].includes(type)}
-          onChange={value => handleParam('Q', value)} 
-          value={Q}
-        />
-      </Parameter>
-    </div>
-    <div>
-      Gain:
-      <Parameter>
-        <RangeInput
-          disabled={['lowpass', 'highpass', 'bandpass', 'notch', 'allpass'].includes(type)}
-          onChange={value => handleParam('gain', value)} 
-          value={gain}
-          />
-        <NumberInput 
-          disabled={['lowpass', 'highpass', 'bandpass', 'notch', 'allpass'].includes(type)}
-          onChange={value => handleParam('gain', value)} 
-          value={gain}
-          min={-40}
-          max={40}
-          unit='dB'
-        />
-      </Parameter>
-    </div>
+    <SelectInput
+      label='Type:'
+      value={type}
+      onChange={handleType}
+    >
+      <option value='lowpass'>Low pass</option>
+      <option value='highpass'>High pass</option>
+      <option value='allpass'>All pass</option>
+      <option value='bandpass'>Band pass</option>
+      <option value='lowshelf'>Low shelf</option>
+      <option value='highshelf'>High shelf</option>
+      <option value='peaking'>Peaking</option>
+      <option value='notch'>Notch</option>
+    </SelectInput>
+    <RangeInput
+      logarithmic
+      label='Frequency (Hz):'
+      value={frequency}
+      max={22000}
+      onChange={value => handleParam('frequency', value)}
+      numberInput
+      numberInputWidth={NUMBER_INPUT_WIDTH}
+    />
+    <RangeInput
+      label='Detune (cents):'
+      value={detune}
+      min={-100}
+      max={100}
+      onChange={value => handleParam('detune', value)} 
+      numberInput
+      numberInputWidth={NUMBER_INPUT_WIDTH}
+    />
+    <RangeInput
+      label='Quality:'
+      value={Q}
+      max={1000}
+      onChange={value => handleParam('Q', value)} 
+      numberInput
+      numberInputWidth={NUMBER_INPUT_WIDTH}
+      disabled={['lowshelf', 'highshelf'].includes(type)}
+    />
+    <RangeInput
+      label='Gain (dB):'
+      value={gain}
+      max={100}
+      onChange={value => handleParam('gain', value)} 
+      numberInput
+      numberInputWidth={NUMBER_INPUT_WIDTH}
+      disabled={['lowpass', 'highpass', 'bandpass', 'notch', 'allpass'].includes(type)}
+    />
   </FlexContainer>
 
   return (

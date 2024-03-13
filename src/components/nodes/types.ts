@@ -10,6 +10,9 @@ export type GainProps = NodeProps & {
     gain?: number
     min?: number
     max?: number
+    ramp?: number
+    rampMin?: number
+    rampMax?: number
   }
 }
 
@@ -39,6 +42,11 @@ export type StereoPannerProps = NodeProps & {
 export type DelayProps = NodeProps & {
   data: {
     time?: number
+    min?: number
+    max?: number
+    ramp?: number
+    rampMin?: number
+    rampMax?: number
   }
 }
 

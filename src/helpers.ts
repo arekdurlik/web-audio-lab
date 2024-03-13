@@ -37,6 +37,14 @@ export function degToRad(value: number) {
   return value * (Math.PI/180)
 }
 
+export function countDecimals(value: string) {
+  if (value.indexOf(".") !== -1) {
+      return value.split(".")[1].length || 0
+  } else {
+    return 0
+  }
+}
+
 export function convertFloatArrayToUint8(floatArray: Float32Array, inputRange: [number, number], outputRange = [0, 255]) {
   const uintArray = new Uint8Array(floatArray.length)
 

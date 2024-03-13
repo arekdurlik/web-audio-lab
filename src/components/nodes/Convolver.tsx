@@ -1,5 +1,4 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import { Parameter, ParameterName } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
@@ -7,20 +6,19 @@ import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
 import { NumberInput } from '../inputs/NumberInput'
 import { generateReverb } from '../../audio/generateReverb'
-import { Select } from '../inputs/styled'
 import { ConvolverProps, ConvolverType } from './types'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
-
-type Param = 'fade-in-time' | 'decay-time' | 'lp-freq-start' | 'lp-freq-end'
+import { SelectInput } from '../inputs/SelectInput'
+import { CheckboxInput } from '../inputs/CheckboxInput'
 
 export function Convolver({ id, data }: ConvolverProps) {
   const [type, setType] = useState<ConvolverType>(data.type ?? 'file')
   const [source, setSource] = useState(data.source ?? 'fender-twin.wav')
   const [sourceBuffer, setSourceBuffer] = useState<AudioBuffer | null>(null)
-  const [fadeInTime, setFadeInTime] = useState<string | number>(data.fadeInTime ?? 0.1)
-  const [decayTime, setDecayTime] = useState<string | number>(data.decayTime ?? 5)
-  const [lpFreqStart, setLpFreqStart] = useState<string | number>(data.lpFreqStart ?? 7000)
-  const [lpFreqEnd, setLpFreqEnd] = useState<string | number>(data.lpFreqEnd ?? 1500)
+  const [fadeInTime, setFadeInTime] = useState(data.fadeInTime ?? 0.1)
+  const [decayTime, setDecayTime] = useState(data.decayTime ?? 5)
+  const [lpFreqStart, setLpFreqStart] = useState(data.lpFreqStart ?? 7000)
+  const [lpFreqEnd, setLpFreqEnd] = useState(data.lpFreqEnd ?? 1500)
   const [reverse, setReverse] = useState(data.reverse ?? false)
   const audioId = `${id}-audio`
   const instance = useRef(new ConvolverNode(audio.context))
@@ -108,111 +106,68 @@ export function Convolver({ id, data }: ConvolverProps) {
     }
   }
 
-  function handleParam(param: Param, value: number) {
-    switch (param) {
-      case 'fade-in-time': setFadeInTime(value); break
-      case 'decay-time': setDecayTime(value); break
-      case 'lp-freq-start': setLpFreqStart(value); break
-      case 'lp-freq-end': setLpFreqEnd(value); break
-    }
-  }
-
   async function handleSource(event: ChangeEvent<HTMLSelectElement>) {
     setSource( event.target.value)
   }
 
-  const Parameters = <FlexContainer 
-    direction='column' 
-    gap={8}
-  >
-    <div>
-      Type:
-      <Parameter>
-        <Select 
-          value={type}
-          onChange={(e) => setType(e.target.value as ConvolverType)} 
-        >
-          <option value='file'>File</option>
-          <option value='generate'>Generate</option>
-        </Select>
-      </Parameter>
-    </div>
-    {type === 'file' ? <div>
-      Source:
-      <Parameter>
-        <Select 
+  const Parameters = 
+    <FlexContainer direction='column' gap={8}>
+      <SelectInput
+        label='Type:'
+        value={type}
+        onChange={(e) => setType(e.target.value as ConvolverType)}
+      >
+        <option value='file'>File</option>
+        <option value='generate'>Generate</option>
+      </SelectInput>
+      {type === 'file' ? <SelectInput
+          label='Source:'
           value={source}
-          onChange={handleSource} 
+          onChange={handleSource}
         >
           {responses.map((res, i) => <option key={i} value={res}>{res}</option>)}
-        </Select>
-      </Parameter>
-    </div>
-    : <>
-      <div>
-        <ParameterName>Fade in time:</ParameterName>
-        <Parameter>
-          <NumberInput 
-            max={22000}
-            onChange={value => handleParam('fade-in-time', value)} 
-            unit='s'
-            width={72}
-            value={fadeInTime}
-          />
-        </Parameter>
-      </div>
-      <div>
-        <ParameterName>Decay time:</ParameterName>
-        <Parameter>
-
-          <NumberInput 
-            max={22000}
-            onChange={value => handleParam('decay-time', value)} 
-            unit='s'
-            width={72}
-            value={decayTime}
-          />
-        </Parameter>
-      </div>
-
-      <div>
-        <ParameterName>Start lowpass filter:</ParameterName>
-        <Parameter>
-
-          <NumberInput 
-            max={22000}
-            onChange={value => handleParam('lp-freq-start', value)} 
-            unit='Hz'
-            width={72}
-            value={lpFreqStart}
-          />
-        </Parameter>
-      </div>
-
-      <div>
-        <ParameterName>End lowpass filter:</ParameterName>
-        <Parameter>
-
-          <NumberInput 
-            max={22000}
-            onChange={value => handleParam('lp-freq-end', value)} 
-            unit='Hz'
-            width={72}
-            value={lpFreqEnd}
-          />
-        </Parameter>
-      </div>
-
-      <div>
-        Reverse:
-        <input 
-          type='checkbox' 
-          checked={reverse} 
+        </SelectInput>
+      : <>
+        <NumberInput
+          label='Fade in time:' 
+          max={22000}
+          onChange={setFadeInTime} 
+          unit='s'
+          width={72}
+          value={fadeInTime}
+        />
+        <NumberInput
+          label='Decay time:'
+          max={22000}
+          onChange={setDecayTime} 
+          unit='s'
+          width={72}
+          value={decayTime}
+        />
+        <NumberInput 
+          label='Start lowpass filter:'
+          max={22000}
+          onChange={setLpFreqStart} 
+          unit='Hz'
+          width={72}
+          value={lpFreqStart}
+        />
+        <NumberInput 
+          label='End lowpass filter:'
+          max={22000}
+          onChange={setLpFreqEnd} 
+          unit='Hz'
+          width={72}
+          value={lpFreqEnd}
+        />
+        <CheckboxInput 
+          id={`${id}-reverse`}
+          label='Reverse' 
+          value={reverse} 
           onChange={() => setReverse(!reverse)}
         />
-      </div>
-    </>}
-  </FlexContainer>
+      </>}
+    </FlexContainer>
 
   return (
     <Node 

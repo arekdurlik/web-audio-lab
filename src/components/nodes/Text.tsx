@@ -2,8 +2,10 @@ import { NoteProps } from './types'
 import { useRef, useEffect, useState } from 'react'
 import { useOutsideClick } from '../../hooks/useOutsideClick'
 import styled from 'styled-components'
-import { Delete } from './BaseNode/styled'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
+import nodeDelete from '/svg/node_delete.svg'
+import resizer from '/svg/resizer.svg'
+import SVG from 'react-inlinesvg'
 
 export function Text({ id, data }: NoteProps) {
   const [active, setActive] = useState(false)
@@ -32,10 +34,7 @@ export function Text({ id, data }: NoteProps) {
       ref={activator}
     >
       <Container>
-        {active && <DeleteWrapper>
- 
-          <Delete onClick={deleteNode}/>
-        </DeleteWrapper>}
+        {active && <Delete src={nodeDelete} onClick={deleteNode}/>}
         <Textarea 
           placeholder='Type here...'
           ref={textarea}
@@ -45,36 +44,61 @@ export function Text({ id, data }: NoteProps) {
           onChange={e => setContent(e.target.value)}
           value={content}
         />
+        <Resizer src={resizer}/>
       </Container>
     </div>
   )
 }
 
-const DeleteWrapper = styled.div`
+const Delete = styled(SVG)`
+width: 8px;
+height: 8px;
 position: absolute;
 right: 0;
-padding: 5px;
-font-size: 11px;
+margin: 4px;
 `
-const Container = styled.div`
-min-width: 30px;
-min-height: 30px;
 
-&:hover {
-  box-shadow: inset 0px 0px 0px 1px #000;
-}
+const Resizer = styled(SVG)`
+width: 6px;
+height: 6px;
+position: absolute;
+right: 16px;
+bottom: 0px;
+opacity: 0;
+pointer-events: none;
 `
 
 const Textarea = styled.textarea`
-margin: 5px; 
-margin-right: 20px;
+margin-right: 16px;
+margin-bottom: -2px;
 background: none;
 border: none;
 outline: none;
 font-size: 11px;
 resize: none;
+min-height: 33px;
 
-&:hover, &:active {
-  resize: both;
+::-webkit-resizer {
+  display: none;
 }
 `
+
+const Container = styled.div`
+
+&:hover {
+  box-shadow: inset 0px 0px 0px 1px #000;
+  background-color: #fff;
+
+  ${Resizer} {
+    opacity: 1;
+  }
+
+  ${Textarea} {
+    box-shadow: inset 0px 0px 0px 1px #000;
+    resize: both;
+  }
+}
+`
+
+
+
