@@ -13,9 +13,10 @@ type NumberInputProps = {
   width?: number
   disabled?: boolean
   unit?: string
+  margin?: boolean
 }
 
-export function NumberInput({ label, value = 0, min = -Infinity, max = Infinity, step = 0.01, width = 38, disabled, onChange }: NumberInputProps) {
+export function NumberInput({ label, value = 0, min = -Infinity, max = Infinity, step = 0.01, width = 38, disabled, margin = false, onChange }: NumberInputProps) {
   const [internalValue, setInternalValue] = useState(value.toString())
   const ref = useRef<HTMLInputElement | null>(null)
 
@@ -91,7 +92,7 @@ export function NumberInput({ label, value = 0, min = -Infinity, max = Infinity,
   }
 
   return (
-    <Wrapper>
+    <Wrapper $margin={margin}>
       {label && <span>{label}</span>}
       <Input 
         ref={ref}
@@ -111,11 +112,15 @@ export function NumberInput({ label, value = 0, min = -Infinity, max = Infinity,
   )
 }
 
-const Wrapper = styled.div`
+const Wrapper = styled.div<{ $margin: boolean }>`
 display: flex;
 gap: 5px;
 align-items: center;
 justify-content: space-between;
+margin: 0;
+${({ $margin }) => $margin && `
+margin: 2px 5px;
+`}
 `
 
 const Input = styled.input<{ width?: number }>`

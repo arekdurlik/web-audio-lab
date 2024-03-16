@@ -1,4 +1,6 @@
 import styled from 'styled-components'
+import { FlexContainer } from '../../styled'
+import SVG from 'react-inlinesvg'
 
 export const InputWrapper = styled.div`
 flex-direction: column;
@@ -8,7 +10,9 @@ justify-content: space-between;
 
 export const InputLabel = styled.span`
 display: block;
-margin-bottom: 1px;
+margin-left: 2px;
+margin-right: 2px;
+padding: 2px;
 `
 
 export const ParamInput = styled.input`
@@ -55,4 +59,38 @@ transition: opacity .2s;
   background: #000;
   cursor: pointer;
 }
+`
+
+export const ExpandableInputLabel = styled(InputLabel)<{ $expanded?: boolean}>`
+padding-left: 2px;
+padding-right: 2px;
+display: flex;
+justify-content: space-between;
+${({ $expanded }) => $expanded !== undefined && `
+&:hover {
+  background-color: lightgray;
+  cursor: pointer;
+}
+`}
+`
+export const ExpandableInputWrapper = styled(InputWrapper)`
+flex: 1;
+`
+export const ExpandableInputContainer = styled(FlexContainer)`
+margin: 0 5px;
+margin-bottom: 4px;
+`
+export const Triangle = styled(SVG)<{ $expanded?: boolean }>`
+width: 7px;
+margin-left: 2px;
+margin-right: 2px;
+rotate: 180deg;
+
+${({ $expanded }) => $expanded && 'rotate: 0deg;' }
+`
+
+export const ExpandableInputContent = styled.div<{ $expanded?: boolean }>`
+${({ $expanded }) => !$expanded && `
+height: 0;
+overflow: hidden;`}
 `

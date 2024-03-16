@@ -128,19 +128,19 @@ ${({ position, type }) => type === 'target'
     switch(position) {
       case Position.Left: return `
         top: -5px;
-        left: -5px;
+        left: -5.5px;
       `
       case Position.Right: return `
-        left: -3px;
+        left: -2.5px;
         top: -5px;
       `
       case Position.Bottom: return `
       left: -4px;
-      top: -3px;
+      top: -3.5px;
       `
       case Position.Top: return `
         left: -4px;
-        top: -5px;
+        top: -6.5px;
       `
     }
   }}

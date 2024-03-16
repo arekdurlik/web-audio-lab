@@ -1,7 +1,7 @@
 /* Color */
 export const surface = '#c0c0c0'
 const button_highlight = '#ffffff'
-const button_face = '#dfdfdf'
+export const button_face = '#dfdfdf'
 const button_shadow = '#808080'
 const window_frame = '#0a0a0a'
 const dialog_blue = '#000080'

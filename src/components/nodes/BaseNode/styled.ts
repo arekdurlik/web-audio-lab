@@ -1,8 +1,10 @@
 import { GiClockwiseRotation } from 'react-icons/gi'
 import { RiDeleteBin2Line } from 'react-icons/ri'
 import styled from 'styled-components'
-import { LineHandle, StyledLineHandle } from '../../handles/LineHandle'
+import { StyledLineHandle } from '../../handles/LineHandle'
 import { outsetBorder, surface } from '../../../98'
+import { ExpandableInputWrapper, InputLabel } from '../../inputs/styled'
+import { CheckboxInput, CheckboxWrapper } from '../../inputs/CheckboxInput'
 
 export const NodeTitle = styled.span<{ rotation?: 0 | 1 | 2 | 3 }>`
   font-size: 11px;
@@ -78,13 +80,12 @@ export const NodeContainer = styled.div<{ width?: number, height?: number, rotat
 export const Parameters = styled.div<{ 
   rotation?: 0 | 1 | 2 | 3, 
   positions?: ('left' | 'top' | 'right' | 'bottom')[] 
-  offset?: number
+  offset?: number 
 }>
 `
 ${outsetBorder}
 font-size: 11px;
 background-color: ${surface};
-padding: 5px;
 width: max-content;
 
 ${({ rotation = 0, positions = ['bottom', 'right', 'bottom', 'right'], offset = 0 }) => {
@@ -107,6 +108,18 @@ ${({ rotation = 0, positions = ['bottom', 'right', 'bottom', 'right'], offset = 
       right: 100%;`
 }
 }}
+
+${ExpandableInputWrapper}:first-child > ${InputLabel} {
+  margin-top: 2px;
+}
+
+${ExpandableInputWrapper}:last-child > ${InputLabel} {
+  margin-bottom: 2px;
+}
+
+${CheckboxWrapper}:last-child {
+  margin-bottom: 5px;
+}
 `
 
 export const Parameter = styled.div`
@@ -157,4 +170,12 @@ ${({ color }) => color && `color: ${color};`}
 svg {
   font-size: 11px;
 }
+`
+
+export const Hr = styled.div`
+position: relative;
+left: 1px;
+width: calc(100% - 2px);
+height: 2px;
+box-shadow: inset -1px -1px #ffffff, inset 1px 1px #808080;
 `

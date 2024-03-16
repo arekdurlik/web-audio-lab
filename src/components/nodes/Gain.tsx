@@ -4,18 +4,23 @@ import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
-import { FlexContainer, Hr } from '../../styled'
+import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
+import { Hr } from './BaseNode/styled'
 
 export function Gain({ id, data }: GainProps) {
   const [gain, setGain] = useState(data.gain ?? 1)
-  const [min, setMin] = useState<number>(data.min ?? -2)
-  const [max, setMax] = useState<number>(data.max ?? 2)
+  const [min, setMin] = useState(data.min ?? 0)
+  const [max, setMax] = useState(data.max ?? 2)
 
   const [ramp, setRamp] = useState(data.ramp ?? 0.04)
-  const [rampMin, setRampMin] = useState<number>(data.rampMin ?? 0)
-  const [rampMax, setRampMax] = useState<number>(data.rampMax ?? 2)
+  const [rampMin, setRampMin] = useState(data.rampMin ?? 0)
+  const [rampMax, setRampMax] = useState(data.rampMax ?? 2)
+
+  const [expanded, setExpanded] = useState(data.expanded ?? {
+    g: true, r: false
+  })
 
   const audioId = `${id}-audio`
   const controlVoltageId = `${id}-cv`
@@ -58,8 +63,8 @@ export function Gain({ id, data }: GainProps) {
     })
     if (invalid) return
 
-    updateNode({ gain, min, max })
-  }, [gain, max, min])
+    updateNode({ gain, min, max, expanded })
+  }, [gain, max, min, expanded])
 
   useEffect(() => {
     if (gain === undefined || Number.isNaN(gain)) return
@@ -69,7 +74,7 @@ export function Gain({ id, data }: GainProps) {
   }, [gain])
 
   const Parameters = 
-    <FlexContainer direction='column' gap={8}>
+    <FlexContainer direction='column'>
       <RangeInput
         label='Gain (dB):'
         value={gain}
@@ -82,8 +87,10 @@ export function Gain({ id, data }: GainProps) {
         adjustableBounds
         onMinChange={setMin}
         onMaxChange={setMax}
+        expanded={expanded.g}
+        onExpandChange={value => setExpanded(state => ({ ...state, g: value }))}
       />
-
+      <Hr/>
       <RangeInput
         label='Ramp (s):'
         value={ramp}
@@ -95,6 +102,8 @@ export function Gain({ id, data }: GainProps) {
         adjustableBounds
         onMinChange={setRampMin}
         onMaxChange={setRampMax}
+        expanded={expanded.r}
+        onExpandChange={value => setExpanded(state => ({ ...state, r: value }))}
       />
     </FlexContainer>
 

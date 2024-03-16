@@ -7,12 +7,23 @@ import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
 import { useReactFlow } from 'reactflow'
+import { PlayButton } from './styled'
+import { Hr } from './BaseNode/styled'
 
 export function ConstantSource({ id, data }: ConstantSourceProps) {
   const [playing, setPlaying] = useState(data.playing ?? false)
   const [offset, setOffset] = useState(data.offset ?? 0)
   const [min, setMin] = useState(data.min ?? 0)
   const [max, setMax] = useState(data.max ?? 1)
+
+  const [ramp, setRamp] = useState(data.ramp ?? 0.04)
+  const [rampMin, setRampMin] = useState(data.rampMin ?? 0)
+  const [rampMax, setRampMax] = useState(data.rampMax ?? 2)
+
+  const [expanded, setExpanded] = useState(data.expanded ?? {
+    o: true, r: false
+  })
+
   const signalId = `${id}-signal`
   const offsetId = `${id}-offset`
   const instance = useRef(new ConstantSourceNode(audio.context, { offset: offset }))
@@ -61,8 +72,9 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
   useEffect(() => {
     if (offset === undefined || Number.isNaN(offset)) return
     
+    instance.current.offset.cancelScheduledValues(audio.context.currentTime)
     instance.current.offset.setValueAtTime(instance.current.offset.value, audio.context.currentTime)
-    instance.current.offset.linearRampToValueAtTime(offset, audio.context.currentTime + 0.03)
+    instance.current.offset.linearRampToValueAtTime(offset, audio.context.currentTime + ramp)
   }, [offset])
   
   useEffect(() => {
@@ -78,10 +90,11 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
     }
   }, [playing])
 
-  const Parameters = <FlexContainer direction='column' gap={8}>
-    <FlexContainer gap={8}>
-      <button onClick={playing ? () => setPlaying(false) : () => setPlaying(true)}>{playing ? 'Stop' : 'Start'}</button>
+  const Parameters = <FlexContainer direction='column'>
+    <FlexContainer>
+      <PlayButton onClick={playing ? () => setPlaying(false) : () => setPlaying(true)}>{playing ? 'Stop' : 'Start'}</PlayButton>
     </FlexContainer>
+    <Hr/>
     <RangeInput
       label='Offset:'
       value={offset}
@@ -92,6 +105,22 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
       adjustableBounds
       onMinChange={setMin}
       onMaxChange={setMax}
+      expanded={expanded.o}
+      onExpandChange={value => setExpanded(state => ({ ...state, o: value }))}
+    />
+    <Hr/>
+    <RangeInput
+      label='Ramp:'
+      value={ramp}
+      min={rampMin}
+      max={rampMax}
+      onChange={setRamp}
+      numberInput
+      adjustableBounds
+      onMinChange={setRampMin}
+      onMaxChange={setRampMax}
+      expanded={expanded.r}
+      onExpandChange={value => setExpanded(state => ({ ...state, r: value }))}
     />
   </FlexContainer>
 

@@ -12,15 +12,22 @@ import { RangeInput } from '../inputs/RangeInput'
 import { FlexContainer } from '../../styled'
 import { SelectInput } from '../inputs/SelectInput'
 import { CheckboxInput } from '../inputs/CheckboxInput'
+import { Hr } from './BaseNode/styled'
 
 export function Analyser({ id, data }: AnalyserProps) {
   const [type, setType] = useState(data.type ?? 'oscilloscope')
   const [scale, setScale] = useState(data.scale ?? 1)
-  const scaleRef = useRef(scale)
   const [width, setWidth] = useState(data.width ?? 4)
-  const widthRef = useRef(width)
   const [fitInScreen, setFitInScreen] = useState(data.fitInScreen ?? false)
+
+  const [expanded, setExpanded] = useState(data.expanded ?? {
+    t: true, s: true, w: true
+  })
+
+  const scaleRef = useRef(scale)
+  const widthRef = useRef(width)
   const fitInScreenRef = useRef(fitInScreen)
+
   const audioId = `${id}-audio`
   const [instance] = useState(new AnalyserNode(audio.context, { smoothingTimeConstant: 0, fftSize: 2048 }))
   const [dataArray] = useState(new Float32Array(instance.frequencyBinCount))
@@ -249,7 +256,7 @@ export function Analyser({ id, data }: AnalyserProps) {
     c.fillStyle = '#000000'
     c.fillRect(0, 0, cwidth, cheight)
 
-    c.font = '24px PixelMono'
+    c.font = '11px Pixelated MS Sans Serif'
     c.fillStyle = '#aaa'
     const h = cheight - 3
     switch (widthRef.current) {
@@ -302,25 +309,34 @@ export function Analyser({ id, data }: AnalyserProps) {
     c.fillRect(0, 0, cwidth * invlerp(-30, 4, avgPowerDecibels), cheight - 20)
   }
 
-  const Parameters = <FlexContainer direction='column' gap={8}>
+  const Parameters = <FlexContainer direction='column'>
     <SelectInput
       label='Type:'
       value={type}
-      onChange={e => setType(e.target.value as AnalyserType)} 
-    >
-      <option value='oscilloscope'>Oscilloscope</option>
-      <option value='analyser'>Spectrum analyser</option>
-      <option value='vu-meter'>VU Meter</option>
-    </SelectInput>
-    {type === 'oscilloscope' && <RangeInput
-      label='Scale:'
-      value={scale}
-      onChange={v => { setScale(v); scaleRef.current = v }}
-      min={0}
-      max={10}
-      step={0.01}
-      numberInput
-      />}
+      onChange={e => setType(e.target.value as AnalyserType)}
+      options={[
+        { value: 'oscilloscope', label: 'Oscilloscope' },
+        { value: 'analyser', label: 'Spectrum analyser' },
+        { value: 'vu-meter', label: 'VU Meter' },
+      ]}
+      expanded={expanded.t}
+      onExpandChange={value => setExpanded(state => ({ ...state, t: value }))}
+    />
+    {type === 'oscilloscope' && <>
+      <Hr/>
+      <RangeInput
+        label='Scale:'
+        value={scale}
+        onChange={v => { setScale(v); scaleRef.current = v }}
+        min={0}
+        max={10}
+        step={0.01}
+        numberInput
+        expanded={expanded.s}
+        onExpandChange={value => setExpanded(state => ({ ...state, s: value }))}
+      />
+    </>}
+    <Hr/>
     <RangeInput
       label='Width:'
       value={width}
@@ -329,13 +345,18 @@ export function Analyser({ id, data }: AnalyserProps) {
       max={4}
       step={1}
       numberInput
+      expanded={expanded.w}
+      onExpandChange={value => setExpanded(state => ({ ...state, w: value }))}
     />
-    {type === 'oscilloscope' && <CheckboxInput 
-      id={`${id}-fit`}
-      label='Fit in screen' 
-      value={fitInScreen} 
-      onChange={() => { setFitInScreen(!fitInScreen); fitInScreenRef.current = !fitInScreen }} 
-    />}
+    {type === 'oscilloscope' && <>
+      <Hr/>
+      <CheckboxInput 
+        id={`${id}-fit`}
+        label='Fit in screen' 
+        value={fitInScreen} 
+        onChange={() => { setFitInScreen(!fitInScreen); fitInScreenRef.current = !fitInScreen }} 
+      />
+    </>}
   </FlexContainer>
 
   return (
@@ -347,7 +368,6 @@ export function Analyser({ id, data }: AnalyserProps) {
       parameters={Parameters}
       optionsColor='white'
       constantSize
-      valueFont='PixelMono'
       valueColor={type === 'oscilloscope' ? '#00ffff' : '#ff0000'}
       value={type === 'oscilloscope' ? scale : undefined}
       valueUnit={type === 'oscilloscope' ? 'x' : undefined}

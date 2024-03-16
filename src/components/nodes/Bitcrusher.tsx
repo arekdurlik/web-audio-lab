@@ -7,10 +7,16 @@ import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
 import { BitcrusherProps } from './types'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
+import { Hr } from './BaseNode/styled'
 
 export function Bitcrusher({ id, data }: BitcrusherProps) {
   const [bitDepth, setBitDepth] = useState(data.bitDepth ?? 16)
   const [sampleRateReduction, setSampleRateReduction] = useState(data.sampleRateReduction ?? 1)
+
+  const [expanded, setExpanded] = useState(data.expanded ?? {
+    g: true, r: false
+  })
+  
   const audioId = `${id}-audio`
   const instance = useRef(new AudioWorkletNode(audio.context, 'bit-crusher-processor'))
   const setInstance = useNodeStore(state => state.setInstance)
@@ -49,7 +55,7 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
   }, [bitDepth, sampleRateReduction])
 
   const Parameters = 
-    <FlexContainer direction='column' gap={8}>
+    <FlexContainer direction='column'>
       <RangeInput
         label='Bit depth:'
         value={bitDepth}
@@ -58,7 +64,10 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
         step={1}
         onChange={setBitDepth}
         numberInput
+        expanded={expanded.b}
+        onExpandChange={value => setExpanded(state => ({ ...state, b: value }))}
       />
+      <Hr/>
       <RangeInput
         label='Sample rate reduction:'
         value={sampleRateReduction}
@@ -67,6 +76,8 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
         step={1}
         onChange={setSampleRateReduction}
         numberInput
+        expanded={expanded.s}
+        onExpandChange={value => setExpanded(state => ({ ...state, s: value }))}
       />
     </FlexContainer>
 

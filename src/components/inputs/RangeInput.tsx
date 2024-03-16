@@ -1,10 +1,12 @@
-import { useEffect, ChangeEvent, MouseEvent, KeyboardEvent, CSSProperties, useState } from 'react'
+import { useEffect, ChangeEvent, CSSProperties, useState } from 'react'
 import styled from 'styled-components'
 import { clamp, countDecimals } from '../../helpers'
-import { InputLabel, InputWrapper } from './styled'
+import { ExpandableInputContainer, ExpandableInputContent, ExpandableInputLabel, ExpandableInputWrapper, InputLabel, InputWrapper, Triangle } from './styled'
 import { NumberInput } from './NumberInput'
 import { FlexContainer } from '../../styled'
 import Log from './log'
+import SVG from 'react-inlinesvg'
+import triangle from '/svg/triangle.svg'
 
 type RangeInputProps = {
   value: number
@@ -17,13 +19,15 @@ type RangeInputProps = {
   max?: number
   step?: number
   disabled?: boolean
+  expanded?: boolean
+  onExpandChange?: (value: boolean) => void
   style?: CSSProperties
   logarithmic?: boolean
   adjustableBounds?: boolean
   numberInput?: boolean
   numberInputWidth?: number
 }
-export function RangeInput({ value, min = 0, max = 100, label, disabled, step = 0.01, numberInput, numberInputWidth, adjustableBounds, logarithmic, onChange, onMinChange, onMaxChange, style }: RangeInputProps) {
+export function RangeInput({ value, min = 0, max = 100, label, disabled, expanded = true, onExpandChange, step = 0.01, numberInput, numberInputWidth, adjustableBounds, logarithmic, onChange, onMinChange, onMaxChange, style }: RangeInputProps) {
   const [internalValue, setInternalValue] = useState(value)
   const log = new Log({ minval: Math.max(1, min), maxval: max })
 
@@ -47,9 +51,6 @@ export function RangeInput({ value, min = 0, max = 100, label, disabled, step = 
   }
 
   function calculateValue(pos: number) {
-    if (pos === 0) return 0
-    if (pos === 1) return 1
-
     const decimals = countDecimals(step.toString())
     const value = log.value(pos).toFixed(decimals)
     return Number(value)
@@ -70,56 +71,58 @@ export function RangeInput({ value, min = 0, max = 100, label, disabled, step = 
     }
   }
 
-  return <RangeInputWrapper>
-      {label && <InputLabel>{label}</InputLabel>}
-      <FlexContainer gap={4}>
-        <input 
-          type='range' 
-          step={step} 
-          value={internalValue}
-          min={logarithmic ? 0 : min}
-          max={logarithmic ? 100 : max}
-          disabled={disabled}
-          onChange={handleChange} 
-          onMouseDownCapture={(e) => e.stopPropagation()}
-          onPointerDownCapture={(e) => e.stopPropagation()}
-          style={style}
-        />
-        {numberInput && <NumberInput 
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          disabled={disabled}
-          onChange={handleNumberChange} 
-          width={numberInputWidth}
-        />}
-      </FlexContainer>
-      {adjustableBounds && <FlexContainer
-        justify='flex-end'
-        gap={8}
-        style={{ marginTop: 8 }}
-    >
-      <FlexContainer gap={2} align='center'>
-        min:
-        <NumberInput 
-          width={50}
-          onChange={onMinChange} 
-          value={min}
-        />
-      </FlexContainer>
-      <FlexContainer gap={2} align='center'>
-        max:
-        <NumberInput 
-          width={50}
-          onChange={onMaxChange}
-          value={max}
-        />
-      </FlexContainer>
-    </FlexContainer>}
-    </RangeInputWrapper>
+  return <ExpandableInputWrapper>
+      {label && <ExpandableInputLabel $expanded={expanded} onClick={() => typeof onExpandChange === 'function' && onExpandChange(!expanded)}>
+        <span>{label}{!expanded && ' ' + value}</span>
+        <Triangle $expanded={expanded} src={triangle}/>
+      </ExpandableInputLabel>}
+      <ExpandableInputContent $expanded={expanded}>
+        <ExpandableInputContainer gap={4}>
+          <input 
+            type='range' 
+            step={step} 
+            value={internalValue}
+            min={logarithmic ? 0 : min}
+            max={logarithmic ? 100 : max}
+            disabled={disabled}
+            onChange={handleChange} 
+            onMouseDownCapture={(e) => e.stopPropagation()}
+            onPointerDownCapture={(e) => e.stopPropagation()}
+            style={style}
+          />
+          {numberInput && <NumberInput 
+            min={min}
+            max={max}
+            step={step}
+            value={value}
+            disabled={disabled}
+            onChange={handleNumberChange} 
+            width={numberInputWidth}
+          />}
+        </ExpandableInputContainer>
+        {adjustableBounds && <ExpandableInputContainer
+          justify='flex-end'
+          gap={8}
+          style={{ marginTop: 8 }}
+        >
+          <FlexContainer gap={2} align='center'>
+            min:
+            <NumberInput 
+              width={50}
+              onChange={onMinChange} 
+              value={min}
+            />
+          </FlexContainer>
+          <FlexContainer gap={2} align='center'>
+            max:
+            <NumberInput 
+              width={50}
+              onChange={onMaxChange}
+              value={max}
+            />
+          </FlexContainer>
+        </ExpandableInputContainer>}
+      </ExpandableInputContent>
+    </ExpandableInputWrapper>
 }
 
-const RangeInputWrapper = styled(InputWrapper)`
-flex: 1;
-`

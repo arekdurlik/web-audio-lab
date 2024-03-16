@@ -1,6 +1,6 @@
 import { OscillatorProps } from './types'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import { Parameter, ParameterName } from './BaseNode/styled'
+import { Hr, Parameter, ParameterName } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
@@ -12,6 +12,8 @@ import { Select } from '../inputs/styled'
 import styled from 'styled-components'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 import { SelectInput } from '../inputs/SelectInput'
+import { PlayButton } from './styled'
+import { clamp } from '../../helpers'
 
 const NUMBER_INPUT_WIDTH = 52
 
@@ -23,6 +25,12 @@ export function Oscillator({ id, data }: OscillatorProps) {
   const [customLength, setCustomLength] = useState(2)
   const [real, setReal] = useState<number[]>(data.real ?? [0, 1])
   const [imag, setImag] = useState<number[]>(data.imag ?? [0, 0])
+
+  const [expanded, setExpanded] = useState(data.expanded ?? {
+    t: true, f: true, d: true
+  })
+
+
   const setInstance = useNodeStore(state => state.setInstance)
   const instance = useRef<OscillatorNode | null>()
   const { updateNode } = useUpdateFlowNode(id)
@@ -161,21 +169,28 @@ export function Oscillator({ id, data }: OscillatorProps) {
     instance.current[param].linearRampToValueAtTime(value, audio.context.currentTime + 0.04)
   }
 
-  const Parameters = <FlexContainer direction='column' gap={8}>
-    <FlexContainer gap={8}>
-      <button onClick={playing ? () => setPlaying(false) : () => setPlaying(true)}>{playing ? 'Stop' : 'Start'}</button>
+  const Parameters = <FlexContainer direction='column'>
+    <FlexContainer>
+      <PlayButton onClick={playing ? () => setPlaying(false) : () => setPlaying(true)}>
+        {playing ? 'Stop' : 'Start'}
+      </PlayButton>
     </FlexContainer>
+    <Hr/>
     <SelectInput
       label='Type:'
       value={type}
       onChange={handleType}
-    >
-      <option value='sine'>Sine</option>
-      <option value='square'>Square</option>
-      <option value='sawtooth'>Sawtooth</option>
-      <option value='triangle'>Triangle</option>
-      <option value='custom'>Custom</option>
-    </SelectInput>
+      options={[
+        { value: 'sine', label: 'Sine' },
+        { value: 'square', label: 'Square' },
+        { value: 'sawtooth', label: 'Sawtooth' },
+        { value: 'triangle', label: 'Triangle' },
+        { value: 'custom', label: 'Custom' },
+      ]}
+      expanded={expanded.t}
+      onExpandChange={value => setExpanded(state => ({ ...state, t: value }))}
+    />
+    <Hr/>
     <RangeInput
       logarithmic
       label='Frequency (Hz):'
@@ -184,7 +199,10 @@ export function Oscillator({ id, data }: OscillatorProps) {
       onChange={value => handleParam('frequency', value)}
       numberInput
       numberInputWidth={NUMBER_INPUT_WIDTH}
+      expanded={expanded.f}
+      onExpandChange={value => setExpanded(state => ({ ...state, f: value }))}
     />
+    <Hr/>
     <RangeInput
       label='Detune (cents):'
       value={detune}
@@ -194,18 +212,18 @@ export function Oscillator({ id, data }: OscillatorProps) {
       onChange={value => handleParam('detune', value)} 
       numberInput
       numberInputWidth={NUMBER_INPUT_WIDTH}
+      expanded={expanded.d}
+      onExpandChange={value => setExpanded(state => ({ ...state, d: value }))}
     />
-    {type === 'custom' ? <div>
-      <ParameterName>Length:</ParameterName>
-      <Parameter>
-        <NumberInput 
-          min={2}
-          step={1}
-          onChange={setCustomLength} 
-          value={customLength}
-        />
-      </Parameter>
-      <ParameterName>Real:</ParameterName>
+    {type === 'custom' ? <CustomWrapper>
+      <CustomName>Length:</CustomName>
+      <NumberInput 
+        min={2}
+        step={1}
+        onChange={setCustomLength} 
+        value={customLength}
+      />
+      <CustomName>Real:</CustomName>
       <WaveTable>
         {Array(customLength).fill(0).map((_, i) => 
           <NumberInput 
@@ -216,28 +234,28 @@ export function Oscillator({ id, data }: OscillatorProps) {
             value={real[i]}
             onChange={newValue => setReal(state => {
               const newState = [...state]
-              newState[i] = newValue
+              newState[i] = clamp(newValue, -1, 1)
               return newState
             })}
-            />)}
+          />)}
       </WaveTable>
-      <ParameterName>Imaginary:</ParameterName>
+      <CustomName>Imaginary:</CustomName>
       <WaveTable>
         {Array(customLength).fill(0).map((_, i) => 
           <NumberInput 
-          key={i}
-          min={-1} 
-          max={1} 
-          step={0.001} 
-          value={imag[i]}
-          onChange={newValue => setImag(state => {
-            const newState = [...state]
-            newState[i] = newValue
-            return newState
-          })}
+            key={i}
+            min={-1} 
+            max={1} 
+            step={0.001} 
+            value={imag[i]}
+            onChange={newValue => setImag(state => {
+              const newState = [...state]
+              newState[i] = clamp(newValue, -1, 1)
+              return newState
+            })}
           />)}
       </WaveTable>
-    </div> : ''}
+    </CustomWrapper> : ''}
   </FlexContainer>
 
   return (
@@ -261,9 +279,19 @@ const WaveTable = styled.div`
   }
 
   input { 
-    max-width: 54px;
+    max-width: 100px;
   }
 
 `
 
+const CustomWrapper = styled.div`
+margin-left: 5px;
+margin-right: 5px;
+margin-bottom: 6px;
+`
 
+const CustomName = styled.span`
+display: block;
+padding-top: 2px;
+padding-bottom: 2px;
+`

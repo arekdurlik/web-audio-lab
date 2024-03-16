@@ -1,6 +1,6 @@
 import { WaveShaperProps, WaveShaperType } from './types'
 import { useEffect, useRef, useState } from 'react'
-import { Parameter } from './BaseNode/styled'
+import { Hr, Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
@@ -9,6 +9,7 @@ import { FlexContainer } from '../../styled'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 import { TextInput } from '../inputs/TextInput'
 import { SelectInput } from '../inputs/SelectInput'
+import { PlayButton } from './styled'
 
 // (1 + 20) * x * 50 * (Math.PI / 180) / (Math.PI + 20 / Math.cos(x * 7.5))
 export function WaveShaper({ id, data }: WaveShaperProps) {
@@ -16,9 +17,14 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
   const [array, setArray] = useState(data.array ?? '-1,0,1')
   const [equation, setEquation] = useState(data.equation ?? '(3 + 20) * x * 57 * (Math.PI / 180) / (Math.PI + 20 * Math.abs(x))')
   const [oversample, setOversample] = useState(data.oversample ?? 'none')
+  
+  const [expanded, setExpanded] = useState(data.expanded ?? {
+    o: true, t: true
+  })
+  
+  
   const [arrayError, setArrayError] = useState(false)
   const [equationError, setEquationError] = useState(false)
-
   const audioId = `${id}-audio`
   const instance = useRef(new WaveShaperNode(audio.context, { oversample: data.oversample }))
   const setInstance = useNodeStore(state => state.setInstance)
@@ -102,63 +108,48 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
     }
   }
 
-  const Parameters = <FlexContainer 
-    direction='column' 
-    gap={8}
-  > 
+  const Parameters = <FlexContainer direction='column'> 
     <SelectInput
       label='Oversample:'
       value={oversample}
       onChange={e => setOversample(e.target.value as OverSampleType)}
-    >
-      <option value='none'>None</option>
-      <option value='2x'>2x</option>
-      <option value='4x'>4x</option>
-    </SelectInput>
+      options={[
+        { value: 'none', label: 'None' },
+        { value: '2x', label: '2x' },
+        { value: '4x', label: '4x' },
+      ]}
+      expanded={expanded.o}
+      onExpandChange={value => setExpanded(state => ({ ...state, o: value }))}
+    />
+    <Hr/>
     <SelectInput
       label='Type:'
       value={type}
       onChange={e => setType(e.target.value as WaveShaperType)} 
-    >
-      <option value='array'>Array</option>
-      <option value='equation'>Equation</option>
-    </SelectInput>
-    <div>
-      {type === 'array' ? <>
-        Array:
-        <FlexContainer
-          direction='column'
-          gap={8}
-        >
-          <Parameter>
-            <TextInput 
-              value={array} 
-              onChange={setArray}
-              error={arrayError}
-              errorMessage='Comma separated list of values required.'
-            />
-          </Parameter>
-        </FlexContainer>
-      </> : <>
-        Equation:
-        <FlexContainer
-          direction='column'
-          gap={8}
-        >
-          <Parameter>
-            <TextInput
-              value={equation}
-              onChange={setEquation} 
-              error={equationError}
-              errorMessage='Invalid equation.'
-              width={400}
-              />
-          </Parameter>
-        </FlexContainer>
-      </>}
-    </div>
+      options={[
+        { value: 'array', label: 'Array' },
+        { value: 'equation', label: 'Equation' },
+      ]}
+      expanded={expanded.t}
+      onExpandChange={value => setExpanded(state => ({ ...state, t: value }))}
+    />
+    <Hr/>
+    {type === 'array' ? <TextInput 
+      label='Array:'
+      value={array} 
+      onChange={setArray}
+      error={arrayError}
+      errorMessage='Comma separated list of values required.'
+    /> : <TextInput
+      label='Equation:'
+      value={equation}
+      onChange={setEquation} 
+      error={equationError}
+      errorMessage='Invalid equation.'
+      width={400}
+      />}
     <FlexContainer>
-      <button onClick={handleApply}>Apply</button>
+      <PlayButton onClick={handleApply}>Apply</PlayButton>
     </FlexContainer>
   </FlexContainer>
 

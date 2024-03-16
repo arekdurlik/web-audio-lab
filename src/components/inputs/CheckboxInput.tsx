@@ -1,4 +1,5 @@
 import { ChangeEventHandler } from 'react'
+import styled from 'styled-components'
 
 type NumberInputProps = {
   id: string
@@ -8,8 +9,12 @@ type NumberInputProps = {
   disabled?: boolean
 }
 export function CheckboxInput({ id, label, value, disabled, onChange }: NumberInputProps) {
-  return <div>
+  return <CheckboxWrapper>
   <input type="checkbox" id={id} checked={value} onChange={onChange} disabled={disabled} />
   <label htmlFor={id}>{label}</label>
-</div>
+</CheckboxWrapper>
 }
+
+export const CheckboxWrapper = styled.div`
+margin: 5px;
+`

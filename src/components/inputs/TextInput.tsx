@@ -1,6 +1,7 @@
 import { ChangeEvent, KeyboardEvent } from 'react'
 import styled from 'styled-components'
 import { clamp } from '../../helpers'
+import { InputLabel } from './styled'
 
 type TextInputProps = {
   value?: number | string
@@ -22,7 +23,7 @@ export function TextInput({ label, value, width, disabled, error, errorMessage, 
 
   return (
     <Wrapper>
-      {label && <span>{label}: </span>}
+      {label && <InputLabel>{label}</InputLabel>}
       <Input 
         type='text' 
         value={String(value)}
@@ -42,7 +43,6 @@ export function TextInput({ label, value, width, disabled, error, errorMessage, 
 const Wrapper = styled.div`
 display: flex;
 flex-direction: column;
-gap: 5px;
 justify-content: space-between;
 `
 
@@ -51,6 +51,8 @@ border-radius: 0;
 border: 1px solid #000;
 outline: none;
 z-index: 500;
+margin-left: 5px;
+margin-right: 5px;
 
 ${({ width }) => width && `max-width: ${width}px; min-width: ${width}px;`}
 ${({ error }) => error && 'border-color: red;'}

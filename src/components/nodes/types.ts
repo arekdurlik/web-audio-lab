@@ -1,7 +1,13 @@
 export type NodeProps = {
   id: string
   data: {
+    params?: {
+      [x:string]: any
+    }
     rotation?: 0 | 1 | 2 | 3
+    expanded?: {
+      [x:string] : boolean
+    }
   }
 }
 
@@ -36,6 +42,11 @@ export type AnalyserTypeProps = AnalyserProps & {
 export type StereoPannerProps = NodeProps & {
   data: {
     pan?: number
+    min?: number
+    max?: number
+    ramp?: number
+    rampMin?: number
+    rampMax?: number
   }
 }
 
@@ -78,14 +89,16 @@ export type ConstantSourceProps = NodeProps & {
     offset?: number
     min?: number
     max?: number
+    ramp?: number
+    rampMin?: number
+    rampMax?: number
   }
 }
 
-export type AudioBufferSourceFile = 'white-noise' | 'pink-noise' | 'brownian-noise'
 export type AudioBufferSourceProps = NodeProps & {
   id: string
   data: {
-    source?: AudioBufferSourceFile
+    source?: string
     playing?: boolean
     loop?: boolean
     playbackRate?: number

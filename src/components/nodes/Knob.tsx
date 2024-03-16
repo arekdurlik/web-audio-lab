@@ -11,7 +11,7 @@ import styled from 'styled-components'
 import SVG from 'react-inlinesvg'
 import knobBg from '/svg/knob_bg.svg'
 import { useFlowStore } from '../../stores/flowStore'
-import { clamp, invlerp, range } from '../../helpers'
+import { clamp, countDecimals, invlerp, range } from '../../helpers'
 import { bline } from '../FlowEditor/EdgeController/bezier'
 import { TextInput } from '../inputs/TextInput'
 
@@ -158,9 +158,12 @@ export function Knob({ id, data }: KnobProps) {
         newValue = clamp(valueRef.current - step, min, max)
       }
       
-      setValue(newValue)
-      valueRef.current = newValue
-      rotation.current = range(newValue, min, max, -1, 1)
+      const decimals = countDecimals(step.toString())
+      const rounded = Number(newValue.toFixed(decimals))
+
+      setValue(rounded)
+      valueRef.current = rounded
+      rotation.current = range(rounded, min, max, -1, 1)
 
       c.clearRect(0, 0, canvas.current.width, canvas.current.height)
       drawLine()
@@ -182,7 +185,7 @@ export function Knob({ id, data }: KnobProps) {
       direction='column'
       gap={8}
     >
-        Value: {Math.round(value * 100) / 100}
+        Value: {value}
         <FlexContainer
           gap={8}
         >
@@ -203,6 +206,7 @@ export function Knob({ id, data }: KnobProps) {
         <NumberInput
         label='Step:'
         value={step}
+        step={0.0001}
         onChange={setStep} 
         />
         <NumberInput

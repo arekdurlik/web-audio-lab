@@ -14,12 +14,12 @@ ${({ state, rotation }) => {
       case 1:
         return state === 'A' ? `
           transform: rotate(90deg);
-          left: -12.5px; 
+          left: -12px; 
           top: 16px;
         ` : `
           transform: rotate(90deg);
           left: -1.5px;
-          top: 12.5px;
+          top: 11.5px;
       `
       case 2:
         return state === 'A' ? `
@@ -35,11 +35,11 @@ ${({ state, rotation }) => {
       case 3:
         return state === 'A' ? `
           transform: rotate(-90deg);
-          left: 3.5px;
+          left: 4px;
           top: 20px;
         ` : `
           left: 1.5px;
-          top: 12.5px;
+          top: 11.5px;
           transform: rotate(-90deg);
       `
       default:
@@ -59,7 +59,7 @@ ${({ state, rotation }) => {
   }}
 `
 export const ConnectionLine = styled.div`
-width: 48px;
+width: 47px;
 height: 1px;
 background-color: #000;
 `

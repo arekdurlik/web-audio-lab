@@ -10,14 +10,35 @@ import SVG from 'react-inlinesvg'
 export function Text({ id, data }: NoteProps) {
   const [active, setActive] = useState(false)
   const [content, setContent] = useState(data.content ?? ``)
+  const [size, setSize] = useState(data.size)
+  const resizeObserver = useRef(new ResizeObserver(entries => {
+    const { inlineSize, blockSize } = entries[0].borderBoxSize[0]
+    setSize({
+      width: inlineSize,
+      height: blockSize
+    })
+  }))
   const activator = useOutsideClick(() => setActive(false))
   const textarea = useRef<HTMLTextAreaElement | null>(null)
   const { updateNode, deleteNode } = useUpdateFlowNode(id)
 
+  // init note size and observer
   useEffect(() => {
-    updateNode({ content })
-  }, [content])
+    if (!textarea.current) return
 
+    if (data.size) {
+      textarea.current.style.width = data.size.width + 'px'
+      textarea.current.style.height = data.size.height + 'px'
+    }
+
+    resizeObserver.current.observe(textarea.current)
+  }, [textarea])
+
+  useEffect(() => {
+    updateNode({ content, size })
+  }, [content, size])
+
+  // on init, expand height if there is overflow
   useEffect(() => {
     if (!textarea.current || content === data.content) return
 
@@ -56,11 +77,16 @@ height: 8px;
 position: absolute;
 right: 0;
 margin: 4px;
+
+&:hover {
+  cursor: pointer;
+  color: #999;
+}
 `
 
 const Resizer = styled(SVG)`
-width: 6px;
-height: 6px;
+width: 7px;
+height: 7px;
 position: absolute;
 right: 16px;
 bottom: 0px;
@@ -76,7 +102,6 @@ border: none;
 outline: none;
 font-size: 11px;
 resize: none;
-min-height: 33px;
 
 ::-webkit-resizer {
   display: none;

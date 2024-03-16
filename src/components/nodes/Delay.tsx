@@ -7,6 +7,7 @@ import { audio } from '../../main'
 import { RangeInput } from '../inputs/RangeInput'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 import { FlexContainer } from '../../styled'
+import { Hr } from './BaseNode/styled'
 
 export function Delay({ id, data }: DelayProps) {
   const [time, setTime] = useState(data.time ?? 0.5)
@@ -16,6 +17,10 @@ export function Delay({ id, data }: DelayProps) {
   const [ramp, setRamp] = useState(data.ramp ?? 0.04)
   const [rampMin, setRampMin] = useState<number>(data.rampMin ?? 0)
   const [rampMax, setRampMax] = useState<number>(data.rampMax ?? 2)
+
+  const [expanded, setExpanded] = useState(data.expanded ?? {
+    t: true, r: false
+  })
   
   const audioId = `${id}-audio`
   const controlVoltageId = `${id}-cv`
@@ -49,6 +54,15 @@ export function Delay({ id, data }: DelayProps) {
   ]
 
   useEffect(() => {
+    const invalid = [time, min, max, ramp, rampMin, rampMax].find(param => {
+      if (param === undefined || Number.isNaN(param)) return true
+    })
+    if (invalid) return
+
+    updateNode({ time, min, max, ramp, rampMin, rampMax, expanded })
+  }, [time, min, max, ramp, rampMin, rampMax, expanded])
+
+  useEffect(() => {
     instance.current = new DelayNode(audio.context, { maxDelayTime: max })
     instance.current.delayTime.value = time
     setInstance(audioId, instance.current, 'source')
@@ -58,14 +72,13 @@ export function Delay({ id, data }: DelayProps) {
   useEffect(() => {
     if (time === undefined || Number.isNaN(time)) return
 
-    updateNode({ time })
     instance.current.delayTime.cancelScheduledValues(audio.context.currentTime)
     instance.current.delayTime.setValueAtTime(instance.current.delayTime.value, audio.context.currentTime)
     instance.current.delayTime.linearRampToValueAtTime(time, audio.context.currentTime + ramp)
   }, [time])
 
   const Parameters = 
-    <FlexContainer direction='column' gap={8}>
+    <FlexContainer direction='column' >
       <RangeInput
         label='Time (s):'
         value={time}
@@ -76,8 +89,10 @@ export function Delay({ id, data }: DelayProps) {
         adjustableBounds
         onMinChange={setMin}
         onMaxChange={setMax}
+        expanded={expanded.t}
+        onExpandChange={value => setExpanded(state => ({ ...state, t: value }))}
       />
-
+      <Hr/>
       <RangeInput
         label='Ramp (s):'
         value={ramp}
@@ -88,6 +103,8 @@ export function Delay({ id, data }: DelayProps) {
         adjustableBounds
         onMinChange={setRampMin}
         onMaxChange={setRampMax}
+        expanded={expanded.r}
+        onExpandChange={value => setExpanded(state => ({ ...state, r: value }))}
       />
     </FlexContainer>
     

@@ -1,29 +1,57 @@
-import { ChangeEventHandler } from 'react'
+import { ChangeEventHandler, useRef } from 'react'
 import styled from 'styled-components'
-import { InputLabel, InputWrapper } from './styled'
+import triangle from '/svg/triangle.svg'
+import { ExpandableInputContent, ExpandableInputLabel, ExpandableInputWrapper, Triangle } from './styled'
 
 type SelectInputProps = {
   value?: number | string
-  label?: string
   onChange?: ChangeEventHandler<HTMLSelectElement>
-  children: React.ReactNode
+  label?: string
+  expanded?: boolean
+  onExpandChange?: (value: boolean) => void
+  options: { value: string, label: string }[]
 }
-export function SelectInput({ value, label, onChange, children }: SelectInputProps) {
+export function SelectInput({ value, label, onChange, expanded, onExpandChange, options }: SelectInputProps) {
+  const ref = useRef<HTMLSelectElement | null>(null)
 
   return (
-    <InputWrapper>
-      {label && <InputLabel>{label}</InputLabel>}
-      <Input 
-        value={value}
-        onChange={onChange} 
+    <ExpandableInputWrapper>
+      {label && <ExpandableInputLabel 
+        $expanded={expanded} 
+        onClick={() => typeof onExpandChange === 'function' && onExpandChange(!expanded)} 
       >
-        {children}
-      </Input>
-    </InputWrapper>
+        <Label>
+          {label}
+          {expanded !== undefined && !expanded && ' ' + options.find(o => o.value === value)?.label }
+        </Label>
+        {expanded !== undefined && <Triangle 
+          $expanded={expanded} 
+          src={triangle}/>}
+      </ExpandableInputLabel>}
+      <ExpandableInputContent $expanded={expanded ?? true}>
+        <Input 
+          ref={ref}
+          value={value}
+          onChange={onChange} 
+          >
+          {options.map(o => <option value={o.value}>{o.label}</option>)}
+        </Input>
+      </ExpandableInputContent>
+    </ExpandableInputWrapper>
   )
 }
 
 const Input = styled.select`
 border-radius: 0;
 outline: none;
+max-width: 250px;
+margin: 0 5px;
+margin-bottom: 4px;
+`
+
+const Label = styled.span`
+max-width: 170px;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
 `

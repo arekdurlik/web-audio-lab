@@ -43,7 +43,6 @@ export const Node: FC<NodeProps> = function({
   const [rotation, setRotation] = useState<0 | 1 | 2 | 3>(data.rotation ?? 0)
   const [active, setActive] = useState(false)
   const [expanded, setExpanded] = useState(startExpanded)
-  const reactFlowInstance = useReactFlow()
   const updateNodeInternals = useUpdateNodeInternals()
   const { updateNode, deleteNode } = useUpdateFlowNode(id)
   const activator = useOutsideClick(() => setActive(false))

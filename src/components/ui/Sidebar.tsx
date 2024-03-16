@@ -106,7 +106,7 @@ export function Sidebar() {
     event.dataTransfer.setDragImage(preview, 0, 0)
   }
 
-  return <Container>
+  return <Container onWheel={e => { e.stopPropagation() }}>
     {options.map((o, i) => <div key={i}>
       <Tab active={options[i].active} onClick={(() => handleTabClick(i))}>
         <Triangle src={triangle} />
@@ -181,7 +181,7 @@ background-color: ${surface};
 const Container = styled.div`
 background-color: ${surface};
 box-sizing: border-box;
-overflow: hidden;
+overflow-y: auto;
 min-width: 100px;
 max-height: 100%;
 position: absolute;

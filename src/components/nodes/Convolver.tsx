@@ -10,6 +10,7 @@ import { ConvolverProps, ConvolverType } from './types'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 import { SelectInput } from '../inputs/SelectInput'
 import { CheckboxInput } from '../inputs/CheckboxInput'
+import { Hr } from './BaseNode/styled'
 
 export function Convolver({ id, data }: ConvolverProps) {
   const [type, setType] = useState<ConvolverType>(data.type ?? 'file')
@@ -20,6 +21,11 @@ export function Convolver({ id, data }: ConvolverProps) {
   const [lpFreqStart, setLpFreqStart] = useState(data.lpFreqStart ?? 7000)
   const [lpFreqEnd, setLpFreqEnd] = useState(data.lpFreqEnd ?? 1500)
   const [reverse, setReverse] = useState(data.reverse ?? false)
+
+  const [expanded, setExpanded] = useState(data.expanded ?? {
+    t: true
+  })
+
   const audioId = `${id}-audio`
   const instance = useRef(new ConvolverNode(audio.context))
   const registerInstance = useNodeStore(state => state.setInstance)
@@ -111,22 +117,25 @@ export function Convolver({ id, data }: ConvolverProps) {
   }
 
   const Parameters = 
-    <FlexContainer direction='column' gap={8}>
+    <FlexContainer direction='column'>
       <SelectInput
         label='Type:'
         value={type}
         onChange={(e) => setType(e.target.value as ConvolverType)}
-      >
-        <option value='file'>File</option>
-        <option value='generate'>Generate</option>
-      </SelectInput>
+        expanded={expanded.t}
+        onExpandChange={value => setExpanded(state => ({ ...state, t: value }))}
+        options={[
+          { value: 'file', label: 'File' },
+          { value: 'generate', label: 'Generate' },
+        ]}
+      />
+      <Hr/>
       {type === 'file' ? <SelectInput
           label='Source:'
           value={source}
           onChange={handleSource}
-        >
-          {responses.map((res, i) => <option key={i} value={res}>{res}</option>)}
-        </SelectInput>
+          options={responses.map((res, i) => ({ value: res, label: res }))}
+      />
       : <>
         <NumberInput
           label='Fade in time:' 
@@ -135,7 +144,9 @@ export function Convolver({ id, data }: ConvolverProps) {
           unit='s'
           width={72}
           value={fadeInTime}
+          margin
         />
+        <Hr/>
         <NumberInput
           label='Decay time:'
           max={22000}
@@ -143,7 +154,9 @@ export function Convolver({ id, data }: ConvolverProps) {
           unit='s'
           width={72}
           value={decayTime}
+          margin
         />
+        <Hr/>
         <NumberInput 
           label='Start lowpass filter:'
           max={22000}
@@ -151,7 +164,9 @@ export function Convolver({ id, data }: ConvolverProps) {
           unit='Hz'
           width={72}
           value={lpFreqStart}
+          margin
         />
+        <Hr/>
         <NumberInput 
           label='End lowpass filter:'
           max={22000}
@@ -159,7 +174,9 @@ export function Convolver({ id, data }: ConvolverProps) {
           unit='Hz'
           width={72}
           value={lpFreqEnd}
+          margin
         />
+        <Hr/>
         <CheckboxInput 
           id={`${id}-reverse`}
           label='Reverse' 

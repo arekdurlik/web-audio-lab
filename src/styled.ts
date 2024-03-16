@@ -111,9 +111,3 @@ export const FlexContainer = styled.div<{ direction?: string, justify?: string, 
   ${({ align }) => align && `align-items: ${align};`}
   ${({ gap }) => gap !== undefined && `gap: ${gap}px;`}
 `
-
-export const Hr = styled.div`
-width: 100%;
-height: 2px;
-box-shadow: inset -1px -1px #ffffff, inset 1px 1px #808080;
-`
