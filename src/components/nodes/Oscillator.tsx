@@ -1,6 +1,6 @@
-import { OscillatorProps } from './types'
+import { OscillatorParams, OscillatorProps } from './types'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import { Hr, Parameter, ParameterName } from './BaseNode/styled'
+import { Hr } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
@@ -8,7 +8,6 @@ import { audio } from '../../main'
 import { RangeInput } from '../inputs/RangeInput'
 import { NumberInput } from '../inputs/NumberInput'
 import { FlexContainer } from '../../styled'
-import { Select } from '../inputs/styled'
 import styled from 'styled-components'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 import { SelectInput } from '../inputs/SelectInput'
@@ -18,19 +17,11 @@ import { clamp } from '../../helpers'
 const NUMBER_INPUT_WIDTH = 52
 
 export function Oscillator({ id, data }: OscillatorProps) {
-  const [playing, setPlaying] = useState(data.playing ?? false)
-  const [frequency, setFrequency] = useState(data.frequency ?? 20)
-  const [detune, setDetune] = useState(data.detune ?? 0)
-  const [type, setType] = useState<OscillatorType>(data.type ?? 'sine')
-  const [customLength, setCustomLength] = useState(2)
-  const [real, setReal] = useState<number[]>(data.real ?? [0, 1])
-  const [imag, setImag] = useState<number[]>(data.imag ?? [0, 0])
-
-  const [expanded, setExpanded] = useState(data.expanded ?? {
-    t: true, f: true, d: true
+  const [params, setParams] = useState<OscillatorParams>({
+    ...{ playing: false, frequency: 20, detune: 0, type: 'sine', customLength: 2, real: [0, 1], imag: [0, 0], expanded: { t: true, f: true, d: true }},
+    ...data.params
   })
-
-
+  
   const setInstance = useNodeStore(state => state.setInstance)
   const instance = useRef<OscillatorNode | null>()
   const { updateNode } = useUpdateFlowNode(id)
@@ -63,7 +54,7 @@ export function Oscillator({ id, data }: OscillatorProps) {
     }
   ]
 
-  const typeLabels = {
+  const typeLabels: { [x:string]: string } = {
     sine: 'sin',
     square: 'sq',
     sawtooth: 'saw',
@@ -80,25 +71,19 @@ export function Oscillator({ id, data }: OscillatorProps) {
 
   // update reactflow whenever a value changes
   useEffect(() => {
-    const invalid = [frequency, detune].find(param => {
-      if (param === undefined || Number.isNaN(param)) return true
-    })
-
-    if (invalid) return
-
-    updateNode({ playing, frequency, detune, type })
-  }, [playing, frequency, detune, type])
+    updateNode({ params })
+  }, [params])
 
   // start or stop oscillator
   useEffect(() => {
-    if (playing) {
+    if (params.playing) {
       try { instance.current?.stop() } catch {}
 
       instance.current = new OscillatorNode(audio.context, {
-        type,
-        frequency,
-        detune,
-        ...(type === 'custom') && { periodicWave: audio.context.createPeriodicWave(real, imag) }
+        type: params.type,
+        frequency: params.frequency,
+        detune: params.detune,
+        ...(params.type === 'custom') && { periodicWave: audio.context.createPeriodicWave(params.real, params.imag) }
       })
       setInstance(audioId, instance.current, 'source')
       setInstance(freqId, instance.current.frequency, 'param')
@@ -107,61 +92,54 @@ export function Oscillator({ id, data }: OscillatorProps) {
     } else {
       try { instance.current?.stop() } catch {}
     }
-  }, [playing])
+  }, [params.playing])
 
-  // update real and imag arrays if length input changes
+  // update real and imag arrays if custom length changes
   useEffect(() => {
-    if (customLength > real.length) {
-      setReal(state => [...state, 0])
-      setImag(state => [...state, 0])
-    } else if (customLength < real.length) {
-      setReal(state => {
-        const newState = [...state]
-        newState.pop()
-        return newState
-      })
-      setImag(state => {
-        const newState = [...state]
-        newState.pop()
+    if (params.customLength > params.real.length) {
+      setParams(state => ({ ...state, real: [...state.real, 0] }))
+      setParams(state => ({ ...state, imag: [...state.imag, 0] }))
+    } else if (params.customLength < params.real.length) {
+      setParams(state => {
+        const newState = {...state}
+        newState.real.pop()
+        newState.imag.pop()
         return newState
       })
     }
-  }, [customLength])
+  }, [params.customLength])
 
   // if type is set to custom, set the periodic wave whenever the wavetable changes
   useEffect(() => {
-    if (type !== 'custom' || !instance.current) return
+    if (params.type !== 'custom' || !instance.current) return
 
-    const realNan = real.find(v => v === undefined || Number.isNaN(v))
-    const imagNan = imag.find(v => v === undefined || Number.isNaN(v))
+    const realNan = params.real.find((v: number) => v === undefined || Number.isNaN(v))
+    const imagNan = params.imag.find((v: number) => v === undefined || Number.isNaN(v))
 
     if (realNan !== undefined || imagNan !== undefined) return
 
-    instance.current.setPeriodicWave(audio.context.createPeriodicWave(real, imag))
-  }, [real, imag])
+    instance.current.setPeriodicWave(audio.context.createPeriodicWave(params.real, params.imag))
+  }, [params.real, params.imag])
 
   function handleType(event: ChangeEvent<HTMLSelectElement>) {
     const type = event.target.value as OscillatorType
-    setType(type)
+    setParams(state => ({ ...state, type }))
 
     if (!instance.current) return
 
     if (type === 'custom') {
-      instance.current.setPeriodicWave(audio.context.createPeriodicWave(real, imag))
+      instance.current.setPeriodicWave(audio.context.createPeriodicWave(params.real, params.imag))
     } else {
       instance.current.type = type
     }
   }
 
+  type Param = 'frequency' | 'detune'
   function handleParam(param: Param, value: number) {
-    switch(param) {
-      case 'frequency': setFrequency(value); break
-      case 'detune': setDetune(value); break
-    }
+    setParams(state => ({ ...state, [param]: value }))
     setParam(param, value)
   }
 
-  type Param = 'frequency' | 'detune'
   function setParam(param: Param, value: any) {
     if (!instance.current || value === undefined || Number.isNaN(value)) return
 
@@ -171,14 +149,18 @@ export function Oscillator({ id, data }: OscillatorProps) {
 
   const Parameters = <FlexContainer direction='column'>
     <FlexContainer>
-      <PlayButton onClick={playing ? () => setPlaying(false) : () => setPlaying(true)}>
-        {playing ? 'Stop' : 'Start'}
+      <PlayButton 
+        onClick={() => setParams(state => ({ ...state, playing: !state.playing }))}
+        onMouseDownCapture={(e) => e.stopPropagation()}
+        onPointerDownCapture={(e) => e.stopPropagation()}
+      >
+        {params.playing ? 'Stop' : 'Start'}
       </PlayButton>
     </FlexContainer>
     <Hr/>
     <SelectInput
       label='Type:'
-      value={type}
+      value={params.type}
       onChange={handleType}
       options={[
         { value: 'sine', label: 'Sine' },
@@ -187,70 +169,70 @@ export function Oscillator({ id, data }: OscillatorProps) {
         { value: 'triangle', label: 'Triangle' },
         { value: 'custom', label: 'Custom' },
       ]}
-      expanded={expanded.t}
-      onExpandChange={value => setExpanded(state => ({ ...state, t: value }))}
+      expanded={params.expanded.t}
+      onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, t: v }}))}
     />
     <Hr/>
     <RangeInput
       logarithmic
       label='Frequency (Hz):'
-      value={frequency}
+      value={params.frequency}
       max={22000}
       onChange={value => handleParam('frequency', value)}
       numberInput
       numberInputWidth={NUMBER_INPUT_WIDTH}
-      expanded={expanded.f}
-      onExpandChange={value => setExpanded(state => ({ ...state, f: value }))}
+      expanded={params.expanded.f}
+      onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, f: v }}))}
     />
     <Hr/>
     <RangeInput
       label='Detune (cents):'
-      value={detune}
+      value={params.detune}
       min={-1200}
       max={1200}
       step={0.1}
       onChange={value => handleParam('detune', value)} 
       numberInput
       numberInputWidth={NUMBER_INPUT_WIDTH}
-      expanded={expanded.d}
-      onExpandChange={value => setExpanded(state => ({ ...state, d: value }))}
+      expanded={params.expanded.d}
+      onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, d: v }}))}
     />
-    {type === 'custom' ? <CustomWrapper>
+    {params.type === 'custom' ? <CustomWrapper>
       <CustomName>Length:</CustomName>
       <NumberInput 
         min={2}
         step={1}
-        onChange={setCustomLength} 
-        value={customLength}
+        value={params.customLength}
+        onChange={v => setParams(state => ({ ...state, customLength: v }))} 
       />
       <CustomName>Real:</CustomName>
       <WaveTable>
-        {Array(customLength).fill(0).map((_, i) => 
+        {Array(params.customLength).fill(0).map((_, i) => 
           <NumberInput 
             key={i}
             min={-1} 
             max={1} 
             step={0.001} 
-            value={real[i]}
-            onChange={newValue => setReal(state => {
-              const newState = [...state]
-              newState[i] = clamp(newValue, -1, 1)
+            value={params.real[i]}
+            onChange={newValue => setParams(state => {
+              const newState = {...state}
+              newState.real[i] = clamp(newValue, -1, 1)
               return newState
             })}
           />)}
       </WaveTable>
       <CustomName>Imaginary:</CustomName>
       <WaveTable>
-        {Array(customLength).fill(0).map((_, i) => 
+        {Array(params.customLength).fill(0).map((_, i) => 
           <NumberInput 
             key={i}
             min={-1} 
             max={1} 
             step={0.001} 
-            value={imag[i]}
-            onChange={newValue => setImag(state => {
-              const newState = [...state]
-              newState[i] = clamp(newValue, -1, 1)
+            value={params.imag[i]}
+            onChange={newValue => setParams(state => {
+              const newState = {...state}
+              newState.imag[i] = clamp(newValue, -1, 1)
               return newState
             })}
           />)}
@@ -263,7 +245,7 @@ export function Oscillator({ id, data }: OscillatorProps) {
       id={id}
       name='Oscillator'
       data={data}
-      value={typeLabels[type]}
+      value={typeLabels[params.type]}
       sockets={sockets}
       parameterPositions={['bottom', 'left', 'top', 'right']}
       parameters={Parameters}

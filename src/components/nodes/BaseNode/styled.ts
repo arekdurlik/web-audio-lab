@@ -5,6 +5,7 @@ import { StyledLineHandle } from '../../handles/LineHandle'
 import { outsetBorder, surface } from '../../../98'
 import { ExpandableInputWrapper, InputLabel } from '../../inputs/styled'
 import { CheckboxInput, CheckboxWrapper } from '../../inputs/CheckboxInput'
+import { TextInputWrapper } from '../../inputs/TextInput'
 
 export const NodeTitle = styled.span<{ rotation?: 0 | 1 | 2 | 3 }>`
   font-size: 11px;
@@ -117,7 +118,8 @@ ${ExpandableInputWrapper}:last-child > ${InputLabel} {
   margin-bottom: 2px;
 }
 
-${CheckboxWrapper}:last-child {
+${CheckboxWrapper}:last-child,
+${TextInputWrapper}:last-child {
   margin-bottom: 5px;
 }
 `

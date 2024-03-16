@@ -1,4 +1,4 @@
-import { GainProps } from './types'
+import { GainParams, GainProps } from './types'
 import { useEffect, useState } from 'react'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -10,23 +10,17 @@ import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 import { Hr } from './BaseNode/styled'
 
 export function Gain({ id, data }: GainProps) {
-  const [gain, setGain] = useState(data.gain ?? 1)
-  const [min, setMin] = useState(data.min ?? 0)
-  const [max, setMax] = useState(data.max ?? 2)
-
-  const [ramp, setRamp] = useState(data.ramp ?? 0.04)
-  const [rampMin, setRampMin] = useState(data.rampMin ?? 0)
-  const [rampMax, setRampMax] = useState(data.rampMax ?? 2)
-
-  const [expanded, setExpanded] = useState(data.expanded ?? {
-    g: true, r: false
+  const [params, setParams] = useState<GainParams>({
+    ...{ gain: 1, min: 0, max: 2, ramp: 0.04, rampMin: 0, rampMax: 2, expanded: { g: true, r: false }},
+    ...data.params
   })
+
+  const [instance] = useState(new GainNode(audio.context, { gain: params.gain }))
+  const setInstance = useNodeStore(state => state.setInstance)
+  const { updateNode } = useUpdateFlowNode(id)
 
   const audioId = `${id}-audio`
   const controlVoltageId = `${id}-cv`
-  const [instance] = useState(new GainNode(audio.context))
-  const setInstance = useNodeStore(state => state.setInstance)
-  const { updateNode } = useUpdateFlowNode(id)
   const sockets: Socket[] = [
     {
       id: audioId,
@@ -52,58 +46,52 @@ export function Gain({ id, data }: GainProps) {
   ]
 
   useEffect(() => {
-    instance.gain.value = gain
     setInstance(audioId, instance, 'source')
     setInstance(controlVoltageId, instance.gain, 'param')
   }, [])
 
   useEffect(() => {
-    const invalid = [gain, min, max].find(param => {
-      if (param === undefined || Number.isNaN(param)) return true
-    })
-    if (invalid) return
-
-    updateNode({ gain, min, max, expanded })
-  }, [gain, max, min, expanded])
+    updateNode({ params })
+  }, [params])
 
   useEffect(() => {
-    if (gain === undefined || Number.isNaN(gain)) return
+    if (params.gain === undefined || Number.isNaN(params.gain)) return
     instance.gain.cancelScheduledValues(audio.context.currentTime)
     instance.gain.setValueAtTime(instance.gain.value, audio.context.currentTime)
-    instance.gain.linearRampToValueAtTime(gain, audio.context.currentTime + ramp)
-  }, [gain])
+    instance.gain.linearRampToValueAtTime(params.gain, audio.context.currentTime + params.ramp)
+  }, [params.gain])
 
   const Parameters = 
     <FlexContainer direction='column'>
       <RangeInput
         label='Gain (dB):'
-        value={gain}
-        min={min}
-        max={max}
+        value={params.gain}
+        min={params.min}
+        max={params.max}
         step={0.001}
-        onChange={setGain}
+        onChange={v => setParams(state => ({ ...state, gain: v }))}
         numberInput
         numberInputWidth={50}
         adjustableBounds
-        onMinChange={setMin}
-        onMaxChange={setMax}
-        expanded={expanded.g}
-        onExpandChange={value => setExpanded(state => ({ ...state, g: value }))}
+        onMinChange={v => setParams(state => ({ ...state, min: v }))}
+        onMaxChange={v => setParams(state => ({ ...state, max: v }))}
+        expanded={params.expanded.g}
+        onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, g: v }}))}
       />
       <Hr/>
       <RangeInput
         label='Ramp (s):'
-        value={ramp}
-        min={rampMin}
-        max={rampMax}
-        onChange={setRamp}
+        value={params.ramp}
+        min={params.rampMin}
+        max={params.rampMax}
+        onChange={ramp => setParams(state => ({ ...state, ramp }))}
         numberInput
         numberInputWidth={50}
         adjustableBounds
-        onMinChange={setRampMin}
-        onMaxChange={setRampMax}
-        expanded={expanded.r}
-        onExpandChange={value => setExpanded(state => ({ ...state, r: value }))}
+        onMinChange={v => setParams(state => ({ ...state, rampMin: v }))}
+        onMaxChange={v => setParams(state => ({ ...state, rampMax: v }))}
+        expanded={params.expanded.r}
+        onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, r: v }}))}
       />
     </FlexContainer>
 
@@ -111,7 +99,7 @@ export function Gain({ id, data }: GainProps) {
     <Node 
       id={id}
       name='Gain'
-      value={gain}
+      value={params.gain}
       data={data}
       sockets={sockets}
       parameterPositions={['bottom', 'left', 'top', 'right']}

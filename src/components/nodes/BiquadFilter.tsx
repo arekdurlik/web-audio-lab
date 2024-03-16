@@ -1,4 +1,4 @@
-import { BiquadFilterParam, BiquadFilterProps } from './types'
+import { BiquadFilterParam, BiquadFilterParams, BiquadFilterProps } from './types'
 import { useRef, ChangeEvent, useEffect, useState } from 'react'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -13,22 +13,17 @@ import { Hr } from './BaseNode/styled'
 const NUMBER_INPUT_WIDTH = 52
 
 export function BiquadFilter({ id, data }: BiquadFilterProps) {
-  const [frequency, setFrequency] = useState(data.frequency ?? 8000)
-  const [detune, setDetune] = useState(data.detune ?? 0)
-  const [Q, setQ] = useState(data.Q ?? 0)
-  const [gain, setGain] = useState(data.gain ?? 0)
-  const [type, setType] = useState<BiquadFilterType>(data.type ?? 'lowpass')
-
-  const [expanded, setExpanded] = useState(data.expanded ?? {
-    t: true, f: true, d: true, q: true, g: true
+  const [params, setParams] = useState<BiquadFilterParams>({
+    ...{ type: 'lowpass', frequency: 8000, detune: 0, Q: 0, gain: 0, expanded: { t: true, f: true, d: true, q: true, g: true }},
+    ...data.params
   })
-
+  
+  const instance = useRef(new BiquadFilterNode(audio.context, {
+    frequency: params.frequency, detune: params.detune, Q: params.Q, gain: params.gain, type: params.type
+  }))
   const setInstance = useNodeStore(state => state.setInstance)
   const { updateNode } = useUpdateFlowNode(id)
-  const instance = useRef(new BiquadFilterNode(audio.context, {
-    frequency, detune, Q, gain, type
-  }))
-
+  
   const audioId = `${id}-audio`
   const freqId = `${id}-freq`
   const QId = `${id}-q`
@@ -82,7 +77,7 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
     }
   ]
 
-  const typeLabels = {
+  const typeLabels: { [x:string]: string } = {
     lowpass: 'lp',
     highpass: 'hp',
     allpass: 'ap',
@@ -102,28 +97,17 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
   }, [])
 
   useEffect(() => {
-    const invalid = [frequency, detune, Q, gain].find(param => {
-      if (param === undefined || Number.isNaN(param)) return true
-    })
-
-    if (invalid) return
-
-    updateNode({ frequency, detune, Q, gain, type, expanded })
-  }, [frequency, detune, Q, gain, type, expanded])
+    updateNode({ params })
+  }, [params])
 
   function handleType(event: ChangeEvent<HTMLSelectElement>) {
     const type = event.target.value as BiquadFilterType
-    setType(type)
+    setParams(state => ({ ...state, type }))
     instance.current.type = type
   }
 
   function handleParam(param: BiquadFilterParam, value: number) {
-    switch (param) {
-      case 'frequency': setFrequency(value); break
-      case 'detune': setDetune(value); break
-      case 'Q': setQ(value); break
-      case 'gain': setGain(value); break
-    }
+    setParams(state => ({ ...state, [param]: value }))
     setInstanceParam(param, value)
   }
 
@@ -137,10 +121,8 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
   const Parameters = <FlexContainer direction='column'>
     <SelectInput
       label='Type:'
-      value={type}
+      value={params.type}
       onChange={handleType}
-      expanded={expanded.t}
-      onExpandChange={value => setExpanded(state => ({ ...state, t: value }))}
       options={[
         { value: 'lowpass', label: 'Low-pass' },
         { value: 'highpass', label: 'High-pass' },
@@ -151,54 +133,56 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
         { value: 'peaking', label: 'Peaking' },
         { value: 'notch', label: 'Notch' },
       ]}
+      expanded={params.expanded.t}
+      onExpandChange={t => setParams(state => ({ ...state, expanded: { ...state.expanded, t } }))}
     />
     <Hr/>
     <RangeInput
       logarithmic
       label='Frequency (Hz):'
-      value={frequency}
+      value={params.frequency}
       max={22000}
       onChange={value => handleParam('frequency', value)}
       numberInput
       numberInputWidth={NUMBER_INPUT_WIDTH}
-      expanded={expanded.f}
-      onExpandChange={value => setExpanded(state => ({ ...state, f: value }))}
+      expanded={params.expanded.f}
+      onExpandChange={f => setParams(state => ({ ...state, expanded: { ...state.expanded, f } }))}
     />
     <Hr/>
     <RangeInput
       label='Detune (cents):'
-      value={detune}
+      value={params.detune}
       min={-100}
       max={100}
       onChange={value => handleParam('detune', value)} 
       numberInput
       numberInputWidth={NUMBER_INPUT_WIDTH}
-      expanded={expanded.d}
-      onExpandChange={value => setExpanded(state => ({ ...state, d: value }))}
+      expanded={params.expanded.d}
+      onExpandChange={d => setParams(state => ({ ...state, expanded: { ...state.expanded, d } }))}
     />
     <Hr/>
     <RangeInput
       label='Quality:'
-      value={Q}
+      value={params.Q}
       max={100}
       onChange={value => handleParam('Q', value)} 
       numberInput
       numberInputWidth={NUMBER_INPUT_WIDTH}
-      disabled={['lowshelf', 'highshelf'].includes(type)}
-      expanded={expanded.q}
-      onExpandChange={value => setExpanded(state => ({ ...state, q: value }))}
+      disabled={['lowshelf', 'highshelf'].includes(params.type)}
+      expanded={params.expanded.q}
+      onExpandChange={q => setParams(state => ({ ...state, expanded: { ...state.expanded, q } }))}
     />
     <Hr/>
     <RangeInput
       label='Gain (dB):'
-      value={gain}
+      value={params.gain}
       max={100}
       onChange={value => handleParam('gain', value)} 
       numberInput
       numberInputWidth={NUMBER_INPUT_WIDTH}
-      disabled={['lowpass', 'highpass', 'bandpass', 'notch', 'allpass'].includes(type)}
-      expanded={expanded.g}
-      onExpandChange={value => setExpanded(state => ({ ...state, g: value }))}
+      disabled={['lowpass', 'highpass', 'bandpass', 'notch', 'allpass'].includes(params.type)}
+      expanded={params.expanded.g}
+      onExpandChange={g => setParams(state => ({ ...state, expanded: { ...state.expanded, g } }))}
     />
   </FlexContainer>
 
@@ -206,7 +190,7 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
     <Node 
       id={id}
       name='BQF'
-      value={typeLabels[type]}
+      value={typeLabels[params.type]}
       data={data}
       sockets={sockets}
       parameterPositions={['bottom', 'left', 'top', 'right']}

@@ -1,163 +1,204 @@
 export type NodeProps = {
   id: string
   data: {
-    params?: {
-      [x:string]: any
-    }
     rotation?: 0 | 1 | 2 | 3
-    expanded?: {
-      [x:string] : boolean
+    params: {
+      expanded: {
+        [x:string] : boolean
+      }
     }
   }
 }
 
+export type GainParams = GainProps['data']['params']
 export type GainProps = NodeProps & {
   data: {
-    gain?: number
-    min?: number
-    max?: number
-    ramp?: number
-    rampMin?: number
-    rampMax?: number
+    params: {
+      gain: number
+      min: number
+      max: number
+      ramp: number
+      rampMin: number
+      rampMax: number
+    }
   }
 }
 
 export type AnalyserType = 'oscilloscope' | 'analyser' | 'vu-meter'
+export type AnalyserParams = AnalyserProps['data']['params']
 export type AnalyserProps = NodeProps & {
   data: {
-    type?: AnalyserType
-    width?: number
-    scale?: number
-    fitInScreen?: boolean
-    resolution?: number
-  }
-}
-
-export type AnalyserTypeProps = AnalyserProps & {
-  type: AnalyserType,
-  startExpanded?: boolean,
-  onTypeChange: (type: AnalyserType) => void
-}
-
-export type StereoPannerProps = NodeProps & {
-  data: {
-    pan?: number
-    min?: number
-    max?: number
-    ramp?: number
-    rampMin?: number
-    rampMax?: number
-  }
-}
-
-export type DelayProps = NodeProps & {
-  data: {
-    time?: number
-    min?: number
-    max?: number
-    ramp?: number
-    rampMin?: number
-    rampMax?: number
-  }
-}
-
-export type BiquadFilterParam = 'frequency' | 'detune' | 'Q' | 'gain'
-export type BiquadFilterProps = NodeProps & {
-  data: {
-    frequency?: number
-    detune?: number
-    Q?: number
-    gain?: number
-    type?: BiquadFilterType
-  }
-}
-
-export type OscillatorProps = NodeProps & {
-  data: {
-    playing?: boolean,
-    frequency?: number,
-    detune?: number,
-    type?: OscillatorType
-    real?: number[]
-    imag?: number[]
-  }
-}
-
-export type ConstantSourceProps = NodeProps & {
-  data: {
-    playing?: boolean,
-    offset?: number
-    min?: number
-    max?: number
-    ramp?: number
-    rampMin?: number
-    rampMax?: number
-  }
-}
-
-export type AudioBufferSourceProps = NodeProps & {
-  id: string
-  data: {
-    source?: string
-    playing?: boolean
-    loop?: boolean
-    playbackRate?: number
-  }
-}
-
-export type ConvolverType = 'file' | 'generate'
-export type ConvolverProps = NodeProps & {
-  data: {
-    type?: ConvolverType
-    source?: string
-    fadeInTime?: number
-    decayTime?: number
-    lpFreqStart?: number
-    lpFreqEnd?: number,
-    reverse?: boolean
-  }
-}
-
-export type BitcrusherProps = NodeProps & {
-  data: {
-    bitDepth?: number
-    sampleRateReduction?: number
-  }
-}
-
-export type WaveShaperType = 'array' | 'equation'
-export type WaveShaperProps = NodeProps & {
-  data: {
-    type?: WaveShaperType
-    array?: string
-    equation?: string
-    oversample?: OverSampleType
-  }
-}
-
-export type NoteProps = NodeProps & {
-  data: {
-    content?: string
-    size?: {
-      height: number
+    params: {
+      type: AnalyserType
       width: number
+      scale: number
+      fitInScreen: boolean
+      resolution: number
     }
   }
 }
 
-export type TextProps = NodeProps & {
+export type StereoPannerParams = StereoPannerProps['data']['params']
+export type StereoPannerProps = NodeProps & {
   data: {
-    content?: string
+    params: {
+      pan: number
+      min: number
+      max: number
+      ramp: number
+      rampMin: number
+      rampMax: number
+    }
+  }
+}
+export type DelayParams = DelayProps['data']['params']
+export type DelayProps = NodeProps & {
+  data: {
+    params: {
+      time: number
+      min: number
+      max: number
+      ramp: number
+      rampMin: number
+      rampMax: number
+    }
   }
 }
 
+export type BiquadFilterParam = 'frequency' | 'detune' | 'Q' | 'gain'
+export type BiquadFilterParams = BiquadFilterProps['data']['params']
+export type BiquadFilterProps = NodeProps & {
+  data: {
+    params: {
+      type: BiquadFilterType
+      frequency: number
+      detune: number
+      Q: number
+      gain: number
+    }
+  }
+}
+
+export type OscillatorParams = OscillatorProps['data']['params']
+export type OscillatorProps = NodeProps & {
+  data: {
+    params: {
+      playing: boolean
+      frequency: number
+      detune: number
+      type: OscillatorType
+      customLength: number
+      real: number[]
+      imag: number[]
+    }
+  }
+}
+
+export type ConstantSourceParams = ConstantSourceProps['data']['params']
+export type ConstantSourceProps = NodeProps & {
+  data: {
+    params: {
+      playing: boolean,
+      offset: number
+      min: number
+      max: number
+      ramp: number
+      rampMin: number
+      rampMax: number
+    }
+  }
+}
+
+export type AudioBufferSourceParams = AudioBufferSourceProps['data']['params']
+export type AudioBufferSourceProps = NodeProps & {
+  data: {
+    params: {
+      source: string
+      playing: boolean
+      loop: boolean
+      playbackRate: number
+    }
+  }
+}
+
+export type ConvolverType = 'file' | 'generate'
+export type ConvolverParams = ConvolverProps['data']['params']
+export type ConvolverProps = NodeProps & {
+  data: {
+    params: {
+      type: ConvolverType
+      source: string
+      fadeInTime: number
+      decayTime: number
+      lpFreqStart: number
+      lpFreqEnd: number,
+      reverse: boolean
+    }
+  }
+}
+
+export type BitcrusherParams = BitcrusherProps['data']['params']
+export type BitcrusherProps = NodeProps & {
+  data: {
+    params: {
+      bitDepth: number
+      sampleRateReduction: number
+    }
+  }
+}
+
+export type WaveShaperType = 'array' | 'equation'
+export type WaveShaperParams = WaveShaperProps['data']['params']
+export type WaveShaperProps = NodeProps & {
+  data: {
+    params: {
+      type: WaveShaperType
+      array: string
+      equation: string
+      oversample: OverSampleType
+    }
+  }
+}
+export type NoteParams = NoteProps['data']['params']
+export type NoteProps = NodeProps & {
+  data: {
+    params: {
+      content: string
+      size: {
+        height: number
+        width: number
+      }
+    }
+  }
+}
+
+export type TextParams = NoteProps['data']['params']
+export type TextProps = NodeProps & {
+  data: {
+    params: {
+      content: string
+      size: {
+        height: number
+        width: number
+      }
+    }
+  }
+}
+
+export type KnobParams = KnobProps['data']['params']
 export type KnobProps = NodeProps & {
   data: {
-    value?: number
-    min?: number
-    max?: number
-    label?: string
-    step?: number
-    ramp?: number
+    params: {
+      value: number
+      min: number
+      max: number
+      label: string
+      step: number
+      stepMin: number
+      stepMax: number
+      ramp: number
+      rampMin: number
+      rampMax: number
+    }
   }
 }

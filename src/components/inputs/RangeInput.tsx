@@ -105,17 +105,17 @@ export function RangeInput({ value, min = 0, max = 100, label, disabled, expande
           gap={8}
           style={{ marginTop: 8 }}
         >
-          <FlexContainer gap={2} align='center'>
-            min:
+          <FlexContainer align='center'>
             <NumberInput 
+              label='min:'
               width={50}
               onChange={onMinChange} 
               value={min}
-            />
+              />
           </FlexContainer>
-          <FlexContainer gap={2} align='center'>
-            max:
+          <FlexContainer align='center'>
             <NumberInput 
+              label='max:'
               width={50}
               onChange={onMaxChange}
               value={max}

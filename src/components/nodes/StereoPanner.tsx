@@ -1,4 +1,4 @@
-import { StereoPannerProps } from './types'
+import { StereoPannerParams, StereoPannerProps } from './types'
 import { useEffect, useState } from 'react'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -10,23 +10,17 @@ import { FlexContainer } from '../../styled'
 import { Hr } from './BaseNode/styled'
 
 export function StereoPanner({ id, data }: StereoPannerProps) {
-  const [pan, setPan] = useState(data.pan ?? 0)
-  const [min, setMin] = useState(data.min ?? -1)
-  const [max, setMax] = useState(data.max ?? 1)
-
-  const [ramp, setRamp] = useState(data.ramp ?? 0.04)
-  const [rampMin, setRampMin] = useState(data.rampMin ?? 0)
-  const [rampMax, setRampMax] = useState(data.rampMax ?? 2)
-
-  const [expanded, setExpanded] = useState(data.expanded ?? {
-    p: true, r: false
+  const [params, setParams] = useState<StereoPannerParams>({
+    ...{ pan: 0, min: -1, max: 1, ramp: 0.04, rampMin: 0, rampMax: 2, expanded: { p: true, r: false }},
+    ...data.params
   })
+  
+  const [instance] = useState(new StereoPannerNode(audio.context, { pan: params.pan }))
+  const setInstance = useNodeStore(state => state.setInstance)
+  const { updateNode } = useUpdateFlowNode(id)
 
   const audioId = `${id}-audio`
   const panId = `${id}-pan`
-  const [instance] = useState(new StereoPannerNode(audio.context))
-  const setInstance = useNodeStore(state => state.setInstance)
-  const { updateNode } = useUpdateFlowNode(id)
   const sockets: Socket[] = [
     {
       id: audioId,
@@ -52,46 +46,48 @@ export function StereoPanner({ id, data }: StereoPannerProps) {
   ]
 
   useEffect(() => {
-    instance.pan.value = pan
     setInstance(audioId, instance, 'source')
     setInstance(panId, instance.pan, 'param')
   }, [])
 
   useEffect(() => {
-    if (pan === undefined || Number.isNaN(pan)) return
-    
-    updateNode(pan)
+    updateNode({ params })
+  }, [params])
+
+  useEffect(() => {
+    if (params.pan === undefined || Number.isNaN(params.pan)) return
+
     instance.pan.setValueAtTime(instance.pan.value, audio.context.currentTime)
-    instance.pan.linearRampToValueAtTime(pan, audio.context.currentTime + 0.03)
-  }, [pan])
+    instance.pan.linearRampToValueAtTime(params.pan, audio.context.currentTime + params.ramp)
+  }, [params.pan])
 
   const Parameters = <FlexContainer direction='column'>
     <RangeInput
       label='Pan:'
-      value={pan}
-      min={min}
-      max={max}
-      onChange={setPan}
-      onMinChange={setMin}
-      onMaxChange={setMax}
+      value={params.pan}
+      min={params.min}
+      max={params.max}
+      onChange={v => setParams(state => ({ ...state, pan: v }))}
+      onMinChange={v => setParams(state => ({ ...state, min: v }))}
+      onMaxChange={v => setParams(state => ({ ...state, max: v }))}
       numberInput
       adjustableBounds
-      expanded={expanded.p}
-      onExpandChange={value => setExpanded(state => ({ ...state, p: value }))}
+      expanded={params.expanded.p}
+      onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, p: v }}))}
     />
     <Hr/>
     <RangeInput
       label='Ramp (s):'
-      value={ramp}
-      min={rampMin}
-      max={rampMax}
-      onChange={setRamp}
-      onMinChange={setRampMin}
-      onMaxChange={setRampMax}
+      value={params.ramp}
+      min={params.rampMin}
+      max={params.rampMax}
+      onChange={v => setParams(state => ({ ...state, ramp: v }))}
+      onMinChange={v => setParams(state => ({ ...state, rampMin: v }))}
+      onMaxChange={v => setParams(state => ({ ...state, rampMax: v }))}
       numberInput
       adjustableBounds
-      expanded={expanded.r}
-      onExpandChange={value => setExpanded(state => ({ ...state, r: value }))}
+      expanded={params.expanded.r}
+      onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, r: v }}))}
     />
   </FlexContainer>
 
@@ -99,7 +95,7 @@ export function StereoPanner({ id, data }: StereoPannerProps) {
     <Node 
       id={id}
       name='Stereo panner'
-      value={pan}
+      value={params.pan}
       data={data}
       sockets={sockets}
       parameterPositions={['bottom', 'left', 'top', 'right']}

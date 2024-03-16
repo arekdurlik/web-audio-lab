@@ -5,7 +5,7 @@ import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
 import { createBrownianNoiseBuffer, createPinkNoiseBuffer, createWhiteNoiseBuffer } from '../../audio/utils'
-import { AudioBufferSourceProps } from './types'
+import { AudioBufferSourceParams, AudioBufferSourceProps } from './types'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 import { RangeInput } from '../inputs/RangeInput'
 import { SelectInput } from '../inputs/SelectInput'
@@ -15,26 +15,23 @@ import { PlayButton } from './styled'
 import { Hr } from './BaseNode/styled'
 
 export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
-  const [source, setSource] = useState(data.source ?? 'brown-noise')
-  const [playbackRate, setPlaybackRate] = useState(data.playbackRate ?? 1)
-  const [playing, setPlaying] = useState(data.playing ?? false)
-  const [loop, setLoop] = useState(data.loop ?? true)
-
-  const [expanded, setExpanded] = useState(data.expanded ?? {
-    s: true, pr: true,
+  const [params, setParams] = useState<AudioBufferSourceParams>({
+    ...{ source: 'brown-noise', playbackRate: 1, playing: false, loop: true, expanded: { s: true, pr: true }},
+    ...data.params
   })
   
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [loadedFiles, setLoadedFiles] = useState<Map<string, { name: string, buffer: AudioBuffer }>>(new Map()
-    .set('white-noise', { name: 'White noise', buffer: createWhiteNoiseBuffer(audio.context) })
-    .set('pink-noise', { name: 'Pink noise', buffer: createPinkNoiseBuffer(audio.context) })
-    .set('brown-noise', { name: 'Brown noise', buffer: createBrownianNoiseBuffer(audio.context) })
+  .set('white-noise', { name: 'White noise', buffer: createWhiteNoiseBuffer(audio.context) })
+  .set('pink-noise', { name: 'Pink noise', buffer: createPinkNoiseBuffer(audio.context) })
+  .set('brown-noise', { name: 'Brown noise', buffer: createBrownianNoiseBuffer(audio.context) })
   )
-  const audioId = `${id}-audio`
-  const controlVoltageId = `${id}-cv`
   const instance = useRef<AudioBufferSourceNode | null>()
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const setInstance = useNodeStore(state => state.setInstance)
   const { updateNode } = useUpdateFlowNode(id)
+
+  const audioId = `${id}-audio`
+  const controlVoltageId = `${id}-cv`
   const sockets: Socket[] = [
     {
       id: audioId,
@@ -59,59 +56,49 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
   }, [])
 
   useEffect(() => {
-    updateNode({ playing, loop, playbackRate })
-  }, [playing, loop, playbackRate])
+    updateNode({ params })
+  }, [params])
   
   useEffect(() => {
-    if (playing) {
+    if (params.playing) {
       try { instance.current?.stop() } catch {}
       
-      const buffer = loadedFiles.get(source)?.buffer
+      const buffer = loadedFiles.get(params.source)?.buffer
 
       if (buffer) {
         startBuffer(buffer)
       } else {
         console.error('Error starting buffer')
+        setParams(state => ({ ...state, playing: false }))
       }
 
     } else {
       try { instance.current?.stop() } catch {}
     }
-  }, [playing])
-  
-  function getBuffer(type: string) {
-    let buffer: AudioBuffer
-
-    switch(type) {
-      case 'pink-noise': buffer = createPinkNoiseBuffer(audio.context); break
-      case 'brown-noise': buffer = createBrownianNoiseBuffer(audio.context); break
-      default: buffer = createWhiteNoiseBuffer(audio.context); break
-    }
-    return buffer
-  }
+  }, [params.playing])
   
   function startBuffer(buffer: AudioBuffer) {
-    if (playing && instance.current) {
+    if (params.playing && instance.current) {
       try { instance.current.stop() } catch {}
     }
 
-    instance.current = new AudioBufferSourceNode(audio.context, { buffer, loop })
+    instance.current = new AudioBufferSourceNode(audio.context, { buffer, loop: params.loop })
     setInstance(audioId, instance.current, 'source')
     setInstance(controlVoltageId, instance.current.playbackRate, 'param')
-    instance.current.playbackRate.value = playbackRate
+    instance.current.playbackRate.value = params.playbackRate
     instance.current.start()
     instance.current.onended = () => {
-      if (!loop) { 
-        setPlaying(false)
+      if (!params.loop) { 
+        setParams(state => ({ ...state, playing: false }))
       }
     }
   }
   
   function handleSource(event: ChangeEvent<HTMLSelectElement>) {
     const name = event.target.value
-    setSource(name)
+    setParams(state => ({ ...state, source: name }))
     
-    if (playing) {
+    if (params.playing) {
       const file = loadedFiles.get(name)
 
       if (file) {
@@ -136,15 +123,15 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
       [file.name, { name: file.name, buffer: audioBuffer }]
     ]))
 
-    setSource(file.name)
+    setParams(state => ({ ...state, source: file.name }))
     
-    if (playing) {
+    if (params.playing) {
       startBuffer(audioBuffer)
     }
   }
   
   function handlePlaybackRate(value: number) {
-    setPlaybackRate(value)
+    setParams(state => ({ ...state, playbackRate: value }))
 
   if (instance.current) {
       instance.current.playbackRate.setValueAtTime(value, audio.context.currentTime)
@@ -154,29 +141,29 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
   const Parameters = <FlexContainer direction='column'>
     <FlexContainer align='center'>
       <PlayButton 
-        onClick={playing ? () => setPlaying(false) : () => setPlaying(true)}
+        onClick={() => setParams(state => ({ ...state, playing: !state.playing }))}
         onMouseDownCapture={(e) => e.stopPropagation()}
         onPointerDownCapture={(e) => e.stopPropagation()}
       >
-        {playing ? 'Stop' : 'Start'}
+        {params.playing ? 'Stop' : 'Start'}
       </PlayButton>
       <CheckboxInput
         label='Loop'
         id={`${id}-loop`}
-        value={loop}
-        onChange={() => setLoop(!loop)}
+        value={params.loop}
+        onChange={() => setParams(state => ({ ...state , loop: !state.loop }))}
       />
     </FlexContainer>
     <Hr/>
     <SelectInput
       label='Source:'
-      value={source}
+      value={params.source}
       onChange={handleSource}
       options={Array.from(loadedFiles).map(([k, v], i) => ({ value: k, label: v.name }))}
-      expanded={expanded.s}
-      onExpandChange={value => setExpanded(state => ({ ...state, s: value }))}
+      expanded={params.expanded.s}
+      onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, s: v }}))}
     />
-    {expanded.s && <FlexContainer>
+    {params.expanded.s && <FlexContainer>
       <PlayButton 
         onClick={() => fileInputRef.current?.click()}
         onMouseDownCapture={(e) => e.stopPropagation()}
@@ -189,13 +176,13 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
     <Hr/>
     <RangeInput
       label='Playback rate:'
-      value={playbackRate}
+      value={params.playbackRate}
       min={0}
       max={2}
       onChange={handlePlaybackRate}
       numberInput
-      expanded={expanded.pr}
-      onExpandChange={value => setExpanded(state => ({ ...state, pr: value }))}
+      expanded={params.expanded.pr}
+      onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, pr: v }}))}
     />
   </FlexContainer>
 

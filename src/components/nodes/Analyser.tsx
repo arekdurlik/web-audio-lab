@@ -1,4 +1,4 @@
-import { AnalyserProps, AnalyserType } from './types'
+import { AnalyserParams, AnalyserProps, AnalyserType } from './types'
 import { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
@@ -15,20 +15,14 @@ import { CheckboxInput } from '../inputs/CheckboxInput'
 import { Hr } from './BaseNode/styled'
 
 export function Analyser({ id, data }: AnalyserProps) {
-  const [type, setType] = useState(data.type ?? 'oscilloscope')
-  const [scale, setScale] = useState(data.scale ?? 1)
-  const [width, setWidth] = useState(data.width ?? 4)
-  const [fitInScreen, setFitInScreen] = useState(data.fitInScreen ?? false)
-
-  const [expanded, setExpanded] = useState(data.expanded ?? {
-    t: true, s: true, w: true
+  const [params, setParams] = useState<AnalyserParams>({
+    ...{ type: 'oscilloscope', scale: 1, width: 4, fitInScreen: false, expanded: { t: true, s: true, w: true }},
+    ...data.params
   })
+  const scaleRef = useRef(params.scale)
+  const widthRef = useRef(params.width)
+  const fitInScreenRef = useRef(params.fitInScreen)
 
-  const scaleRef = useRef(scale)
-  const widthRef = useRef(width)
-  const fitInScreenRef = useRef(fitInScreen)
-
-  const audioId = `${id}-audio`
   const [instance] = useState(new AnalyserNode(audio.context, { smoothingTimeConstant: 0, fftSize: 2048 }))
   const [dataArray] = useState(new Float32Array(instance.frequencyBinCount))
   const setInstance = useNodeStore(state => state.setInstance)
@@ -37,23 +31,24 @@ export function Analyser({ id, data }: AnalyserProps) {
   const canvasWrapper = useRef<HTMLDivElement | null>(null)
   const [c, setC] = useState<CanvasRenderingContext2D  | null>(null)
   const rafID = useRef(0)
-  let fps = 75, fpsInterval: number, now, then: number, elapsed
   const imgData = useRef(new Uint8ClampedArray())
-
+  let fps = 75, fpsInterval: number, now, then: number, elapsed
+  
+  const audioId = `${id}-audio`
   const sockets: Socket[] = [
     {
       id: audioId,
       label: '',
       type: 'target',
       edge: 'left',
-      offset: [24, 24 * width, 24, 24 * width]
+      offset: [24, 24 * params.width, 24, 24 * params.width]
     },
     {
       id: audioId,
       label: '',
       type: 'source',
       edge: 'right',
-      offset: [24, 24 * width, 24, 24 * width]
+      offset: [24, 24 * params.width, 24, 24 * params.width]
     }
   ]
 
@@ -80,7 +75,7 @@ export function Analyser({ id, data }: AnalyserProps) {
     c.stroke()
 
     startDrawing()
-  }, [canvas, c, canvasWrapper, type, width])
+  }, [canvas, c, canvasWrapper, params.type, params.width])
 
   useEffect(() => {
     instance.connect(audio.context.destination)
@@ -93,21 +88,15 @@ export function Analyser({ id, data }: AnalyserProps) {
   }, [])
 
   useEffect(() => {
-    const invalid = [scale, width].find(param => {
-      if (param === undefined || Number.isNaN(param)) return true
-    })
-
-    if (invalid) return
-
-    updateNode({ type, scale, width, fitInScreen })
-  }, [type, scale, width, fitInScreen])
+    updateNode({ params })
+  }, [params])
 
   function startDrawing() {
     fpsInterval = 1000 / fps
     then = Date.now()
 
-    type === 'oscilloscope' ? drawOscilloscope() :
-    type === 'analyser' ? drawAnalyser() : drawVuMeter()
+    params.type === 'oscilloscope' ? drawOscilloscope() :
+    params.type === 'analyser' ? drawAnalyser() : drawVuMeter()
 
   }
 
@@ -312,49 +301,49 @@ export function Analyser({ id, data }: AnalyserProps) {
   const Parameters = <FlexContainer direction='column'>
     <SelectInput
       label='Type:'
-      value={type}
-      onChange={e => setType(e.target.value as AnalyserType)}
+      value={params.type}
+      onChange={e => setParams(state => ({ ...state, type: e.target.value as AnalyserType }))}
       options={[
         { value: 'oscilloscope', label: 'Oscilloscope' },
         { value: 'analyser', label: 'Spectrum analyser' },
         { value: 'vu-meter', label: 'VU Meter' },
       ]}
-      expanded={expanded.t}
-      onExpandChange={value => setExpanded(state => ({ ...state, t: value }))}
+      expanded={params.expanded.t}
+      onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, t: v }}))}
     />
-    {type === 'oscilloscope' && <>
+    {params.type === 'oscilloscope' && <>
       <Hr/>
       <RangeInput
         label='Scale:'
-        value={scale}
-        onChange={v => { setScale(v); scaleRef.current = v }}
+        value={params.scale}
+        onChange={v => { setParams(state => ({ ...state, scale: v })); scaleRef.current = v }}
         min={0}
         max={10}
         step={0.01}
         numberInput
-        expanded={expanded.s}
-        onExpandChange={value => setExpanded(state => ({ ...state, s: value }))}
+        expanded={params.expanded.s}
+        onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, s: v }}))}
       />
     </>}
     <Hr/>
     <RangeInput
       label='Width:'
-      value={width}
-      onChange={v => { setWidth(v); widthRef.current = v }} 
+      value={params.width}
+      onChange={v => { setParams(state => ({ ...state, width: v })); widthRef.current = v }} 
       min={1}
       max={4}
       step={1}
       numberInput
-      expanded={expanded.w}
-      onExpandChange={value => setExpanded(state => ({ ...state, w: value }))}
+      expanded={params.expanded.w}
+      onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, w: v }}))}
     />
-    {type === 'oscilloscope' && <>
+    {params.type === 'oscilloscope' && <>
       <Hr/>
       <CheckboxInput 
         id={`${id}-fit`}
         label='Fit in screen' 
-        value={fitInScreen} 
-        onChange={() => { setFitInScreen(!fitInScreen); fitInScreenRef.current = !fitInScreen }} 
+        value={params.fitInScreen} 
+        onChange={() => { setParams(state => ({ ...state, fitInScreen: !state.fitInScreen })); fitInScreenRef.current = !fitInScreenRef.current }} 
       />
     </>}
   </FlexContainer>
@@ -368,10 +357,10 @@ export function Analyser({ id, data }: AnalyserProps) {
       parameters={Parameters}
       optionsColor='white'
       constantSize
-      valueColor={type === 'oscilloscope' ? '#00ffff' : '#ff0000'}
-      value={type === 'oscilloscope' ? scale : undefined}
-      valueUnit={type === 'oscilloscope' ? 'x' : undefined}
-      width={width * 3}
+      valueColor={params.type === 'oscilloscope' ? '#00ffff' : '#ff0000'}
+      value={params.type === 'oscilloscope' ? params.scale : undefined}
+      valueUnit={params.type === 'oscilloscope' ? 'x' : undefined}
+      width={params.width * 3}
       parametersWidth={193}
       background={<Background ref={canvasWrapper}><Canvas ref={canvas}/></Background>}
     />

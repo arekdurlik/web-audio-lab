@@ -22,7 +22,7 @@ export function TextInput({ label, value, width, disabled, error, errorMessage, 
   }
 
   return (
-    <Wrapper>
+    <TextInputWrapper>
       {label && <InputLabel>{label}</InputLabel>}
       <Input 
         type='text' 
@@ -36,11 +36,11 @@ export function TextInput({ label, value, width, disabled, error, errorMessage, 
         error={error}
       />
       {error && <ErrorMessage>{errorMessage}</ErrorMessage>}
-    </Wrapper>
+    </TextInputWrapper>
   )
 }
 
-const Wrapper = styled.div`
+export const TextInputWrapper = styled.div`
 display: flex;
 flex-direction: column;
 justify-content: space-between;

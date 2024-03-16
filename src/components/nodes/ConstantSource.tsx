@@ -1,4 +1,4 @@
-import { ConstantSourceProps } from './types'
+import { ConstantSourceParams, ConstantSourceProps } from './types'
 import { useEffect, useRef, useState } from 'react'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -6,29 +6,22 @@ import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
-import { useReactFlow } from 'reactflow'
 import { PlayButton } from './styled'
 import { Hr } from './BaseNode/styled'
+import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 
 export function ConstantSource({ id, data }: ConstantSourceProps) {
-  const [playing, setPlaying] = useState(data.playing ?? false)
-  const [offset, setOffset] = useState(data.offset ?? 0)
-  const [min, setMin] = useState(data.min ?? 0)
-  const [max, setMax] = useState(data.max ?? 1)
-
-  const [ramp, setRamp] = useState(data.ramp ?? 0.04)
-  const [rampMin, setRampMin] = useState(data.rampMin ?? 0)
-  const [rampMax, setRampMax] = useState(data.rampMax ?? 2)
-
-  const [expanded, setExpanded] = useState(data.expanded ?? {
-    o: true, r: false
+  const [params, setParams] = useState<ConstantSourceParams>({ 
+    ...{ playing: false, offset: 0, min: 0, max: 1, ramp: 0.04, rampMin: 0, rampMax: 2, expanded: { o: true, r: false }},
+    ...data.params
   })
+  
+  const instance = useRef(new ConstantSourceNode(audio.context, { offset: params.offset }))
+  const setInstance = useNodeStore(state => state.setInstance)
+  const { updateNode } = useUpdateFlowNode(id)
 
   const signalId = `${id}-signal`
   const offsetId = `${id}-offset`
-  const instance = useRef(new ConstantSourceNode(audio.context, { offset: offset }))
-  const setInstance = useNodeStore(state => state.setInstance)
-  const reactFlowInstance = useReactFlow()
   const sockets: Socket[] = [
     {
       id: signalId,
@@ -54,33 +47,22 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
   }, [])
 
   useEffect(() => {
-    const invalid = [offset, min, max].find(param => {
-      if (param === undefined || Number.isNaN(param)) return true
-    })
-    if (invalid) return
-
-    const newNodes = reactFlowInstance.getNodes().map((node) => {
-      if (node.id === id) {
-        node.data = { ...node.data, playing, offset, min, max }
-      }
-      return node
-    })
-    reactFlowInstance.setNodes(newNodes)
-  }, [playing, offset, max, min])
+    updateNode({ params })
+  }, [params])
 
   
   useEffect(() => {
-    if (offset === undefined || Number.isNaN(offset)) return
+    if (params.offset === undefined || Number.isNaN(params.offset)) return
     
     instance.current.offset.cancelScheduledValues(audio.context.currentTime)
     instance.current.offset.setValueAtTime(instance.current.offset.value, audio.context.currentTime)
-    instance.current.offset.linearRampToValueAtTime(offset, audio.context.currentTime + ramp)
-  }, [offset])
+    instance.current.offset.linearRampToValueAtTime(params.offset, audio.context.currentTime + params.ramp)
+  }, [params.offset])
   
   useEffect(() => {
-    if (playing) {
+    if (params.playing) {
       try { instance.current.stop() } catch {}
-      instance.current = new ConstantSourceNode(audio.context, { offset })
+      instance.current = new ConstantSourceNode(audio.context, { offset: params.offset })
 
       setInstance(signalId, instance.current, 'source')
       setInstance(offsetId, instance.current.offset, 'param')
@@ -88,39 +70,41 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
     } else {
       try { instance.current.stop() } catch {}
     }
-  }, [playing])
+  }, [params.playing])
 
   const Parameters = <FlexContainer direction='column'>
     <FlexContainer>
-      <PlayButton onClick={playing ? () => setPlaying(false) : () => setPlaying(true)}>{playing ? 'Stop' : 'Start'}</PlayButton>
+      <PlayButton onClick={() => setParams(state => ({ ...state, playing: !state.playing }))}>
+        {params.playing ? 'Stop' : 'Start'}
+      </PlayButton>
     </FlexContainer>
     <Hr/>
     <RangeInput
       label='Offset:'
-      value={offset}
-      min={min}
-      max={max}
-      onChange={setOffset}
+      value={params.offset}
+      min={params.min}
+      max={params.max}
+      onChange={v => setParams(state => ({ ...state, offset: v }))}
       numberInput
       adjustableBounds
-      onMinChange={setMin}
-      onMaxChange={setMax}
-      expanded={expanded.o}
-      onExpandChange={value => setExpanded(state => ({ ...state, o: value }))}
+      onMinChange={v => setParams(state => ({ ...state, min: v }))}
+      onMaxChange={v => setParams(state => ({ ...state, max: v }))}
+      expanded={params.expanded.o}
+      onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, o: v }}))}
     />
     <Hr/>
     <RangeInput
-      label='Ramp:'
-      value={ramp}
-      min={rampMin}
-      max={rampMax}
-      onChange={setRamp}
+      label='Ramp (s):'
+      value={params.ramp}
+      min={params.rampMin}
+      max={params.rampMax}
+      onChange={v => setParams(state => ({ ...state, ramp: v }))}
       numberInput
       adjustableBounds
-      onMinChange={setRampMin}
-      onMaxChange={setRampMax}
-      expanded={expanded.r}
-      onExpandChange={value => setExpanded(state => ({ ...state, r: value }))}
+      onMinChange={v => setParams(state => ({ ...state, rampMin: v }))}
+      onMaxChange={v => setParams(state => ({ ...state, rampMax: v }))}
+      expanded={params.expanded.r}
+      onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, r: v }}))}
     />
   </FlexContainer>
 
@@ -128,7 +112,7 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
     <Node 
       id={id}
       name='Constant'
-      value={offset}
+      value={params.offset}
       data={data}
       sockets={sockets}
       parameterPositions={['bottom', 'left', 'top', 'right']}

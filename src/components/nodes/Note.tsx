@@ -1,4 +1,4 @@
-import { NoteProps } from './types'
+import { NoteParams, NoteProps } from './types'
 import { useRef, useEffect, useState } from 'react'
 import { useOutsideClick } from '../../hooks/useOutsideClick'
 import styled from 'styled-components'
@@ -8,15 +8,15 @@ import resizer from '/svg/resizer.svg'
 import SVG from 'react-inlinesvg'
 
 export function Note({ id, data }: NoteProps) {
+  const [params, setParams] = useState<NoteParams>({
+    ...{ content: '', size: { width: 0, height: 0 }},
+    ...data.params
+  })
+
   const [active, setActive] = useState(false)
-  const [content, setContent] = useState(data.content ?? '')
-  const [size, setSize] = useState(data.size)
   const resizeObserver = useRef(new ResizeObserver(entries => {
     const { inlineSize, blockSize } = entries[0].borderBoxSize[0]
-    setSize({
-      width: inlineSize,
-      height: blockSize
-    })
+    setParams(state => ({ ...state, size: { width: inlineSize, height: blockSize }}))
   }))
   const activator = useOutsideClick(() => setActive(false))
   const textarea = useRef<HTMLTextAreaElement | null>(null)
@@ -26,27 +26,27 @@ export function Note({ id, data }: NoteProps) {
   useEffect(() => {
     if (!textarea.current) return
 
-    if (data.size) {
-      textarea.current.style.width = data.size.width + 'px'
-      textarea.current.style.height = data.size.height + 'px'
+    if (data.params?.size) {
+      textarea.current.style.width = params.size.width + 'px'
+      textarea.current.style.height = params.size.height + 'px'
     }
 
     resizeObserver.current.observe(textarea.current)
   }, [textarea])
 
   useEffect(() => {
-    updateNode({ content, size })
-  }, [content, size])
+    updateNode({ params })
+  }, [params])
 
   // on init, expand height if there is overflow
   useEffect(() => {
-    if (!textarea.current || content === data.content) return
+    if (!textarea.current) return
 
     if (textarea.current.offsetHeight < textarea.current.scrollHeight) {
       textarea.current.style.height = ''
       textarea.current.style.height = textarea.current.scrollHeight + 'px'
     }
-  }, [content])
+  }, [params.content])
 
   return (
     <div
@@ -62,8 +62,8 @@ export function Note({ id, data }: NoteProps) {
           spellCheck={false}
           onPointerDownCapture={e => { e.stopPropagation() }}
           onMouseDownCapture={e => { e.stopPropagation() }}
-          onChange={e => setContent(e.target.value)}
-          value={content}
+          onChange={e => setParams(state => ({ ...state, content: e.target.value }))}
+          value={params.content}
         />
         <Resizer src={resizer}/>
       </Container>

@@ -1,4 +1,4 @@
-import { KnobProps } from './types'
+import { KnobParams, KnobProps } from './types'
 import { PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
@@ -14,20 +14,20 @@ import { useFlowStore } from '../../stores/flowStore'
 import { clamp, countDecimals, invlerp, range } from '../../helpers'
 import { bline } from '../FlowEditor/EdgeController/bezier'
 import { TextInput } from '../inputs/TextInput'
+import { RangeInput } from '../inputs/RangeInput'
+import { Hr } from './BaseNode/styled'
 
 const DRAG_RANGE = 100
 
 export function Knob({ id, data }: KnobProps) {
-  const [value, setValue] = useState(data.value ?? 0)
-  const valueRef = useRef(value)
-  const [min, setMin] = useState(data.min ?? 0)
-  const [max, setMax] = useState(data.max ?? 1)
-  const [step, setStep] = useState(data.step ?? 0.01)
-  const [ramp, setRamp] = useState(data.ramp ?? 0.03)
-  const [label, setLabel] = useState(data.label ?? '')
+  const [params, setParams] = useState<KnobParams>({
+    ...{ value: 0, min: 0, max: 1, step: 0.01, stepMin: 0, stepMax: 1, ramp: 0.03, rampMin: 0, rampMax: 2, label: '', expanded: { s: true, r: false }},
+    ...data.params 
+  })
+  const valueRef = useRef(params.value)
   const [labelOffset, setLabelOffset] = useState(0)
   const signalId = `${id}-signal`
-  const instance = useRef(new ConstantSourceNode(audio.context, { offset: value}))
+  const instance = useRef(new ConstantSourceNode(audio.context, { offset: params.value}))
   const setInstance = useNodeStore(state => state.setInstance)
   const { updateNode } = useUpdateFlowNode(id)
   const canvas = useRef<HTMLCanvasElement | null>(null)
@@ -35,10 +35,10 @@ export function Knob({ id, data }: KnobProps) {
   const [c, setC] = useState<CanvasRenderingContext2D  | null>(null)
   const imgData = useRef(new Uint8ClampedArray())
   const { editMode } = useFlowStore()
-  const rotation = useRef((invlerp(min, max, value) * 2) - 1)
+  const rotation = useRef((invlerp(params.min, params.max, params.value) * 2) - 1)
   const startY = useRef(0)
   const labelRef = useRef<HTMLSpanElement | null>(null)
-  const DRAG_STEP = DRAG_RANGE * (invlerp(0, Math.abs(max - min), step))
+  const DRAG_STEP = DRAG_RANGE * (invlerp(0, Math.abs(params.max - params.min), params.step))
   const lastDragRangeStep = useRef(0)
 
   const sockets: Socket[] = [
@@ -51,17 +51,12 @@ export function Knob({ id, data }: KnobProps) {
   ]
 
   useEffect(() => {
-    const invalid = [value, min, max, step, ramp].find(param => {
-      if (param === undefined || Number.isNaN(param)) return true
-    })
 
-    if (invalid) return
-
-    updateNode({ value, min, max, step, ramp, label })
-  }, [value, min, max, step, ramp, label])
+    updateNode({ params })
+  }, [params])
 
   useEffect(() => {
-    instance.current = new ConstantSourceNode(audio.context, { offset: value })
+    instance.current = new ConstantSourceNode(audio.context, { offset: params.value })
     setInstance(signalId, instance.current, 'source')
     
     try { instance.current.start() } catch {}
@@ -69,11 +64,12 @@ export function Knob({ id, data }: KnobProps) {
   }, [])
 
   useEffect(() => {
-    if (value === undefined || Number.isNaN(value)) return
+    if (params.value === undefined || Number.isNaN(params.value)) return
+
     instance.current.offset.cancelScheduledValues(audio.context.currentTime)
     instance.current.offset.setValueAtTime(instance.current.offset.value, audio.context.currentTime)
-    instance.current.offset.linearRampToValueAtTime(value, audio.context.currentTime + ramp)
-  }, [value])
+    instance.current.offset.linearRampToValueAtTime(params.value, audio.context.currentTime + params.ramp)
+  }, [params.value])
 
   // setup canvas
   useEffect(() => {
@@ -94,7 +90,7 @@ export function Knob({ id, data }: KnobProps) {
 
     const { width } = labelRef.current.getBoundingClientRect()
     setLabelOffset(Math.round(16 - width/2) + 1)
-  }, [label])
+  }, [params.label])
   
   function drawLine() {
     if (!canvas.current || !c) return
@@ -153,17 +149,17 @@ export function Knob({ id, data }: KnobProps) {
       
       let newValue = valueRef.current
       if (direction > 0) {
-        newValue = clamp(valueRef.current + step, min, max)
+        newValue = clamp(valueRef.current + params.step, params.min, params.max)
       } else if (direction < 0) {
-        newValue = clamp(valueRef.current - step, min, max)
+        newValue = clamp(valueRef.current - params.step, params.min, params.max)
       }
       
-      const decimals = countDecimals(step.toString())
+      const decimals = countDecimals(params.step.toString())
       const rounded = Number(newValue.toFixed(decimals))
 
-      setValue(rounded)
+      setParams(state => ({ ...state, value: rounded }))
       valueRef.current = rounded
-      rotation.current = range(rounded, min, max, -1, 1)
+      rotation.current = range(rounded, params.min, params.max, -1, 1)
 
       c.clearRect(0, 0, canvas.current.width, canvas.current.height)
       drawLine()
@@ -180,54 +176,62 @@ export function Knob({ id, data }: KnobProps) {
     return distancesquared <= radius * radius
   }
 
-  const Parameters = <FlexContainer direction='column' gap={8}>
-    <FlexContainer
-      direction='column'
-      gap={8}
-    >
-        Value: {value}
-        <FlexContainer
-          gap={8}
-        >
+  const Parameters = <FlexContainer direction='column'>
+      <ValueWrapper direction='column' gap={4}>
+        Value: {params.value}
+        
+        <FlexContainer gap={8} justify='flex-end'>
           <NumberInput
             label='min:'
             width={50}
-            onChange={setMin} 
-            value={min}
-          />
+            onChange={v => setParams(state => ({ ...state, min: v }))} 
+            value={params.min}
+            />
           <NumberInput
             label='max:'
             width={50}
-            onChange={setMax} 
-            value={max}
-          />
+            onChange={v => setParams(state => ({ ...state, max: v }))} 
+            value={params.max}
+            />
         </FlexContainer>
-      <FlexContainer direction='column' justify='space-between' gap={8}>
-        <NumberInput
+      </ValueWrapper>
+      <Hr/>
+      <RangeInput
         label='Step:'
-        value={step}
-        step={0.0001}
-        onChange={setStep} 
-        />
-        <NumberInput
-          label='Ramp:'
-          value={ramp}
-          onChange={setRamp} 
-        />
-      </FlexContainer>
-      <div>
-        Label:
-        <FlexContainer
-          direction='column'
-          gap={8}
-        >
-          <TextInput
-            value={label}
-            onChange={setLabel} 
-          />
-        </FlexContainer>
-      </div>
-    </FlexContainer>
+        value={params.step}
+        min={params.stepMin}
+        max={params.stepMax}
+        step={0.001}
+        onChange={v => setParams(state => ({ ...state, step: v }))}
+        numberInput
+        numberInputWidth={50}
+        adjustableBounds
+        onMinChange={v => setParams(state => ({ ...state, stepMin: v }))}
+        onMaxChange={v => setParams(state => ({ ...state, stepMax: v }))}
+        expanded={params.expanded.s}
+        onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, s: v }}))}
+      />
+      <Hr/>
+      <RangeInput
+        label='Ramp:'
+        value={params.ramp}
+        min={params.rampMin}
+        max={params.rampMax}
+        onChange={v => setParams(state => ({ ...state, ramp: v }))}
+        numberInput
+        numberInputWidth={50}
+        adjustableBounds
+        onMinChange={v => setParams(state => ({ ...state, rampMin: v }))}
+        onMaxChange={v => setParams(state => ({ ...state, rampMax: v }))}
+        expanded={params.expanded.r}
+        onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, r: v }}))}
+      />
+      <Hr/>
+      <TextInput
+        label='Label:'
+        value={params.label}
+        onChange={v => setParams(state => ({ ...state, label: v }))} 
+      />
   </FlexContainer>
 
   return (
@@ -248,7 +252,7 @@ export function Knob({ id, data }: KnobProps) {
         onPointerDown={handleDragStart} 
         className={`${!editMode && 'nopan'}`} 
       > 
-        <Label ref={labelRef} left={labelOffset}>{label}</Label>
+        <Label ref={labelRef} left={labelOffset}>{params.label}</Label>
         <Canvas ref={canvas} />
         <KnobSvg src={knobBg}/>
         </Background>
@@ -284,6 +288,7 @@ position: absolute;
 left: 0;
 top: 0;
 `
-const Fieldset = styled.fieldset`
-padding: 4px;
+
+const ValueWrapper = styled(FlexContainer)`
+margin: 4px 5px;
 `
