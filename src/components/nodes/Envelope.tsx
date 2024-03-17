@@ -60,8 +60,8 @@ export function Envelope({ id, data }: EnvelopeProps) {
     updateNode({ params })
   }, [params])
   
-  gate.port.onmessage = function({ data: up }) {
-    if (up) {
+  gate.port.onmessage = function({ data }) {
+    if (data.up) {
       startEnvelope()
     } else {
       stopEnvelope()

@@ -41,8 +41,10 @@ export class GateProcessor extends AudioWorkletProcessor {
         
         if (avg >= threshold && !this._up) {
           this._up = true
+          this.port.postMessage({ up: this._up })
         } else if (avg < threshold && this._up) {
           this._up = false
+          this.port.postMessage({ up: this._up })
         }
       } else if (input.length === 0 && this._up) {
         this._up = false
