@@ -50,13 +50,25 @@ export function Sidebar() {
       }
     ]
   }, {
-    title: 'AudioWorklet',
+    title: 'Custom nodes',
     active: false,
     items: [
       {
         id: 'bitcrusher',
         label: 'Bitcrusher'
       },
+      {
+        id: 'gate',
+        label: 'Gate'
+      },
+      {
+        id: 'envelope',
+        label: 'Envelope'
+      },
+      {
+        id: 'knob',
+        label: 'Knob'
+      }
     ]
   }, {
     title: 'Switches',
@@ -83,10 +95,7 @@ export function Sidebar() {
         id: 'text',
         label: 'Text'
       },
-      {
-        id: 'knob',
-        label: 'Knob'
-      }
+      
     ]
   }
   ])

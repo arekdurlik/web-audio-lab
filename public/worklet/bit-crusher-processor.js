@@ -29,25 +29,33 @@ class BitCrusherProcessor extends AudioWorkletProcessor {
     const frequencyReduction = parameters.frequencyReduction
     const isBitDepthConstant = bitDepth.length === 1
 
-    for (let channel = 0; channel < input.length; ++channel) {
-      const inputChannel = input[channel]
-      const outputChannel = output[channel]
-
-      let step = Math.pow(0.5, bitDepth[0])
-
-      for (let i = 0; i < inputChannel.length; ++i) {
-        if (!isBitDepthConstant) {
-          step = Math.pow(0.5, bitDepth[i])
+    try {
+      if (input.length > 0 && output.length > 0) {
+        for (let channel = 0; channel < input.length; ++channel) {
+          const inputChannel = input[channel]
+          const outputChannel = output[channel]
+    
+          let step = Math.pow(0.5, bitDepth[0])
+    
+          for (let i = 0; i < inputChannel.length; ++i) {
+            if (!isBitDepthConstant) {
+              step = Math.pow(0.5, bitDepth[i])
+            }
+    
+            if (i % frequencyReduction === 0) {
+              this.lastSampleValue = step * Math.floor(inputChannel[i] / step + 0.5)
+            }
+            outputChannel[i] = this.lastSampleValue
+          }
         }
-
-        if (i % frequencyReduction === 0) {
-          this.lastSampleValue = step * Math.floor(inputChannel[i] / step + 0.5)
-        }
-        outputChannel[i] = this.lastSampleValue
+        return true
+      } else {
+        return false
       }
+    } catch (error) {
+      this.port.postMessage(error)
+      return false
     }
-
-    return true
   }
 }
 

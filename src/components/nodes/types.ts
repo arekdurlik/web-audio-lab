@@ -24,6 +24,26 @@ export type GainProps = NodeProps & {
   }
 }
 
+export type EnvelopeParams = EnvelopeProps['data']['params']
+export type EnvelopeProps = NodeProps & {
+  data: {
+    params: {
+      a: number
+      aMin: number
+      aMax: number
+      d: number
+      dMin: number
+      dMax: number
+      s: number
+      sMin: number
+      sMax: number
+      r: number
+      rMin: number
+      rMax: number
+    }
+  }
+}
+
 export type AnalyserType = 'oscilloscope' | 'analyser' | 'vu-meter'
 export type AnalyserParams = AnalyserProps['data']['params']
 export type AnalyserProps = NodeProps & {
@@ -143,6 +163,20 @@ export type BitcrusherProps = NodeProps & {
     params: {
       bitDepth: number
       sampleRateReduction: number
+    }
+  }
+}
+
+export type GateParams = GateProps['data']['params']
+export type GateProps = NodeProps & {
+  data: {
+    params: {
+      threshold: number
+      min: number
+      max: number
+      ramp: number
+      rampMin: number
+      rampMax: number
     }
   }
 }

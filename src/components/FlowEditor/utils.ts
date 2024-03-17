@@ -16,6 +16,8 @@ import { Text } from '../nodes/Text'
 import { SPDTFork, SPDTJoin } from '../switches/SPDT'
 import { Analyser } from '../nodes/Analyser'
 import { Knob } from '../nodes/Knob'
+import { Gate } from '../nodes/Gate'
+import { Envelope } from '../nodes/Envelope'
 
 export const propOptions = {
   hideAttribution: true
@@ -55,6 +57,8 @@ export const nodeTypes = {
   knob: Knob,
 
   bitcrusher: Bitcrusher,
+  gate: Gate,
+  envelope: Envelope,
 
   spdtFork: SPDTFork,
   spdtJoin: SPDTJoin,

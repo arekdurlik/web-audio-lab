@@ -130,7 +130,7 @@ export function Analyser({ id, data }: AnalyserProps) {
     if (!checkFramePassed()) return
     
     instance.getFloatTimeDomainData(dataArray)
-    const dbArray = convertFloatArrayToUint8(dataArray, [-1,1])
+    const dbArray = convertFloatArrayToUint8(dataArray, [1,-1])
     
     const segmentWidth = canvas.current.width / instance.frequencyBinCount * (fitInScreenRef.current ? widthRef.current : 4)
     c.fillRect(0, 0, canvas.current.width, canvas.current.height)

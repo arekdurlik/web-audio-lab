@@ -15,6 +15,7 @@ async function createAudio() {
   const monoToStereo = createMonoToStereoConverter(actx)
 
   await actx.audioWorklet.addModule('worklet/bit-crusher-processor.js')
+  await actx.audioWorklet.addModule('worklet/gate-processor.js')
   
   monoToStereo.output.connect(circuit.in)
   circuit.out.connect(destination)
