@@ -7,9 +7,25 @@ import { useFlowStore } from '../../../stores/flowStore'
 const NAVBAR_HEIGHT = 47
 
 export function EdgeController({ edges }: { edges: Edge[] }) {
+  const [edgeWrapper, setEdgeWrapper] = useState({ el: document.createElement('div'), x: 0, y: 0})
   const [, forceUpdate] = useReducer(x => x + 1, 0)
   const [mutationObserver, setMutationObserver] = useState<MutationObserver | null>(null)
   const { getEdgeType } = useFlowStore()
+  const { x, y, zoom } = useViewport()
+  const [viewport, setViewport] = useState<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    setViewport(document.querySelector('.react-flow__viewport') as HTMLDivElement)
+    if (!viewport) return
+    viewport.style.position = 'relative'
+  }, [])
+  useEffect(() => {
+    if (!viewport) return
+
+    const style = getComputedStyle(viewport)
+    const matrix = new WebKitCSSMatrix(style.transform)
+    edgeWrapper.el.style.transform = `translate(${matrix.m41}px, ${matrix.m42}px)`
+  }, [x, y])
 
   useEffect(() => {
     // @ts-ignore Property 'handleResize' does not exist on type 'Element' duhh
@@ -18,7 +34,24 @@ export function EdgeController({ edges }: { edges: Edge[] }) {
       for (const e of entries)
         (e.target as HTMLElement & { handleMutation: Function }).handleMutation(e)
     }))
+
+    const rf = document.querySelector('.react-flow')
+    if (!rf) return
+
+    rf.appendChild(edgeWrapper.el)
   }, [])
+
+  useEffect(() => {
+    if (!mutationObserver) return
+    //@ts-ignore
+    edgeWrapper.el.handleMutation = function() {
+      const style = window.getComputedStyle(edgeWrapper.el)
+      const matrix = new WebKitCSSMatrix(style.transform)
+      setEdgeWrapper(state => ({ ...state, x: matrix.m41, y: matrix.m42 }))
+    }
+
+    mutationObserver.observe(edgeWrapper.el, { attributeFilter: ['style'] })
+  }, [mutationObserver])
 
   // force a re-render, otherwise edge state is stale
   useEffect(() => {
@@ -30,13 +63,14 @@ export function EdgeController({ edges }: { edges: Edge[] }) {
       <BezierEdge 
         key={edge.id}
         edge={edge} 
-        mutationObserver={mutationObserver} 
+        mutationObserver={mutationObserver}
+        edgeWrapper={edgeWrapper}
       />
     )}
   </>
 }
 
-function BezierEdge({ edge, mutationObserver }: { edge: Edge<any>, mutationObserver: MutationObserver | null }) {
+function BezierEdge({ edge, mutationObserver, edgeWrapper }: { edge: Edge<any>, mutationObserver: MutationObserver | null, edgeWrapper: { el: HTMLDivElement, x: number, y: number } }) {
   const [canvas, setCanvas] = useState(document.createElement('canvas'))
   const [ctx, setCtx] = useState<CanvasRenderingContext2D  | null>(null)
   const [el, setEl] = useState<Element | null>(null)
@@ -45,15 +79,14 @@ function BezierEdge({ edge, mutationObserver }: { edge: Edge<any>, mutationObser
   const sourceHandle = useRef<Element | null>(null)
   const targetHandle = useRef<Element | null>(null)
   const imgData = useRef(new Uint8ClampedArray())
-  const { x, y, zoom } = useViewport()
+  const { zoom } = useViewport()
 
   async function setupCanvas() {
     const el = await waitForElement(`.react-flow__edge-default[data-testid="rf__edge-${edge.id}"]`)
     if (!el) return
-    const rf = document.querySelector('.react-flow')
     const ctx = canvas.getContext('2d', { willReadFrequently: true })
 
-    if (!ctx || !rf || !el || !mutationObserver) return
+    if (!ctx || !el || !mutationObserver) return
 
     const path = el.querySelector('path')
     if (!path) return
@@ -78,7 +111,7 @@ function BezierEdge({ edge, mutationObserver }: { edge: Edge<any>, mutationObser
     setEl(el)
     setCanvas(canvas)
     setCtx(ctx)
-    rf.appendChild(canvas)
+    edgeWrapper.el.appendChild(canvas)
   }
 
   useEffect(() => {
@@ -100,19 +133,28 @@ function BezierEdge({ edge, mutationObserver }: { edge: Edge<any>, mutationObser
   }
 
   useEffect(() => {
-    if (!el || !canvas || !ctx || !sourceHandle || !targetHandle) return
+    if (!el) return
 
-    const { width, height, left, top } = el.getBoundingClientRect()
+    const { left, top } = el.getBoundingClientRect()
     
+    canvas.style.left = -edgeWrapper.x + left + 'px'
+    canvas.style.top = -edgeWrapper.y + (Math.floor(top - NAVBAR_HEIGHT)) + 'px'
+  }, [edgeWrapper.x, edgeWrapper.y])
+
+  useEffect(() => {
+    if (!el || !canvas || !ctx || !sourceHandle || !targetHandle) return
+    
+    const { width, height, left, top } = el.getBoundingClientRect()
     canvas.width = (width + 1) / zoom
     canvas.height = (height + 1) / zoom
     canvas.style.width = width + 1 + 'px'
     canvas.style.height = height + 1 + 'px'
-    
+
     canvas.style.position = 'absolute'
-    canvas.style.left = left + 'px'
-    canvas.style.top = (Math.floor(top - NAVBAR_HEIGHT)) + 'px'
     
+    canvas.style.left = -edgeWrapper.x + left + 'px'
+    canvas.style.top = -edgeWrapper.y + (Math.floor(top - NAVBAR_HEIGHT)) + 'px'
+
     let imageData: ImageData
     try { 
       imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
@@ -167,7 +209,7 @@ function BezierEdge({ edge, mutationObserver }: { edge: Edge<any>, mutationObser
       (x: number, y: number) => { setPixel(x, y, canvas.width) }
     )
     ctx.putImageData(imageData, 0, 0)
-  }, [x, y, zoom, el, sourceRect, targetRect])
+  }, [zoom, el, sourceRect, targetRect])
     
   return null
 }
