@@ -7,7 +7,7 @@ import { FlowWrapper, Fullscreen, GlobalStyle } from './styled'
 import { useFlowStore } from './stores/flowStore'
 
 function Style() {
-  const { editMode } = useFlowStore()
+  const editMode = useFlowStore(state => state.editMode)
 
   return <GlobalStyle editMode={editMode}/>
 }

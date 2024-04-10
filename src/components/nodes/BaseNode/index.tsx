@@ -13,6 +13,7 @@ import NodeRotate from '/svg/node_rotate.svg'
 import NodeExpand from '/svg/node_expand.svg'
 import SVG from 'react-inlinesvg'
 import { useFlowStore } from '../../../stores/flowStore'
+import { Tooltip } from '../../ui/Tooltip'
 
 export const Node: FC<NodeProps> = function({ 
   id, 
@@ -31,6 +32,7 @@ export const Node: FC<NodeProps> = function({
   disableRemoval,
   disableBackground,
   disableBorder,
+  borderColor = '#000',
   background,
   optionsColor,
   valueFont,
@@ -38,6 +40,7 @@ export const Node: FC<NodeProps> = function({
   valueUnit,
   constantSize,
   optionsStyle,
+  labelPosition,
   onRotate
 }) {
   const [rotation, setRotation] = useState<0 | 1 | 2 | 3>(data.rotation ?? 0)
@@ -75,6 +78,7 @@ export const Node: FC<NodeProps> = function({
       type: socket.type,
       position: positions[rotation][getEdgeIndex(socket.edge)],
       offset: socket.offset instanceof Array ? socket.offset[rotation] + 0.5 : socket.offset + 0.5,
+      tooltip: socket.tooltip
     }
     switch (socket.visual) {
       case 'circle': return <LineHandle {...props} alwaysVisible color={active} />
@@ -96,18 +100,20 @@ export const Node: FC<NodeProps> = function({
         disableBorder={disableBorder}
         active={expanded}
       >
-        {background && <Background disableBorder={disableBorder}>{background}</Background>}
+        {background && <Background disableBorder={disableBorder} borderColor={borderColor}>{background}</Background>}
         {active && <HoverOptions color={optionsColor} style={optionsStyle}>
           <LeftOptions>
-            {parameters && <Expand onClick={handleExpand}>
-              <Option title={`${expanded ? 'Hide' : 'Show'} parameters`} src={NodeExpand} width={8} height={8} $rotate={!expanded} /> 
-            </Expand>}
+            {parameters && <Tooltip delay={1000} content={`${expanded ? 'Hide' : 'Show'} parameters`}>
+              <Expand onClick={handleExpand}>
+                <Option src={NodeExpand} width={8} height={8} $rotate={!expanded} /> 
+              </Expand>
+            </Tooltip>}
             {editMode && <Option title='Rotate node' src={NodeRotate} onClick={handleRotate}  width={8} height={8}/>}
           </LeftOptions>
           {(!disableRemoval && editMode) && <Option title='Delete node' src={NodeDelete} width={8} height={8} onClick={deleteNode}/>}
         </HoverOptions>}
         {handles}
-        <NodeTitle rotation={rotation}>{name}</NodeTitle>
+        <NodeTitle position={labelPosition} rotation={rotation}>{name}</NodeTitle>
         <Value 
           color={valueColor}
           font={valueFont}
@@ -140,10 +146,10 @@ width: 100%;
 ${({ color }) => color && `color: ${color};`}
 ${({ font }) => font && `font-family: '${font}';`}
 `
-const Background = styled.div<{ disableBorder?: boolean }>`
+const Background = styled.div<{ disableBorder?: boolean, borderColor: string }>`
 position: absolute;
 inset: 0;
-${({ disableBorder }) => !disableBorder && 'border: 1px black solid;'}
+${({ disableBorder, borderColor }) => !disableBorder && `border: 1px ${borderColor} solid;`}
 `
 
 const Option = styled(SVG)<{ $rotate?: boolean }>`

@@ -51,6 +51,14 @@ export function Envelope({ id, data }: EnvelopeProps) {
     setInstance(inputId, input, 'target')
     setInstance(outputId, envelope, 'source')
 
+    gate.port.onmessage = function({ data }) {
+      if (data.up) {
+        startEnvelope()
+      } else {
+        stopEnvelope()
+      }
+    }
+
     input.connect(gate)
     constant.connect(envelope)
     try { constant.start() } catch {}
@@ -59,14 +67,6 @@ export function Envelope({ id, data }: EnvelopeProps) {
   useEffect(() => {
     updateNode({ params })
   }, [params])
-  
-  gate.port.onmessage = function({ data }) {
-    if (data.up) {
-      startEnvelope()
-    } else {
-      stopEnvelope()
-    }
-  }
 
   function startEnvelope() {
     envelope.gain.cancelScheduledValues(audio.context.currentTime)

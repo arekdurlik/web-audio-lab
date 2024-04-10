@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tippyjs/react": "^4.2.6",
     "@types/wicg-file-system-access": "^2023.10.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

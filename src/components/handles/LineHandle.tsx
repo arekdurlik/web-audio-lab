@@ -1,7 +1,7 @@
 import { Handle, Position } from 'reactflow'
 import styled from 'styled-components'
-import { Label } from './styled'
 import { useFlowStore } from '../../stores/flowStore'
+import { Tooltip } from '../ui/Tooltip'
 
 type HandleProps = {
   id: string
@@ -12,10 +12,13 @@ type HandleProps = {
   alwaysVisible?: boolean
   disableColor?: boolean
   color?: boolean
+  tooltip?: string
 }
 
-export function LineHandle({ id, label, type, position, offset = 20, alwaysVisible, color }: HandleProps) {
-  const { editMode } = useFlowStore()
+export function LineHandle({ id, label, type, position, offset = 20, alwaysVisible, color, tooltip }: HandleProps) {
+  const editMode = useFlowStore(state => state.editMode)
+  const zoom = useFlowStore(state => state.zoom)
+
   const direction = (function getDirection() {
     switch(position) {
       case Position.Left:
@@ -33,22 +36,24 @@ export function LineHandle({ id, label, type, position, offset = 20, alwaysVisib
     }
   })()
   
-  return (
-    <StyledLineHandle
-      id={id}
-      type={type}
-      direction={direction}
-      position={position}
-      offset={offset}
-      $color={color}
-      $alwaysVisible={alwaysVisible}
-      $visible={editMode}
-    >
-      <Label position={position}>
-        {label}
-      </Label>
-    </StyledLineHandle>
-  )
+  const Handle = <StyledLineHandle
+    id={id}
+    type={type}
+    direction={direction}
+    position={position}
+    offset={offset}
+    $color={color}
+    $alwaysVisible={alwaysVisible}
+    $visible={editMode}
+  >
+    <Label position={position}>
+      {label}
+    </Label>
+  </StyledLineHandle>
+
+  return <>
+    {tooltip ? <Tooltip zoom={zoom} content={tooltip}>{Handle}</Tooltip> : Handle}
+  </>
 }
 
 
@@ -162,4 +167,24 @@ ${({ position, type }) => type === 'target'
     ${({ $color }) => !$color && `filter: saturate(0) brightness(10);`}
   }
 }
+`
+
+const Label = styled.span<{ position: Position }>`
+position: absolute;
+font-size: 11px;
+
+${({ position }) => {
+  switch (position) {
+    case Position.Right: return `right: 1px;
+    bottom: -4px;`
+    case Position.Bottom: return `
+    rotate: -90deg;
+    bottom: 6.5px;
+    left: -7px`
+    case Position.Left: return `left: 2px;
+    bottom: -4px`
+    case Position.Top: return `top: -2px;
+    left: 8px`
+  }
+}}
 `

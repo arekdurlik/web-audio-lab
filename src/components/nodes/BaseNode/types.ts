@@ -1,11 +1,12 @@
 import { ReactNode } from 'react'
 
 export type Socket = {
-  id: string,
-  label?: string,
-  visual?: 'line' | 'param' | 'circle',
-  type: 'target' | 'source',
-  edge: Edge,
+  id: string
+  label?: string
+  tooltip?: string
+  visual?: 'line' | 'param' | 'circle'
+  type: 'target' | 'source'
+  edge: Edge
   offset: number | [number, number, number, number]
 }
 export type Edge = 'left' | 'top' | 'right' | 'bottom'
@@ -30,6 +31,7 @@ export type NodeProps = {
   disableRemoval?: boolean
   disableBackground?: boolean
   disableBorder?: boolean
+  borderColor?: string
   background?: ReactNode
   optionsColor?: string
   valueFont?: string
@@ -39,7 +41,7 @@ export type NodeProps = {
   optionsStyle?: {
     [x:string]: string
   }
-
+  labelPosition?: [[number, number], [number, number]]
   onRotate?: (value?: Rotation) => any
 }
 

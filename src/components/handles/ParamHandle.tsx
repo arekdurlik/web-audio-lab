@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { Label } from './styled'
 import param from '/svg/param.svg'
 import SVG from 'react-inlinesvg'
+import { Tooltip } from '../ui/Tooltip'
 
 type HandleProps = {
   id: string
@@ -10,9 +11,10 @@ type HandleProps = {
   type: 'target' | 'source'
   position: Position
   offset: number
+  tooltip?: string
 }
 
-export function ParamHandle({ id, label, type, position, offset = 20 }: HandleProps) {
+export function ParamHandle({ id, label, type, position, offset = 20, tooltip }: HandleProps) {
   const direction = (function() {
     switch(position) {
       case Position.Left:
@@ -38,8 +40,8 @@ export function ParamHandle({ id, label, type, position, offset = 20 }: HandlePr
       case 'bottom': return '5,6  0,1   10,1'
     }
   })()
-  return (
-    <StyledHandle
+
+  const Handle = <StyledHandle
       id={id}
       type={type}
       direction={direction}
@@ -52,7 +54,10 @@ export function ParamHandle({ id, label, type, position, offset = 20 }: HandlePr
         {label}
       </Label>
     </StyledHandle>
-  )
+
+  return <>
+    {tooltip ? <Tooltip content={tooltip}>{Handle}</Tooltip> : Handle}
+  </>
 }
 
 const Triangle = styled(SVG)<{ direction: 'right' | 'bottom' | 'left' | 'top' }>`

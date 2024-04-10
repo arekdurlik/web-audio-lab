@@ -144,8 +144,8 @@ export function Analyser({ id, data }: AnalyserProps) {
     }
     
     c.beginPath()
-    c.moveTo(0, (canvas.current.height * 1/4 + 0.75))
-    c.lineTo(canvas.current.width, (canvas.current.height * 1/4 + 0.75))
+    c.moveTo(0, (canvas.current.height * 1/4 - 0.25))
+    c.lineTo(canvas.current.width, (canvas.current.height * 1/4 - 0.25))
     c.stroke()
     
     c.beginPath()
@@ -154,8 +154,8 @@ export function Analyser({ id, data }: AnalyserProps) {
     c.stroke()
     
     c.beginPath()
-    c.moveTo(0, (canvas.current.height * 3/4 - 0.75))
-    c.lineTo(canvas.current.width, (canvas.current.height * 3/4 - 0.75))
+    c.moveTo(0, (canvas.current.height * 3/4 + 0.25))
+    c.lineTo(canvas.current.width, (canvas.current.height * 3/4 + 0.25))
     c.stroke()
     
     const imageData = c.getImageData(0, 0, canvas.current.width, canvas.current.height)
@@ -362,6 +362,7 @@ export function Analyser({ id, data }: AnalyserProps) {
       valueUnit={params.type === 'oscilloscope' ? 'x' : undefined}
       width={params.width * 3}
       parametersWidth={193}
+      borderColor='#003300'
       background={<Background ref={canvasWrapper}><Canvas ref={canvas}/></Background>}
     />
   )

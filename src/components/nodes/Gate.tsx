@@ -40,9 +40,6 @@ export function Gate({ id, data }: GateProps) {
 
   useEffect(() => {
     setInstance(audioId, instance.current, 'source')
-    instance.current.port.onmessage = function({ data }) {
-      console.log(data)
-    }
     instance.current.onprocessorerror = function(e) {
       console.error(e)
     }

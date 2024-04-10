@@ -34,7 +34,7 @@ export function SelectInput({ value, label, onChange, expanded, onExpandChange, 
           value={value}
           onChange={onChange} 
           >
-          {options.map(o => <option value={o.value}>{o.label}</option>)}
+          {options.map((o, i) => <option key={i} value={o.value}>{o.label}</option>)}
         </Input>
       </ExpandableInputContent>
     </ExpandableInputWrapper>

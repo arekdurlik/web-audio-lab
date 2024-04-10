@@ -23,7 +23,7 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
   const audioId = `${id}-audio`
   const instance = useRef(new WaveShaperNode(audio.context, { oversample: params.oversample }))
   const setInstance = useNodeStore(state => state.setInstance)
-  const { updateNode } = useUpdateFlowNode(id)
+const { updateNode } = useUpdateFlowNode(id)
   const sockets: Socket[] = [
     {
       id: audioId,

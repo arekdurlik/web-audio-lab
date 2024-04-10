@@ -201,7 +201,7 @@ export function Knob({ id, data }: KnobProps) {
         value={params.step}
         min={params.stepMin}
         max={params.stepMax}
-        step={0.001}
+        step={0.0001}
         onChange={v => setParams(state => ({ ...state, step: v }))}
         numberInput
         numberInputWidth={50}

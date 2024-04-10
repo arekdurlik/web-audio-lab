@@ -1,18 +1,16 @@
-import { ChangeEvent, useEffect, useState } from 'react'
 import { useFlowStore } from '../../stores/flowStore'
-import { useReactFlow } from 'reactflow'
+import { ReactFlowJsonObject, useReactFlow } from 'reactflow'
 import styled from 'styled-components'
 import { FlexContainer } from '../../styled'
 import { audio } from '../../main'
-import { presets } from '../../presets'
-import smooth from '/icons/edge_smooth.png'
-import smoothLines from '/icons/edge_smooth_lines.png'
-import sharp from '/icons/edge_sharp.png'
-import sharpLines from '/icons/edge_sharp_lines.png'
-import zoomIn from '/icons/zoom_in.png'
-import zoomOut from '/icons/zoom_out.png'
 import { surface } from '../../98'
+import { useEffect } from 'react'
+import { Tooltip } from './Tooltip'
 
+type Save = {
+  edges: 'default' | 'smoothstep'
+  flow: ReactFlowJsonObject
+}
 export function Navbar() {
   const reactFlowInstance = useReactFlow()
   const { edgeType, editMode, setEdgeType, setEditMode } = useFlowStore()
@@ -24,19 +22,6 @@ export function Navbar() {
     })
     reactFlowInstance.setEdges(newEdges)
   }, [edgeType])
-
-  function handleLoadPreset(event: ChangeEvent<HTMLSelectElement>) {
-    const index = presets.find(save => save.id === event.target.value)
-
-    if (!index) return
-    reactFlowInstance.setEdges([])
-    reactFlowInstance.setNodes([])
-    setTimeout(() => {
-      reactFlowInstance.setEdges(index.obj.edges)
-      reactFlowInstance.setNodes(index.obj.nodes)
-      reactFlowInstance.setViewport(index.obj.viewport)
-    })
-  }
 
   function handleReload() {
     const edges = reactFlowInstance.getEdges()
@@ -53,7 +38,10 @@ export function Navbar() {
   }
 
   async function handleSave() {
-    const saveObj = JSON.stringify(reactFlowInstance.toObject())
+    const saveObj = JSON.stringify({
+      edges: edgeType,
+      flow: (reactFlowInstance.toObject())
+    })
 
     const handle = await showSaveFilePicker({
       suggestedName: 'circuit.json',
@@ -89,15 +77,20 @@ export function Navbar() {
 
         if (typeof result !== 'string') return
 
-        const obj = JSON.parse(result)
-
-        reactFlowInstance.setEdges([])
-        reactFlowInstance.setNodes([])
-        setTimeout(() => {
-          reactFlowInstance.setEdges(obj.edges)
-          reactFlowInstance.setNodes(obj.nodes)
-          reactFlowInstance.setViewport(obj.viewport)
-        })
+        const obj = JSON.parse(result) as Save
+        
+        if (obj.hasOwnProperty('flow') && obj.hasOwnProperty('edges')) {
+          reactFlowInstance.setEdges([])
+          reactFlowInstance.setNodes([])
+          setTimeout(() => {
+            reactFlowInstance.setEdges(obj.flow.edges)
+            reactFlowInstance.setNodes(obj.flow.nodes)
+            reactFlowInstance.setViewport(obj.flow.viewport)
+            setEdgeType(obj.edges)
+          })
+        } else {
+          console.error('Invalid save file format.')
+        }
       }
       fileReader.readAsText(file)
   }
@@ -111,10 +104,9 @@ export function Navbar() {
   }
 
   return (
-    <div>
+    <div onWheel={e => { e.stopPropagation() }}>
       <TopBar>
         <TopBarButton>File</TopBarButton>
-        <TopBarButton>Nodes</TopBarButton>
         <TopBarButton>Presets</TopBarButton>
         <TopBarButton>Options</TopBarButton>
         <TopBarButton>Help</TopBarButton>
@@ -123,23 +115,17 @@ export function Navbar() {
       
       <FlexContainer justify='space-between' width='100%'>
         <FlexContainer align='center' gap={5}>
-          {/* <Logo>Web Audio Lab</Logo> */}
           <Button>New</Button>
           <Button onClick={handleSave}>Save</Button>
           <Button onClick={handleLoad}>Load</Button>
-          <Button onClick={handleReload}>Reload</Button>
+          <Tooltip content='Reload all nodes (can lower latency)'>
+            <Button onClick={handleReload}>Reload</Button>
+          </Tooltip>
           <Button className={`${editMode && 'active'}`} onClick={() => setEditMode(!editMode)}>Edit mode</Button>
     
           <Button className={`${edgeType === 'smoothstep' && 'active'}`} onClick={setStep}>Step edge</Button>
           <Button className={`${edgeType === 'default' && 'active'}`} onClick={setBezier}>Bezier edge</Button>
         </FlexContainer>
-        {/* <FlexContainer justify='flex-end' align='center' gap={10}>
-        Load preset:
-        <Select onChange={handleLoadPreset}>
-          <option key='null'></option>
-          {presets.map((o, i) => <option key={i} value={o.id}>{o.id}</option>)}
-        </Select>
-        </FlexContainer> */}
       </FlexContainer>
       </BottomBar>
     </div>
@@ -177,82 +163,7 @@ border: 1px outset;
 padding-inline: 2px;
 `
 
-const Logo = styled.span`
-font-size: 32px;
-color: darkred;
-font-weight: 600;
-font-style: italic;
-font-family: 'Pixel';
-font-smoothing: none;
--webkit-font-smoothing: none;
-display: flex;
-gap: 10px;
-text-shadow: 
-  3px 3px 2px #00000022;
-position: relative;
-padding-inline: 10px;
-`
-
-const Trademark = styled.span`
-font-size: 11px;
-font-weight: 900;
-`
 const Button = styled.button`
 padding: 5px 15px;
 min-width: auto;
-`
-
-const IconButton = styled(Button)`
-width: 24px;
-padding: 0;
-display: flex;
-justify-content: center;
-align-items: center;
-`
-
-const Section = styled.div`
-position: relative;
-display: flex;
-flex-direction: column;
-padding-right: 10px;
-margin-right: 10px;
-gap: 2px;
-margin-top: 3px;
-
-
-
-&:after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 3px;
-  height: 18px;
-  width: 1px;
-  background-color: #aaa;
-}
-`
-
-const SectionTitle = styled.span`
-font-size: 11px;
-`
-
-const SectionOptions = styled.div`
-display: flex;
-gap: 1px;
-`
-const Icon = styled.img`
-
-`
-
-const Input = styled.input`
-padding: 9px;
-font-size: 16px;
-border: 2px inset;
-outline: none;
-`
-
-const Select = styled.select`
-font-size: 16px;
-border: 2px inset;
-outline: none;
 `

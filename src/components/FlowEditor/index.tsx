@@ -28,7 +28,8 @@ export function FlowEditor() {
   const reactFlowInstance = useReactFlow()
   const setConnections = useNodeStore(state => state.setConnections)
   const edgeUpdateSuccessful = useRef(true)
-  const { getEdgeType, editMode }= useFlowStore()
+  const getEdgeType = useFlowStore(state => state.getEdgeType)
+  const editMode = useFlowStore(state => state.editMode)
 
   useEffect(() => {
     const connections = edges.map(edge => ({ source: edge.sourceHandle, target: edge.targetHandle }))

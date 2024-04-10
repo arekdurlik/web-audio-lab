@@ -7,7 +7,7 @@ import { ExpandableInputWrapper, InputLabel } from '../../inputs/styled'
 import { CheckboxInput, CheckboxWrapper } from '../../inputs/CheckboxInput'
 import { TextInputWrapper } from '../../inputs/TextInput'
 
-export const NodeTitle = styled.span<{ rotation?: 0 | 1 | 2 | 3 }>`
+export const NodeTitle = styled.span<{ rotation?: 0 | 1 | 2 | 3, position?: [[number, number], [number, number]] }>`
   font-size: 11px;
   text-align: center;
   display: flex;
@@ -24,6 +24,13 @@ export const NodeTitle = styled.span<{ rotation?: 0 | 1 | 2 | 3 }>`
       case 3: return 'rotate: -90deg;'
     }
   }}
+
+${({ position, rotation }) => position && `
+  position: absolute;
+  transform-origin: 51% 50%;
+  left: ${rotation === 0 || rotation === 2 ? position[0][0] : position[1][0]}px;
+  top: ${rotation === 0 || rotation === 2 ? position[0][1] : position[1][1]}px;
+`}
 `
 
 export const NodeContainer = styled.div<{ width?: number, height?: number, rotation?: number, disableBackground?: boolean, disableBorder?: boolean, active?: boolean }>`
