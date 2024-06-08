@@ -28,7 +28,6 @@ class BitCrusherProcessor extends AudioWorkletProcessor {
     const bitDepth = parameters.bitDepth
     const frequencyReduction = parameters.frequencyReduction
     const isBitDepthConstant = bitDepth.length === 1
-
     try {
       if (input.length > 0 && output.length > 0) {
         for (let channel = 0; channel < input.length; ++channel) {
@@ -48,10 +47,8 @@ class BitCrusherProcessor extends AudioWorkletProcessor {
             outputChannel[i] = this.lastSampleValue
           }
         }
-        return true
-      } else {
-        return false
       }
+      return true
     } catch (error) {
       this.port.postMessage(error)
       return false

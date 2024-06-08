@@ -19,24 +19,48 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
     ...{ source: 'brown-noise', playbackRate: 1, playing: false, loop: true, expanded: { s: true, pr: true }},
     ...data.params
   })
-  
+  const playingRef = useRef(params.playing)
+
   const [loadedFiles, setLoadedFiles] = useState<Map<string, { name: string, buffer: AudioBuffer }>>(new Map()
   .set('white-noise', { name: 'White noise', buffer: createWhiteNoiseBuffer(audio.context) })
   .set('pink-noise', { name: 'Pink noise', buffer: createPinkNoiseBuffer(audio.context) })
   .set('brown-noise', { name: 'Brown noise', buffer: createBrownianNoiseBuffer(audio.context) })
   )
   const instance = useRef<AudioBufferSourceNode | null>()
+  const counterSource = useRef<AudioBufferSourceNode | null>()
+  const duration = useRef(new ConstantSourceNode(audio.context, { offset: 0 }))
+  const trigger = useRef(new ConstantSourceNode(audio.context, { offset: 0 }))
+  const playbackRateParam = useRef(new ConstantSourceNode(audio.context, { offset: 0 }))
+  const prp = useRef(new AudioWorkletNode(audio.context, 'playback-reporting-processor'))
+
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const setInstance = useNodeStore(state => state.setInstance)
   const { updateNode } = useUpdateFlowNode(id)
 
   const audioId = `${id}-audio`
+  const durationId = `${id}-duration`
+  const triggerId = `${id}-trigger`
   const controlVoltageId = `${id}-cv`
   const sockets: Socket[] = [
+    {
+      id: triggerId,
+      type: 'source',
+      edge: 'right',
+      tooltip: 'Playback trigger',
+      offset: 56
+    },
+    {
+      id: durationId,
+      type: 'source',
+      edge: 'right',
+      tooltip: 'Duration',
+      offset: 40
+    },
     {
       id: audioId,
       type: 'source',
       edge: 'right',
+      tooltip: 'Audio',
       offset: 24
     },
     {
@@ -45,15 +69,40 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
       visual: 'param',
       type: 'target',
       edge: 'top',
-      offset: 48
+      offset: 48.5
     },
   ]
-
+  
   useEffect(() => {
+    setInstance(controlVoltageId, playbackRateParam.current.offset, 'param')
+    
+    prp.current.port.onmessage = function() {
+      if (!playingRef.current) return
+
+      trigger.current.offset.cancelScheduledValues(audio.context.currentTime)
+      trigger.current.offset.value = 1
+      trigger.current.offset.setValueAtTime(0, audio.context.currentTime + 0.1)
+    }
+    
+    try {
+      playbackRateParam.current.start()
+      trigger.current.start()
+      duration.current.start()
+    } catch {}
+
     return () => { try { 
       instance.current?.stop()
+      counterSource.current?.stop() 
      } catch {} }
   }, [])
+
+  useEffect(() => {
+    if (params.playing) {
+      trigger.current.offset.cancelScheduledValues(audio.context.currentTime)
+      trigger.current.offset.value = 1
+      trigger.current.offset.setValueAtTime(0, audio.context.currentTime + 0.03)
+    }
+  }, [params.playing])
 
   useEffect(() => {
     updateNode({ params })
@@ -61,7 +110,10 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
   
   useEffect(() => {
     if (params.playing) {
-      try { instance.current?.stop() } catch {}
+      try { 
+        instance.current?.stop() 
+        counterSource.current?.stop() 
+      } catch {}
       
       const buffer = loadedFiles.get(params.source)?.buffer
 
@@ -69,27 +121,59 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
         startBuffer(buffer)
       } else {
         console.error('Error starting buffer')
-        setParams(state => ({ ...state, playing: false }))
+        setPlaying(false)
       }
 
     } else {
-      try { instance.current?.stop() } catch {}
+      try { 
+        instance.current?.stop() 
+        counterSource.current?.stop()
+      } catch {}
     }
   }, [params.playing])
+
+  function setPlaying(value: boolean) {
+    setParams(state => ({ ...state, playing: value }))
+        playingRef.current = value
+  }
   
   function startBuffer(buffer: AudioBuffer) {
     if (params.playing && instance.current) {
-      try { instance.current.stop() } catch {}
+      try { 
+        instance.current.stop() 
+        counterSource.current?.stop()
+      } catch {}
     }
 
     instance.current = new AudioBufferSourceNode(audio.context, { buffer, loop: params.loop })
+    counterSource.current = new AudioBufferSourceNode(audio.context, { loop: params.loop })
+    playbackRateParam.current.connect(instance.current.playbackRate)
+    playbackRateParam.current.connect(counterSource.current.playbackRate)
+
+    const counterBuffer = audio.context.createBuffer(1, buffer.length, audio.context.sampleRate)
+    const length = counterBuffer.length
+    counterSource.current.buffer = counterBuffer
+    
+    // [0, 1)
+    for (let i = 0; i < length; ++i) {
+      counterBuffer.getChannelData(0)[i] = i / length
+    }
+
+    counterSource.current.connect(prp.current)
+    counterSource.current.start()
+    duration.current.offset.value = buffer.duration
+    
     setInstance(audioId, instance.current, 'source')
-    setInstance(controlVoltageId, instance.current.playbackRate, 'param')
+    setInstance(durationId, duration.current, 'source')
+    setInstance(triggerId, trigger.current, 'source')
+    
     instance.current.playbackRate.value = params.playbackRate
+    counterSource.current.playbackRate.value = params.playbackRate
+
     instance.current.start()
     instance.current.onended = () => {
       if (!params.loop) { 
-        setParams(state => ({ ...state, playing: false }))
+        setPlaying(false)
       }
     }
   }
@@ -133,15 +217,16 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
   function handlePlaybackRate(value: number) {
     setParams(state => ({ ...state, playbackRate: value }))
 
-  if (instance.current) {
+  if (instance.current && counterSource.current) {
       instance.current.playbackRate.setValueAtTime(value, audio.context.currentTime)
+      counterSource.current.playbackRate.setValueAtTime(value, audio.context.currentTime)
     }
   }
 
   const Parameters = <FlexContainer direction='column'>
     <FlexContainer align='center'>
       <PlayButton 
-        onClick={() => setParams(state => ({ ...state, playing: !state.playing }))}
+        onClick={() => { setParams(state => ({ ...state, playing: !state.playing })); playingRef.current = !playingRef.current}}
         onMouseDownCapture={(e) => e.stopPropagation()}
         onPointerDownCapture={(e) => e.stopPropagation()}
       >
@@ -190,10 +275,12 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
     <Node 
       id={id}
       name='Audio source'
+      height={5}
       data={data}
       sockets={sockets}
       parameterPositions={['bottom', 'left', 'top', 'right']}
       parameters={Parameters}
+      labelPosition={[[18, 0], [9, 0]]}
     />
   )
 }
