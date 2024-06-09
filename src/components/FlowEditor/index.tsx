@@ -16,7 +16,7 @@ import { FlowControls } from './Controls'
 import { useNodeStore } from '../../stores/nodeStore'
 import { useFlowStore } from '../../stores/flowStore'
 import styled from 'styled-components'
-import { EdgeController } from './EdgeController'
+import { EdgeController } from './EdgeController/index'
 import { ZoomController } from './ZoomController'
 import { CustomBackground } from './CustomBackground'
 import { RoundViewport } from './RoundViewport'
@@ -29,6 +29,7 @@ export function FlowEditor() {
   const setConnections = useNodeStore(state => state.setConnections)
   const edgeUpdateSuccessful = useRef(true)
   const getEdgeType = useFlowStore(state => state.getEdgeType)
+  const setPanning = useFlowStore(state => state.setPanning)
   const editMode = useFlowStore(state => state.editMode)
 
   useEffect(() => {
@@ -114,7 +115,8 @@ export function FlowEditor() {
       onDrop={onDrop}
       onDragOver={onDragOver}
       proOptions={propOptions}
-      
+      onMoveStart={() => setPanning(true)}
+      onMoveEnd={() => setPanning(false)}
       nodesDraggable={editMode}
       edgesFocusable={editMode}
       nodesConnectable={editMode}

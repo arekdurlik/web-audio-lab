@@ -4,15 +4,16 @@ import { plotCubicBezier } from './bezier'
 import { range, waitForElement } from '../../../helpers'
 import { useFlowStore } from '../../../stores/flowStore'
 
-const NAVBAR_HEIGHT = 47
+const NAVBAR_HEIGHT = 19
 
 export function EdgeController({ edges }: { edges: Edge[] }) {
   const [edgeWrapper, setEdgeWrapper] = useState({ el: document.createElement('div'), x: 0, y: 0})
-  const [, forceUpdate] = useReducer(x => x + 1, 0)
   const [mutationObserver, setMutationObserver] = useState<MutationObserver | null>(null)
   const { getEdgeType } = useFlowStore()
   const { x, y, zoom } = useViewport()
   const [viewport, setViewport] = useState<HTMLDivElement | null>(null)
+  const panning = useFlowStore(state => state.panning)
+  const prevZoom = useRef(zoom)
 
   useEffect(() => {
     setViewport(document.querySelector('.react-flow__viewport') as HTMLDivElement)
@@ -24,11 +25,20 @@ export function EdgeController({ edges }: { edges: Edge[] }) {
 
     const style = getComputedStyle(viewport)
     const matrix = new WebKitCSSMatrix(style.transform)
+
+    // reduce beziers jumping around during zooming in and out
+    if (!panning || prevZoom.current !== zoom) {
+      prevZoom.current = zoom
+      setTimeout(() => edgeWrapper.el.style.transform = `translate(${matrix.m41}px, ${matrix.m42}px)`)
+      return
+    }
+    prevZoom.current = zoom
+    
     edgeWrapper.el.style.transform = `translate(${matrix.m41}px, ${matrix.m42}px)`
   }, [x, y])
 
   useEffect(() => {
-    // @ts-ignore Property 'handleResize' does not exist on type 'Element' duhh
+    // @ts-ignore Property 'handleMutation' does not exist on type 'Element' duhh
     Element.prototype.handleMutation = function() {}
     setMutationObserver(new MutationObserver(function moDispatchCallback(entries) {
       for (const e of entries)
@@ -43,7 +53,7 @@ export function EdgeController({ edges }: { edges: Edge[] }) {
 
   useEffect(() => {
     if (!mutationObserver) return
-    //@ts-ignore
+    // @ts-ignore Property 'handleMutation' does not exist on type 'Element' duhh
     edgeWrapper.el.handleMutation = function() {
       const style = window.getComputedStyle(edgeWrapper.el)
       const matrix = new WebKitCSSMatrix(style.transform)
@@ -53,10 +63,6 @@ export function EdgeController({ edges }: { edges: Edge[] }) {
     mutationObserver.observe(edgeWrapper.el, { attributeFilter: ['style'] })
   }, [mutationObserver])
 
-  // force a re-render, otherwise edge state is stale
-  useEffect(() => {
-    forceUpdate()
-  }, [edges])
 
   return <>
     {getEdgeType() === 'default' && edges.map(edge => 
@@ -82,6 +88,7 @@ function BezierEdge({ edge, mutationObserver, edgeWrapper }: { edge: Edge<any>, 
   const { zoom } = useViewport()
 
   async function setupCanvas() {
+
     const el = await waitForElement(`.react-flow__edge-default[data-testid="rf__edge-${edge.id}"]`)
     if (!el) return
     const ctx = canvas.getContext('2d', { willReadFrequently: true })
@@ -137,23 +144,23 @@ function BezierEdge({ edge, mutationObserver, edgeWrapper }: { edge: Edge<any>, 
 
     const { left, top } = el.getBoundingClientRect()
     
-    canvas.style.left = -edgeWrapper.x + left + 'px'
-    canvas.style.top = -edgeWrapper.y + (Math.floor(top - NAVBAR_HEIGHT)) + 'px'
+    canvas.style.left = -edgeWrapper.x + Math.round(left) - (0.5 * zoom) + 'px'
+    canvas.style.top = -edgeWrapper.y + (Math.floor(top - NAVBAR_HEIGHT)) - (2 * zoom) + 'px'
   }, [edgeWrapper.x, edgeWrapper.y])
 
   useEffect(() => {
     if (!el || !canvas || !ctx || !sourceHandle || !targetHandle) return
     
     const { width, height, left, top } = el.getBoundingClientRect()
-    canvas.width = (width + 1) / zoom
-    canvas.height = (height + 1) / zoom
-    canvas.style.width = width + 1 + 'px'
-    canvas.style.height = height + 1 + 'px'
+    canvas.width = ((width) / zoom) + 0
+    canvas.height = ((height) / zoom) + 0
+    canvas.style.width = width + 0 + 'px'
+    canvas.style.height = height + 0 + 'px'
 
     canvas.style.position = 'absolute'
     
-    canvas.style.left = -edgeWrapper.x + left + 'px'
-    canvas.style.top = -edgeWrapper.y + (Math.floor(top - NAVBAR_HEIGHT)) + 'px'
+    canvas.style.left = -edgeWrapper.x + Math.round(left) - (0.5 * zoom) + 'px'
+    canvas.style.top = -edgeWrapper.y + (Math.floor(top - NAVBAR_HEIGHT)) - (2 * zoom) + 'px'
 
     let imageData: ImageData
     try { 
