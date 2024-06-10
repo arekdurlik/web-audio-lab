@@ -4,7 +4,7 @@ const button_highlight = '#ffffff'
 export const button_face = '#dfdfdf'
 const button_shadow = '#808080'
 const window_frame = '#0a0a0a'
-const dialog_blue = '#000080'
+export const dialog_blue = '#000080'
 const dialog_blue_light = '#1084d0'
 const dialog_gray = '#808080'
 const dialog_gray_light = '#b5b5b5'
@@ -26,6 +26,10 @@ const border_raised_outer = `inset -1px -1px ${window_frame}, inset 1px 1px ${bu
 const border_raised_inner = `inset -2px -2px ${button_shadow}, inset 2px 2px ${button_face}`
 const border_sunken_outer = `inset -1px -1px ${button_highlight}, inset 1px 1px ${window_frame}`
 const border_sunken_inner = `inset -2px -2px ${button_face}, inset 2px 2px ${button_shadow}`
+const border_window_outer = `inset -1px -1px ${window_frame}, inset 1px 1px ${button_face}`
+const border_window_inner = `inset -2px -2px ${button_shadow}, inset 2px 2px ${button_highlight}`
 
 
 export const outsetBorder = `box-shadow: ${border_raised_outer}, ${border_raised_inner};`
+export const insetBorder = `box-shadow: ${border_sunken_outer}, ${border_sunken_inner};`
+export const windowBorder = `box-shadow: ${border_window_outer}, ${border_window_inner};`

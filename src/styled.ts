@@ -15,6 +15,11 @@ export const GlobalStyle = createGlobalStyle<{ editMode?: boolean }>`
   box-sizing: border-box;
 }
 
+
+.underline {
+  text-decoration: underline;
+}
+
 body {
   margin: 0;
 }
@@ -94,8 +99,7 @@ background-image: url('clouds.jpg');
 background-size: cover;
 position: relative;
 width: 100%;
-// 100% - navbar height
-height: calc(100% - 47px);
+height: 100%;
 `
 
 export const Fullscreen = styled.div`
