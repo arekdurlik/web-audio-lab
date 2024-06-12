@@ -167,6 +167,15 @@ export type BitcrusherProps = NodeProps & {
   }
 }
 
+export type PitchshifterParams = PitchshifterProps['data']['params']
+export type PitchshifterProps = NodeProps & {
+  data: {
+    params: {
+      pitchOffset: number
+    }
+  }
+}
+
 export type GateParams = GateProps['data']['params']
 export type GateProps = NodeProps & {
   data: {

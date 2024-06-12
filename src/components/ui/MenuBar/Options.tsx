@@ -1,10 +1,13 @@
 import { useEffect } from 'react'
-import { useFlowStore } from '../../../stores/flowStore'
 import { Menu, MenuItem } from './styled'
 import { useReactFlow } from 'reactflow'
+import { useSettingsStore } from '../../../stores/settingsStore'
 
 export function Options() {
-  const { setEdgeType, edgeType } = useFlowStore()
+  const edgeType = useSettingsStore(state => state.edgeType)
+  const setEdgeType = useSettingsStore(state => state.setEdgeType)
+  const uiScale = useSettingsStore(state => state.uiScale)
+  const setUIScale = useSettingsStore(state => state.setUIScale)
   const reactFlowInstance = useReactFlow()
 
   useEffect(() => {
@@ -15,24 +18,31 @@ export function Options() {
     reactFlowInstance.setEdges(newEdges)
   }, [edgeType])
 
-  function setStep() {
-    setEdgeType('smoothstep')
-  }
-  
-  function setBezier() {
-    setEdgeType('default')
-  }
+ 
 
   return <Menu width={95}>
-      <MenuItem 
+    <MenuItem 
+      icon={uiScale === 1 ? 'radio' : ''} 
+      onClick={() => setUIScale(1)}
+    >
+      Small UI
+    </MenuItem>
+    <MenuItem 
+      icon={uiScale === 2 ? 'radio' : ''} 
+      onClick={() => setUIScale(2)}
+    >
+      Big UI
+    </MenuItem>
+    <hr/>
+    <MenuItem 
       icon={edgeType === 'smoothstep' ? 'radio' : ''} 
-      onClick={() => setStep()}
+      onClick={() => setEdgeType('smoothstep')}
     >
       Step edge
     </MenuItem>
     <MenuItem 
       icon={edgeType === 'default' ? 'radio' : ''} 
-      onClick={() => setBezier()}
+      onClick={() => setEdgeType('default')}
     >
       Bezier edge
     </MenuItem>

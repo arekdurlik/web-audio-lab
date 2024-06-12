@@ -17,6 +17,7 @@ export const NodeTitle = styled.span<{ rotation?: 0 | 1 | 2 | 3, position?: [[nu
   height: 100%;
   flex: 1;
   white-space: nowrap;
+  pointer-events: none;
 
   ${({ rotation }) => {
     switch(rotation) {

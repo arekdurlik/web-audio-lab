@@ -2,6 +2,7 @@ import Tippy from '@tippyjs/react/headless'; // different import path!
 import { ReactElement } from 'react'
 import styled from 'styled-components'
 import { followCursor } from 'tippy.js'
+import { useSettingsStore } from '../../stores/settingsStore'
 
 type TooltipProps = {
   content: string
@@ -10,7 +11,9 @@ type TooltipProps = {
   zoom?: number
 }
 
-export function Tooltip ({ content, children, delay = 500, zoom }: TooltipProps) {
+export function Tooltip ({ content, children, delay = 250, zoom }: TooltipProps) {
+  const uiScale = useSettingsStore(state => state.uiScale)
+
   return <Tippy 
     plugins={[followCursor]}
     followCursor='initial'
@@ -21,6 +24,7 @@ export function Tooltip ({ content, children, delay = 500, zoom }: TooltipProps)
     render={attrs => (
       <TooltipContainer 
         zoom={zoom}
+        scale={uiScale}
         tabIndex={-1} {...attrs}>
         {content}
       </TooltipContainer>
@@ -30,10 +34,10 @@ export function Tooltip ({ content, children, delay = 500, zoom }: TooltipProps)
   </Tippy>
 }
 
-const TooltipContainer = styled.div<{ zoom?: number }>`
+const TooltipContainer = styled.div<{ zoom?: number, scale?: number }>`
 display: flex;
 padding: 2px 5px;
 background-color: #faf0c8;
 border: 1px solid darkkhaki;
-${({ zoom }) => zoom !== undefined && `zoom: ${Math.max(0.5, zoom)};`}
+${({ zoom, scale }) => `zoom: ${zoom !== undefined ? zoom : scale};`}
 `

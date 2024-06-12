@@ -4,8 +4,8 @@ class BitCrusherProcessor extends AudioWorkletProcessor {
       {
         name: 'bitDepth',
         defaultValue: 12, 
-        minValue: 2, 
-        maxValue: 24
+        minValue: 1, 
+        maxValue: 16
       }, 
       {
         name: 'frequencyReduction',

@@ -1,7 +1,7 @@
 import styled, { createGlobalStyle } from 'styled-components'
 import { outsetBorder } from './98'
 
-export const GlobalStyle = createGlobalStyle<{ editMode?: boolean }>`
+export const GlobalStyle = createGlobalStyle<{ editMode?: boolean, scale?: string }>`
 
 .outset-border {
   ${outsetBorder}
@@ -18,6 +18,10 @@ export const GlobalStyle = createGlobalStyle<{ editMode?: boolean }>`
 
 .underline {
   text-decoration: underline;
+}
+
+option {
+  ${({ scale }) => `zoom: ${scale};`}
 }
 
 body {

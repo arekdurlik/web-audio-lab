@@ -16,7 +16,7 @@ type FlowStore = {
 export const useFlowStore = create<FlowStore>((set, get) => ({
   edgeType: 'default',
   editMode: true,
-  zoom: 1,
+  zoom: 2,
   panning: false,
   setEditMode: (editMode) => set({ editMode }),
   getEdgeType: () => get().edgeType,

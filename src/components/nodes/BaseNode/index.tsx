@@ -152,7 +152,7 @@ inset: 0;
 ${({ disableBorder, borderColor }) => !disableBorder && `border: 1px ${borderColor} solid;`}
 `
 
-const Option = styled(SVG)<{ $rotate?: boolean }>`
+export const Option = styled(SVG)<{ $rotate?: boolean }>`
 &:hover {
   cursor: pointer;
   color: #999;

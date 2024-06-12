@@ -82,6 +82,7 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
     <RangeInput
       label='Offset:'
       value={params.offset}
+      step={0.001}
       min={params.min}
       max={params.max}
       onChange={v => setParams(state => ({ ...state, offset: v }))}

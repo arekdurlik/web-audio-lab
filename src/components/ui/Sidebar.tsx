@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import triangle from '/svg/triangle.svg'
 import SVG from 'react-inlinesvg'
 import { outsetBorder, surface } from '../../98'
+import { useSettingsStore } from '../../stores/settingsStore'
 export function Sidebar() {
   const [options, setOptions] = useState([{
     title: 'Base nodes',
@@ -47,7 +48,15 @@ export function Sidebar() {
       {
         id: 'analyserNode',
         label: 'Analyser'
-      }
+      },
+      {
+        id: 'liveInput',
+        label: 'Live Input'
+      },
+      {
+        id: 'destination',
+        label: 'Output'
+      },
     ]
   }, {
     title: 'Custom nodes',
@@ -56,6 +65,10 @@ export function Sidebar() {
       {
         id: 'bitcrusher',
         label: 'Bitcrusher'
+      },
+      {
+        id: 'pitchshifter',
+        label: 'Pitchshifter'
       },
       {
         id: 'gate',
@@ -99,6 +112,7 @@ export function Sidebar() {
     ]
   }
   ])
+  const uiScale = useSettingsStore(state => state.uiScale)
 
   function handleTabClick(index: number) {
     const newOptions = options.slice()
@@ -115,7 +129,7 @@ export function Sidebar() {
     event.dataTransfer.setDragImage(preview, 0, 0)
   }
 
-  return <Container onWheel={e => { e.stopPropagation() }}>
+  return <Container onWheel={e => { e.stopPropagation() }} scale={uiScale}>
     {options.map((o, i) => <div key={i}>
       <Tab active={options[i].active} onClick={(() => handleTabClick(i))}>
         <Triangle src={triangle} />
@@ -187,7 +201,7 @@ background-color: ${surface};
 }
 `
 
-const Container = styled.div`
+const Container = styled.div<{ scale: number }>`
 background-color: ${surface};
 box-sizing: border-box;
 overflow-y: auto;
@@ -195,6 +209,8 @@ min-width: 100px;
 max-height: 100%;
 position: absolute;
 z-index: 999;
+
+${({ scale }) => `zoom: ${scale};`}
 
 & > div:last-child > ${Options}:last-child {
   border-bottom: 1px outset;

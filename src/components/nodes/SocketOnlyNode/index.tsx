@@ -2,10 +2,14 @@ import { useState } from 'react'
 import { NodeProps } from '../types'
 import { Handle, useUpdateNodeInternals } from 'reactflow'
 import styled from 'styled-components'
-import { HoverOptions, Rotate } from '../BaseNode/styled'
+import { HoverOptions, LeftOptions, Rotate } from '../BaseNode/styled'
 import { Edge } from '../BaseNode/types'
 import { getEdgeIndex, positions } from '../utils'
-import SocketIcon from '/icons/socket_only.png'
+import { useFlowStore } from '../../../stores/flowStore'
+import { Option } from '../BaseNode'
+import NodeDelete from '/svg/node_delete.svg'
+import NodeRotate from '/svg/node_rotate.svg'
+import { useUpdateFlowNode } from '../../../hooks/useUpdateFlowNode'
 
 type SocketOnlyProps = {
   id: string
@@ -26,6 +30,8 @@ export function SocketOnly({ id, data, defaultRotation = 0, label, socket }: Soc
   const [active, setActive] = useState(false)
   const [rotation, setRotation] = useState<0 | 1 | 2 | 3>(data.rotation ?? defaultRotation)
   const updateNodeInternals = useUpdateNodeInternals()
+  const { deleteNode } = useUpdateFlowNode(id)
+  const { editMode } = useFlowStore()
 
   function handleRotate() {
     setRotation(state => (state + 1) % 4 as any)
@@ -38,11 +44,12 @@ export function SocketOnly({ id, data, defaultRotation = 0, label, socket }: Soc
       onPointerOut={() => setActive(false)} 
     >
       <Wrapper>
-        {active && <HoverOptions>
-          <RotateWrapper>
-            <Rotate onClick={handleRotate}  />
-          </RotateWrapper>
-        </HoverOptions>}
+      {active && <SocketOnlyHoverOptions>
+          <LeftOptions>
+            {editMode && <Option title='Rotate node' src={NodeRotate} onClick={handleRotate} width={8} height={8}/>}
+          </LeftOptions>
+          {editMode && <div><Option title='Delete node' src={NodeDelete} onClick={deleteNode} width={8} height={8}/></div>}
+        </SocketOnlyHoverOptions>}
         <Label rotation={rotation}>{label}</Label>
         <CircleHandle 
           rotation={rotation} 
@@ -53,6 +60,14 @@ export function SocketOnly({ id, data, defaultRotation = 0, label, socket }: Soc
     </div>
   )
 }
+
+
+const SocketOnlyHoverOptions = styled(HoverOptions)`
+width: 31px;
+top: -10px;
+left: -15px;
+padding-bottom: 5px;
+`
 
 const Wrapper = styled.div`
 display: grid;

@@ -62,9 +62,9 @@ export function ParamHandle({ id, label, type, position, offset = 20, tooltip }:
 
 const Triangle = styled(SVG)<{ direction: 'right' | 'bottom' | 'left' | 'top' }>`
 position: absolute;
-top: -5px;
+top: -3px;
 font-size: 15px;
-width: 11px;
+width: 12px;
 height: 6px;
 fill: #fff;
 stroke: #000;
@@ -77,14 +77,14 @@ ${({ direction }) => {
     `
     case 'left': return `
     transform: rotate(90deg);
-    left: -6.5px;
+    left: -7.5px;
     top: -2px;`
     case 'top': return `
     transform: rotate(180deg);
     top: -4px;`
     case 'right': return `
     transform: rotate(-90deg);
-    left: -2.5px;
+    left: -3.5px;
     top: -2px;`
   }
 }}

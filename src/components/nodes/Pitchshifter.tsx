@@ -1,19 +1,19 @@
 //@ts-nocheck
 import { useEffect, useRef, useState } from 'react'
-import { Parameter } from './BaseNode/styled'
 import { Node } from './BaseNode'
 import { Socket } from './BaseNode/types'
 import { useNodeStore } from '../../stores/nodeStore'
 import { audio } from '../../main'
 import { FlexContainer } from '../../styled'
 import { RangeInput } from '../inputs/RangeInput'
-import { NumberInput } from '../inputs/NumberInput'
-import { BitcrusherProps } from './types'
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
+import { PitchshifterParams, PitchshifterProps } from './types'
 
-export function Pitchshift({ id, data }: BitcrusherProps) {
-  const [pitchOffset, setPitchOffset] = useState(data.pitchOffset ?? 12)
-  const [sampleRateReduction, setSampleRateReduction] = useState(data.sampleRateReduction ?? 1)
+export function Pitchshifter({ id, data }: PitchshifterProps) {
+  const [params, setParams] = useState<PitchshifterParams>({
+    ...{ pitchOffset: 12, expanded: { p: true }},
+    ...data.params
+  })
   const audioIdInput = `${id}-audioInput`
   const audioIdOutput = `${id}-audioOutput`
   const instance = useRef(new Jungle(audio.context))
@@ -45,38 +45,28 @@ export function Pitchshift({ id, data }: BitcrusherProps) {
     setInstance(audioIdOutput, output, 'source')
   }, [])
 
-  // update reactflow and audio instance
   useEffect(() => {
-    const invalid = pitchOffset === undefined || Number.isNaN(pitchOffset)
-    if (invalid) return
+    updateNode({ params })
+  }, [params])
 
-    updateNode({ pitchOffset })
-    instance.current.setPitchOffset(getMultiplier(pitchOffset))
-  }, [pitchOffset])
+  useEffect(() => {
+    instance.current.setPitchOffset(getMultiplier(params.pitchOffset))
+  }, [params.pitchOffset])
 
-  const Parameters = <FlexContainer direction='column' gap={8}>
-    <div>
-    Pitch offset:
-    <FlexContainer
-      direction='column'
-      gap={8}
-    >
-      <Parameter>
-        <RangeInput
-          min={-24}
-          max={24}
-          step={1}
-          onChange={setPitchOffset} 
-          value={pitchOffset}
-          />
-        <NumberInput 
-          onChange={setPitchOffset} 
-          value={pitchOffset}
-          />
-      </Parameter>
+  const Parameters = <FlexContainer direction='column'>
+      <RangeInput
+        label='Pitch offset:'
+        value={params.pitchOffset}
+        numberInput
+        min={-24}
+        max={24}
+        step={0.01}
+        onChange={v => setParams(state => ({ ...state, pitchOffset: v }))}
+        expanded={params.expanded.p}
+        onExpandChange={v => setParams(state => ({ ...state, expanded: { ...state.expanded, p: v }}))}
+      />
+      
     </FlexContainer>
-    </div>
-  </FlexContainer>
 
   return (
     <Node 

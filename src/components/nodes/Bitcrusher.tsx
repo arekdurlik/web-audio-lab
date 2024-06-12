@@ -62,7 +62,7 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
       <RangeInput
         label='Bit depth:'
         value={params.bitDepth}
-        min={2}
+        min={1}
         max={16}
         step={1}
         onChange={handleBitDepth}

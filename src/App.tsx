@@ -5,11 +5,13 @@ import { Navbar } from './components/ui/Navbar'
 import { Sidebar } from './components/ui/Sidebar'
 import { FlowWrapper, Fullscreen, GlobalStyle } from './styled'
 import { useFlowStore } from './stores/flowStore'
+import { useSettingsStore } from './stores/settingsStore'
 
 function Style() {
   const editMode = useFlowStore(state => state.editMode)
+  const zoom = useFlowStore(state => state.zoom)
 
-  return <GlobalStyle editMode={editMode}/>
+  return <GlobalStyle editMode={editMode} scale={zoom} />
 }
 
 function App() {

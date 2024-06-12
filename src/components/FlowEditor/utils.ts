@@ -18,6 +18,7 @@ import { Analyser } from '../nodes/Analyser'
 import { Knob } from '../nodes/Knob'
 import { Gate } from '../nodes/Gate'
 import { Envelope } from '../nodes/Envelope'
+import { Pitchshifter } from '../nodes/Pitchshifter'
 
 export const propOptions = {
   hideAttribution: true
@@ -27,13 +28,13 @@ export const initialNodes: Node[] = [
   { 
     id: 'liveInput', 
     type: 'liveInput',
-    position: { x: 320, y: 100 }, 
+    position: { x: 720, y: 296 }, 
     data: { label: 'Live Input' }, 
   },
   { 
     id: 'destination', 
     type: 'destination',
-    position: { x: 300, y: 200 }, 
+    position: { x: 832, y: 296 }, 
     data: { label: 'Output' }, 
   }
 ]
@@ -57,6 +58,7 @@ export const nodeTypes = {
   knob: Knob,
 
   bitcrusher: Bitcrusher,
+  pitchshifter: Pitchshifter,
   gate: Gate,
   envelope: Envelope,
 

@@ -3,13 +3,14 @@ import { useViewport, Edge } from 'reactflow'
 import { plotCubicBezier } from './bezier'
 import { range, waitForElement } from '../../../helpers'
 import { useFlowStore } from '../../../stores/flowStore'
+import { useSettingsStore } from '../../../stores/settingsStore'
 
-const NAVBAR_HEIGHT = 19
+
 
 export function EdgeController({ edges }: { edges: Edge[] }) {
   const [edgeWrapper, setEdgeWrapper] = useState({ el: document.createElement('div'), x: 0, y: 0})
   const [mutationObserver, setMutationObserver] = useState<MutationObserver | null>(null)
-  const { getEdgeType } = useFlowStore()
+  const { getEdgeType } = useSettingsStore()
   const { x, y, zoom } = useViewport()
   const [viewport, setViewport] = useState<HTMLDivElement | null>(null)
   const panning = useFlowStore(state => state.panning)
@@ -86,7 +87,9 @@ function BezierEdge({ edge, mutationObserver, edgeWrapper }: { edge: Edge<any>, 
   const targetHandle = useRef<Element | null>(null)
   const imgData = useRef(new Uint8ClampedArray())
   const { zoom } = useViewport()
-
+  
+  const uiScale = useSettingsStore(state => state.uiScale)
+  const NAVBAR_HEIGHT = 19 * uiScale
   async function setupCanvas() {
 
     const el = await waitForElement(`.react-flow__edge-default[data-testid="rf__edge-${edge.id}"]`)
@@ -145,22 +148,27 @@ function BezierEdge({ edge, mutationObserver, edgeWrapper }: { edge: Edge<any>, 
     const { left, top } = el.getBoundingClientRect()
     
     canvas.style.left = -edgeWrapper.x + Math.round(left) - (0.5 * zoom) + 'px'
-    canvas.style.top = -edgeWrapper.y + (Math.floor(top - NAVBAR_HEIGHT)) - (2 * zoom) + 'px'
+    canvas.style.top = -edgeWrapper.y + (Math.floor(top - NAVBAR_HEIGHT)) 
+    //pixel perfect adjustments
+    - zoom - (uiScale === 1 ? 1 : 3) + 'px'
+
   }, [edgeWrapper.x, edgeWrapper.y])
 
   useEffect(() => {
     if (!el || !canvas || !ctx || !sourceHandle || !targetHandle) return
     
     const { width, height, left, top } = el.getBoundingClientRect()
-    canvas.width = ((width) / zoom) + 0
-    canvas.height = ((height) / zoom) + 0
-    canvas.style.width = width + 0 + 'px'
-    canvas.style.height = height + 0 + 'px'
+    canvas.width = ((width) / zoom)
+    canvas.height = ((height) / zoom)
+    canvas.style.width = width + 'px'
+    canvas.style.height = height + 'px'
 
     canvas.style.position = 'absolute'
     
     canvas.style.left = -edgeWrapper.x + Math.round(left) - (0.5 * zoom) + 'px'
-    canvas.style.top = -edgeWrapper.y + (Math.floor(top - NAVBAR_HEIGHT)) - (2 * zoom) + 'px'
+    canvas.style.top = -edgeWrapper.y + (Math.floor(top - NAVBAR_HEIGHT)) 
+    //pixel perfect adjustments
+    - zoom - (uiScale === 1 ? 1 : 3) + 'px'
 
     let imageData: ImageData
     try { 

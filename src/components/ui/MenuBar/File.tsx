@@ -1,8 +1,8 @@
 import { Menu, MenuItem } from './styled'
 import { Tooltip } from '../Tooltip'
 import { ReactFlowJsonObject, useReactFlow } from 'reactflow'
-import { useFlowStore } from '../../../stores/flowStore'
 import { audio } from '../../../main'
+import { useSettingsStore } from '../../../stores/settingsStore'
 
 type Save = {
   edges: 'default' | 'smoothstep'
@@ -11,7 +11,9 @@ type Save = {
 
 export function File({ onBlur }: { onBlur?: Function }) {
   const reactFlowInstance = useReactFlow()
-  const { edgeType, setEdgeType,  } = useFlowStore()
+  const edgeType = useSettingsStore(state => state.edgeType)
+  const setEdgeType = useSettingsStore(state => state.setEdgeType)
+
   function handleReload() {
     const edges = reactFlowInstance.getEdges()
     const nodes = reactFlowInstance.getNodes()

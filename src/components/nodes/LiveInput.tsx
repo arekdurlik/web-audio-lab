@@ -7,13 +7,14 @@ import { SocketOnly } from './SocketOnlyNode'
 
 export function LiveInput({ id, data }: NodeProps) {
   const nodes = useNodeStore(state => state.nodes)
-  
+  const audioId = `${id}-audio`
+
   useEffect(() => {
-    nodes.set('liveInput', { instance: audio.circuit.in, type: 'source' })
+    nodes.set(audioId, { instance: audio.circuit.in, type: 'source' })
   }, [])
 
   const socket ={
-    id: 'liveInput',
+    id: audioId,
     type: 'source' as HandleType,
     offset: 20
   }

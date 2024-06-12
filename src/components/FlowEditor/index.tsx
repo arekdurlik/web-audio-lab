@@ -20,6 +20,7 @@ import { EdgeController } from './EdgeController/index'
 import { ZoomController } from './ZoomController'
 import { CustomBackground } from './CustomBackground'
 import { RoundViewport } from './RoundViewport'
+import { useSettingsStore } from '../../stores/settingsStore'
 
 export function FlowEditor() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
@@ -28,9 +29,9 @@ export function FlowEditor() {
   const reactFlowInstance = useReactFlow()
   const setConnections = useNodeStore(state => state.setConnections)
   const edgeUpdateSuccessful = useRef(true)
-  const getEdgeType = useFlowStore(state => state.getEdgeType)
   const setPanning = useFlowStore(state => state.setPanning)
   const editMode = useFlowStore(state => state.editMode)
+  const getEdgeType = useSettingsStore(state => state.getEdgeType)
 
   useEffect(() => {
     const connections = edges.map(edge => ({ source: edge.sourceHandle, target: edge.targetHandle }))
@@ -88,10 +89,9 @@ export function FlowEditor() {
   }, [])
 
   const onConnect = useCallback((params: Edge | Connection) => setEdges((edges) => {
-    const type = getEdgeType()
     return addEdge({ 
       ...params, 
-      type, 
+      type: getEdgeType(), 
       style: { stroke: `#000`, strokeWidth: 1 }, 
       pathOptions: { borderRadius: 0, offset: 16.5, curvature: 0.5 }
     } as any, edges)
