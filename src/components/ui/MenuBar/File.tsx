@@ -33,59 +33,87 @@ export function File({ onBlur }: { onBlur?: Function }) {
       edges: edgeType,
       flow: (reactFlowInstance.toObject())
     })
-
-    const handle = await showSaveFilePicker({
-      suggestedName: 'circuit.json',
-      types: [{
-          accept: { 'application/json': ['.json'] },
-      }],
-    })
-  
     const blob = new Blob([saveObj])
-    
-    const writableStream = await handle.createWritable()
-    await writableStream.write(blob)
-    await writableStream.close()
 
+    try {
+      const handle = await showSaveFilePicker({
+        suggestedName: 'circuit.json',
+        types: [{
+            accept: { 'application/json': ['.json'] },
+        }],
+      })
+      
+      const writableStream = await handle.createWritable()
+      await writableStream.write(blob)
+      await writableStream.close()
+    } catch {
+      // file picker not supported
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      link.href = url
+      link.download = 'circuit.json'
+      link.click()
+    }
+
+    if (onBlur) onBlur()
   }
 
-  async function handleLoad() {
-    const [fileHandle] = await window.showOpenFilePicker({
-      types: [{
-        accept: { 'application/json': ['.json'] },
-      }],
-      excludeAcceptAllOption: true,
-      multiple: false,
-    })
-
-    const file = await fileHandle.getFile()
-
-    const fileReader = new FileReader()
-
-    fileReader.onload = function(e: ProgressEvent<FileReader>) {
-      if (e.target === null) return
-
-      const result = e.target.result
-
-      if (typeof result !== 'string') return
-
-      const obj = JSON.parse(result) as Save
+  async function handleLoad() { 
       
-      if (obj.hasOwnProperty('flow') && obj.hasOwnProperty('edges')) {
-        reactFlowInstance.setEdges([])
-        reactFlowInstance.setNodes([])
-        setTimeout(() => {
-          reactFlowInstance.setEdges(obj.flow.edges)
-          reactFlowInstance.setNodes(obj.flow.nodes)
-          reactFlowInstance.setViewport(obj.flow.viewport)
-          setEdgeType(obj.edges)
-        })
-      } else {
-        console.error('Invalid save file format.')
+
+      function readFile(file: File) {
+        const fileReader = new FileReader()
+  
+        fileReader.onload = function(e: ProgressEvent<FileReader>) {
+          if (e.target === null) return
+    
+          const result = e.target.result
+    
+          if (typeof result !== 'string') return
+    
+          const obj = JSON.parse(result) as Save
+          
+          if (obj.hasOwnProperty('flow') && obj.hasOwnProperty('edges')) {
+            reactFlowInstance.setEdges([])
+            reactFlowInstance.setNodes([])
+            if (onBlur) onBlur()
+            setTimeout(() => {
+              reactFlowInstance.setEdges(obj.flow.edges)
+              reactFlowInstance.setNodes(obj.flow.nodes)
+              reactFlowInstance.setViewport(obj.flow.viewport)
+              setEdgeType(obj.edges)
+            })
+          } else {
+            console.error('Invalid save file format.')
+          }
+        }
+        fileReader.readAsText(file)
       }
+
+    try {
+      const [fileHandle] = await window.showOpenFilePicker({
+        types: [{
+          accept: { 'application/json': ['.json'] },
+        }],
+        excludeAcceptAllOption: true,
+        multiple: false,
+      })
+  
+      const file = await fileHandle.getFile()
+  
+      readFile(file)
+    } catch (e) {
+      // file picker not supported
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = '.json'
+      input.addEventListener('change', () => {
+        if (input.files) {
+            readFile(input.files[0])
+        }
+      })
+      input.click()
     }
-    fileReader.readAsText(file)
-    if (onBlur) onBlur()
   }
 
   return <Menu width={105}>

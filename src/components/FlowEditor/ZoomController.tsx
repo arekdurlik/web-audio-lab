@@ -16,11 +16,11 @@ export function ZoomController() {
   }
   
   useEffect(() => {
-    document.addEventListener('mousewheel', onScroll)
+    document.addEventListener('wheel', onScroll)
     zoomTo(zoom.current)
     
     return(() => {
-      document.removeEventListener('mousewheel', onScroll)
+      document.removeEventListener('wheel', onScroll)
     })
   }, [zoomTo])
 

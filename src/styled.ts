@@ -15,6 +15,10 @@ export const GlobalStyle = createGlobalStyle<{ editMode?: boolean, scale?: strin
   box-sizing: border-box;
 }
 
+.react-flow__node-default {
+  display: none;
+}
+
 
 .underline {
   text-decoration: underline;
