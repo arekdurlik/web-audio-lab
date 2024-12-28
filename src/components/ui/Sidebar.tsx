@@ -4,6 +4,7 @@ import triangle from '/svg/triangle.svg'
 import SVG from 'react-inlinesvg'
 import { outsetBorder, surface } from '../../98'
 import { useSettingsStore } from '../../stores/settingsStore'
+import { headerHeight } from './MenuBar';
 export function Sidebar() {
   const [options, setOptions] = useState([{
     title: 'Base nodes',
@@ -206,7 +207,7 @@ background-color: ${surface};
 box-sizing: border-box;
 overflow-y: auto;
 min-width: 100px;
-max-height: 100%;
+max-height: calc(100% - ${headerHeight}px);
 position: absolute;
 z-index: 999;
 

@@ -41,10 +41,13 @@ function MenuBarItem({ label, children }: { label: string, children: ReactElemen
   </MenuBarOption>
 }
 
+export const headerHeight = 21;
+
 const Container = styled.div`
 width: 100%;
 display: flex;
 border: 1px outset;
+height: ${headerHeight}px;
 background-color: ${surface};
 `
 
