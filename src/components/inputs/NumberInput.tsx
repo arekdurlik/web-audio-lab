@@ -30,21 +30,25 @@ export function NumberInput({ label, value = 0, min = -Infinity, max = Infinity,
   function checkBounds(e: ChangeEvent<HTMLInputElement>) {
     const target = e.target as HTMLInputElement
     
-    const regex = /(?<=^|)\d+(\.\d+)?(?=$| )/
+    // digits and a single dot
+    const regex = /^\d*(\.\d*)?$/
+    
     if (!regex.test(target.value)) {
-      setInternalValue(target.value)
+      flashError()
       return
     }
     
+    setInternalValue(target.value)
+    
+    if (!target.value.length || target.value.at(-1) === '.') return
+    
     const numberValue = Number(target.value)
+    
     if (Number.isNaN(numberValue)) return
     
     // check out of bounds
     if (ref.current && (numberValue < min || numberValue > max)) {
-      ref.current.classList.remove('error')
-      setTimeout(() => {
-        ref.current!.classList.add('error')
-      }, 50)
+      flashError()
     }
     
     const clamped = clamp(Number(numberValue), min, max)
@@ -72,10 +76,7 @@ export function NumberInput({ label, value = 0, min = -Infinity, max = Infinity,
     const newValue =  type === 'increment' ? Number(internalValue) + step : Number(internalValue) - step
 
     if (ref.current && (newValue < min || newValue > max)) {
-      ref.current.classList.remove('error')
-      setTimeout(() => {
-        ref.current!.classList.add('error')
-      }, 50)
+      flashError()
       return
     }
 
@@ -89,6 +90,13 @@ export function NumberInput({ label, value = 0, min = -Infinity, max = Infinity,
     setInternalValue(rounded)
 
     if (typeof onChange === 'function') onChange(Number(rounded))
+  }
+
+  function flashError() {
+    ref.current?.classList.remove('error')
+      setTimeout(() => {
+        ref.current?.classList.add('error')
+      }, 50)
   }
 
   return (

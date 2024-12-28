@@ -1,11 +1,9 @@
 import { useEffect, ChangeEvent, CSSProperties, useState } from 'react'
-import styled from 'styled-components'
 import { clamp, countDecimals } from '../../helpers'
-import { ExpandableInputContainer, ExpandableInputContent, ExpandableInputLabel, ExpandableInputWrapper, InputLabel, InputWrapper, Triangle } from './styled'
+import { ExpandableInputContainer, ExpandableInputContent, ExpandableInputLabel, ExpandableInputWrapper, Triangle } from './styled'
 import { NumberInput } from './NumberInput'
 import { FlexContainer } from '../../styled'
 import Log from './log'
-import SVG from 'react-inlinesvg'
 import triangle from '/svg/triangle.svg'
 
 type RangeInputProps = {
@@ -27,7 +25,7 @@ type RangeInputProps = {
   numberInput?: boolean
   numberInputWidth?: number
 }
-export function RangeInput({ value, min = 0, max = 100, label, disabled, expanded = true, onExpandChange, step = 0.01, numberInput, numberInputWidth, adjustableBounds, logarithmic, onChange, onMinChange, onMaxChange, style }: RangeInputProps) {
+export function RangeInput({ value, min = 0, max = 100, label, disabled, expanded = true, onExpandChange, step = 0.001, numberInput, numberInputWidth, adjustableBounds, logarithmic, onChange, onMinChange, onMaxChange, style }: RangeInputProps) {
   const [internalValue, setInternalValue] = useState(value)
   const log = new Log({ minval: Math.max(1, min), maxval: max })
 
