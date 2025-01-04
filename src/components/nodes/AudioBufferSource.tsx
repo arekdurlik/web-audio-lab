@@ -13,6 +13,7 @@ import { CheckboxInput } from '../inputs/CheckboxInput'
 import styled from 'styled-components'
 import { PlayButton } from './styled'
 import { Hr } from './BaseNode/styled'
+import { nodeSizes } from '../FlowEditor/utils'
 
 export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
   const [params, setParams] = useState<AudioBufferSourceParams>({
@@ -275,7 +276,7 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
     <Node 
       id={id}
       name='Audio source'
-      height={5}
+      height={nodeSizes.audioBufferSourceNode.y}
       data={data}
       sockets={sockets}
       parameterPositions={['bottom', 'left', 'top', 'right']}

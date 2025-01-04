@@ -8,6 +8,7 @@ import { Node } from '../../nodes/BaseNode'
 import { ConnectionLine, ConnectionWrapper } from './styled'
 import SVG from 'react-inlinesvg'
 import up from '/svg/spdt_up.svg'
+import { nodeSizes } from '../../FlowEditor/utils'
 
 export function SPDTFork({ id, data }: SPDTProps) {
   return SPDT({ id, data }, 'fork')
@@ -89,8 +90,8 @@ export function SPDT({ id, data }: SPDTProps, spdtType: 'fork' | 'join') {
     <Node 
       id={id}
       data={data}
-      width={3}
-      height={3}
+      width={nodeSizes.spdtFork.x}
+      height={nodeSizes.spdtFork.y}
       sockets={sockets}
       parameterPositions={['bottom', 'left', 'top', 'right']}
       disableBackground

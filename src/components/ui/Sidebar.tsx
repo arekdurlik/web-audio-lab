@@ -4,7 +4,10 @@ import triangle from '/svg/triangle.svg'
 import SVG from 'react-inlinesvg'
 import { outsetBorder, surface } from '../../98'
 import { useSettingsStore } from '../../stores/settingsStore'
-import { headerHeight } from './MenuBar';
+import { headerHeight } from './MenuBar'
+import { initialNodeData, nodeSizes, NodeType } from '../FlowEditor/utils'
+import { useReactFlow } from 'reactflow'
+
 export function Sidebar() {
   const [options, setOptions] = useState([{
     title: 'Base nodes',
@@ -114,6 +117,7 @@ export function Sidebar() {
   }
   ])
   const uiScale = useSettingsStore(state => state.uiScale)
+  const { setNodes, screenToFlowPosition, getNodes } = useReactFlow()
 
   function handleTabClick(index: number) {
     const newOptions = options.slice()
@@ -129,6 +133,32 @@ export function Sidebar() {
     preview.style.display = 'none'
     event.dataTransfer.setDragImage(preview, 0, 0)
   }
+  
+  function handleClick(nodeType: NodeType) {
+    return () => {
+      const size = nodeSizes[nodeType as keyof typeof nodeSizes] ?? { x: 6, y: 3 }
+      const offsetX = size.x * 16
+      const offsetY = size.y * 16
+      
+      const pos = screenToFlowPosition({ x: (innerWidth / 2) - offsetX, y: (innerHeight / 2 ) - offsetY })
+      
+      while (getNodes().some(n => n.position.x === pos.x && n.position.y === pos.y)) {
+        pos.x += 16
+        pos.y += 16
+      }
+      
+      const newNode = {
+        id: String(Date.now()),
+        type: nodeType,
+        position: pos,
+        data: {
+          ...initialNodeData[nodeType]
+        }
+      }
+      
+      setNodes((nodes) => nodes.concat(newNode))
+    }
+  }
 
   return <Container onWheel={e => { e.stopPropagation() }} scale={uiScale}>
     {options.map((o, i) => <div key={i}>
@@ -140,6 +170,7 @@ export function Sidebar() {
       {o.items.map((item, j) => <Option 
         key={j} 
         onDragStart={(event) => onDragStart(event, item.id)} 
+        onClick={handleClick(item.id as NodeType)}
         draggable
       >
         {item.label}

@@ -11,7 +11,7 @@ function Style() {
   const editMode = useFlowStore(state => state.editMode)
   const zoom = useFlowStore(state => state.zoom)
 
-  return <GlobalStyle editMode={editMode} scale={zoom} />
+  return <GlobalStyle editMode={editMode} scale={zoom.toString()} />
 }
 
 function App() {

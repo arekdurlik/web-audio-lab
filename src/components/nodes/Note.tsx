@@ -6,6 +6,7 @@ import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode'
 import nodeDelete from '/svg/node_delete.svg'
 import resizer from '/svg/resizer.svg'
 import SVG from 'react-inlinesvg'
+import { nodeSizes } from '../FlowEditor/utils'
 
 export function Note({ id, data }: NoteProps) {
   const [params, setParams] = useState<NoteParams>({
@@ -29,6 +30,9 @@ export function Note({ id, data }: NoteProps) {
     if (data.params?.size) {
       textarea.current.style.width = params.size.width + 'px'
       textarea.current.style.height = params.size.height + 'px'
+    } else {
+      textarea.current.style.width = 16 * nodeSizes.note.x + 1 + 'px'
+      textarea.current.style.height = 16 * nodeSizes.note.y + + 1 + 'px'
     }
 
     resizeObserver.current.observe(textarea.current)

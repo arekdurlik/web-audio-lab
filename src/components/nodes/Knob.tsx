@@ -16,6 +16,7 @@ import { bline } from '../FlowEditor/EdgeController/bezier'
 import { TextInput } from '../inputs/TextInput'
 import { RangeInput } from '../inputs/RangeInput'
 import { Hr } from './BaseNode/styled'
+import { nodeSizes } from '../FlowEditor/utils'
 
 const DRAG_RANGE = 100
 
@@ -239,8 +240,8 @@ export function Knob({ id, data }: KnobProps) {
       id={id}
       data={data}
       sockets={sockets}
-      width={2}
-      height={2}
+      width={nodeSizes.knob.x}
+      height={nodeSizes.knob.y}
       parameterPositions={['bottom', 'left', 'top', 'right']}
       parameterOffset={16}
       parameters={Parameters}

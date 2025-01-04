@@ -66,6 +66,45 @@ export const nodeTypes = {
   spdtJoin: SPDTJoin,
 }
 
+export const nodeSizes = {
+  analyserNode: {
+    x: 12,
+    y: 3,
+  },
+  audioBufferSourceNode: {
+    x: 6,
+    y: 5,
+  },
+  liveInput: {
+    x: 0,
+    y: 1,
+  },
+  destination: {
+    x: 0,
+    y: 1,
+  },
+  knob: {
+    x: 2,
+    y: 2,
+  },
+  note: {
+    x: 5,
+    y: 3,
+  }, 
+  text: {
+    x: 7,
+    y: 2,
+  },
+  spdtFork: {
+    x: 3,
+    y: 3,
+  },
+  spdtJoin: {
+    x: 3,
+    y: 3,
+  }
+}
+
 export type NodeType = keyof typeof nodeTypes
 
 type InitialData = {
