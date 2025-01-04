@@ -1,7 +1,7 @@
-import styled, { createGlobalStyle } from 'styled-components'
-import { outsetBorder } from './98'
+import styled, { createGlobalStyle } from 'styled-components';
+import { outsetBorder } from './98';
 
-export const GlobalStyle = createGlobalStyle<{ editMode?: boolean, scale?: string }>`
+export const GlobalStyle = createGlobalStyle<{ editMode?: boolean; scale?: string }>`
 
 .outset-border {
   ${outsetBorder}
@@ -101,25 +101,31 @@ textarea {
     border: 1px solid rgb(154, 203, 230);
   }
 } */
-`
+`;
 export const FlowWrapper = styled.div`
-background-image: url('clouds.jpg');
-background-size: cover;
-position: relative;
-width: 100%;
-height: 100%;
-`
+    background-image: url('clouds.jpg');
+    background-size: cover;
+    position: relative;
+    width: 100%;
+    height: 100%;
+`;
 
 export const Fullscreen = styled.div`
-height: 100vh;
-overflow: hidden;
-`
+    height: 100vh;
+    overflow: hidden;
+`;
 
-export const FlexContainer = styled.div<{ direction?: string, justify?: string, align?: string, gap?: string | number, width?: string }>`
-  display: flex;
-  ${({ width }) => width !== undefined && `width: ${width};`}
-  ${({ direction }) => direction && `flex-direction: ${direction};`}
+export const FlexContainer = styled.div<{
+    direction?: string;
+    justify?: string;
+    align?: string;
+    gap?: string | number;
+    width?: string;
+}>`
+    display: flex;
+    ${({ width }) => width !== undefined && `width: ${width};`}
+    ${({ direction }) => direction && `flex-direction: ${direction};`}
   ${({ justify }) => justify && `justify-content: ${justify};`}
   ${({ align }) => align && `align-items: ${align};`}
   ${({ gap }) => gap !== undefined && `gap: ${gap}px;`}
-`
+`;

@@ -1,34 +1,30 @@
-import { useEffect, useState } from 'react'
-import { FlowEditor } from './components/FlowEditor'
-import { ReactFlowProvider, useReactFlow } from 'reactflow'
-import { Navbar } from './components/ui/Navbar'
-import { Sidebar } from './components/ui/Sidebar'
-import { FlowWrapper, Fullscreen, GlobalStyle } from './styled'
-import { useFlowStore } from './stores/flowStore'
-import { useSettingsStore } from './stores/settingsStore'
+import { ReactFlowProvider } from 'reactflow';
+import { FlowEditor } from './components/FlowEditor';
+import { Navbar } from './components/ui/Navbar';
+import { Sidebar } from './components/ui/Sidebar';
+import { useFlowStore } from './stores/flowStore';
+import { FlowWrapper, Fullscreen, GlobalStyle } from './styled';
 
 function Style() {
-  const editMode = useFlowStore(state => state.editMode)
-  const zoom = useFlowStore(state => state.zoom)
+    const editMode = useFlowStore(state => state.editMode);
+    const zoom = useFlowStore(state => state.zoom);
 
-  return <GlobalStyle editMode={editMode} scale={zoom.toString()} />
+    return <GlobalStyle editMode={editMode} scale={zoom.toString()} />;
 }
 
 function App() {
-  return (
-    <Fullscreen>
-      <ReactFlowProvider>
-        <Navbar />
-        <Style />
-        <FlowWrapper>
-          <Sidebar />
-          <FlowEditor />
-        </FlowWrapper>
-      </ReactFlowProvider>
-    </Fullscreen>
-  )
+    return (
+        <Fullscreen>
+            <ReactFlowProvider>
+                <Navbar />
+                <Style />
+                <FlowWrapper>
+                    <Sidebar />
+                    <FlowEditor />
+                </FlowWrapper>
+            </ReactFlowProvider>
+        </Fullscreen>
+    );
 }
 
-export default App
-
-
+export default App;

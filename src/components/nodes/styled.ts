@@ -1,5 +1,5 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 export const PlayButton = styled.button`
- margin: 5px;
-`
+    margin: 5px;
+`;

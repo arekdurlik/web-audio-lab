@@ -1,7 +1,7 @@
-import { NodeProps } from '../nodes/types'
+import { NodeProps } from '../nodes/types';
 
 export type SPDTProps = NodeProps & {
-  data: {
-    state: 'A' | 'B'
-  }
-}
+    data: {
+        state: 'A' | 'B';
+    };
+};
