@@ -19,8 +19,8 @@ export const Label = styled.span<{ position: Position }>`
                 `;
             case Position.Left:
                 return `
-                    eft: 5px;
-                    ottom: 3px
+                    left: 5px;
+                    bottom: 3px
                 `;
             case Position.Top:
                 return `
