@@ -35,7 +35,7 @@ export function File({ onBlur }: { onBlur?: Function }) {
         });
         const blob = new Blob([saveObj]);
 
-        try {
+        if ('showSaveFilePicker' in window) {
             const handle = await showSaveFilePicker({
                 suggestedName: 'circuit.json',
                 types: [
@@ -48,8 +48,7 @@ export function File({ onBlur }: { onBlur?: Function }) {
             const writableStream = await handle.createWritable();
             await writableStream.write(blob);
             await writableStream.close();
-        } catch {
-            // file picker not supported
+        } else {
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.href = url;
@@ -90,7 +89,7 @@ export function File({ onBlur }: { onBlur?: Function }) {
             fileReader.readAsText(file);
         }
 
-        try {
+        if ('showSaveFilePicker' in window) {
             const [fileHandle] = await window.showOpenFilePicker({
                 types: [
                     {
@@ -104,8 +103,7 @@ export function File({ onBlur }: { onBlur?: Function }) {
             const file = await fileHandle.getFile();
 
             readFile(file);
-        } catch (e) {
-            // file picker not supported
+        } else {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = '.json';

@@ -39,7 +39,7 @@ export function Analyser({ id, data }: AnalyserProps) {
     const canvasWrapper = useRef<HTMLDivElement | null>(null);
     const [c, setC] = useState<CanvasRenderingContext2D | null>(null);
     const rafID = useRef(0);
-    const imgData = useRef(new Uint8ClampedArray());
+    const imgData = useRef<Uint8ClampedArray>(new Uint8ClampedArray());
     let fps = 75,
         fpsInterval: number,
         now,
@@ -175,7 +175,7 @@ export function Analyser({ id, data }: AnalyserProps) {
         c.stroke();
 
         const imageData = c.getImageData(0, 0, canvas.current.width, canvas.current.height);
-        imgData.current = imageData.data as Uint8ClampedArray<ArrayBuffer>;
+        imgData.current = imageData.data;
 
         const width =
             (instance.frequencyBinCount / (fitInScreenRef.current ? 1 : 4)) * widthRef.current;

@@ -102,7 +102,7 @@ function BezierEdge({
     const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
     const sourceHandle = useRef<Element | null>(null);
     const targetHandle = useRef<Element | null>(null);
-    const imgData = useRef(new Uint8ClampedArray());
+    const imgData = useRef<Uint8ClampedArray>(new Uint8ClampedArray());
     const { zoom } = useViewport();
 
     const uiScale = useSettingsStore(state => state.uiScale);
@@ -197,7 +197,7 @@ function BezierEdge({
         let imageData: ImageData;
         try {
             imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            imgData.current = imageData.data as Uint8ClampedArray<ArrayBuffer>;
+            imgData.current = imageData.data;
         } catch {
             return;
         }

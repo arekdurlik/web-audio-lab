@@ -46,7 +46,7 @@ export function Knob({ id, data }: KnobProps) {
     const canvas = useRef<HTMLCanvasElement | null>(null);
     const canvasWrapper = useRef<HTMLDivElement | null>(null);
     const [c, setC] = useState<CanvasRenderingContext2D | null>(null);
-    const imgData = useRef(new Uint8ClampedArray());
+    const imgData = useRef<Uint8ClampedArray>(new Uint8ClampedArray());
     const { editMode } = useFlowStore();
     const rotation = useRef(invlerp(params.min, params.max, params.value) * 2 - 1);
     const startY = useRef(0);
@@ -120,7 +120,7 @@ export function Knob({ id, data }: KnobProps) {
         if (!canvas.current || !c) return;
 
         const imageData = c.getImageData(0, 0, canvas.current.width, canvas.current.height);
-        imgData.current = imageData.data as Uint8ClampedArray<ArrayBuffer>;
+        imgData.current = imageData.data;
 
         const deg = rotation.current * 135 - 90;
         const r = 16;
