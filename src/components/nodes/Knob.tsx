@@ -37,22 +37,25 @@ export function Knob({ id, data }: KnobProps) {
         },
         ...data.params,
     });
-    const valueRef = useRef(params.value);
+    const [c, setC] = useState<CanvasRenderingContext2D | null>(null);
     const [labelOffset, setLabelOffset] = useState(0);
-    const signalId = `${id}-signal`;
+    const valueRef = useRef(params.value);
     const instance = useRef(new ConstantSourceNode(audio.context, { offset: params.value }));
-    const setInstance = useNodeStore(state => state.setInstance);
-    const { updateNode } = useUpdateFlowNode(id);
     const canvas = useRef<HTMLCanvasElement | null>(null);
     const canvasWrapper = useRef<HTMLDivElement | null>(null);
-    const [c, setC] = useState<CanvasRenderingContext2D | null>(null);
     const imgData = useRef<Uint8ClampedArray>(new Uint8ClampedArray());
-    const { editMode } = useFlowStore();
     const rotation = useRef(invlerp(params.min, params.max, params.value) * 2 - 1);
     const startY = useRef(0);
     const labelRef = useRef<HTMLSpanElement | null>(null);
-    const DRAG_STEP = DRAG_RANGE * invlerp(0, Math.abs(params.max - params.min), params.step);
     const lastDragRangeStep = useRef(0);
+
+    const { updateNode } = useUpdateFlowNode(id);
+    const setInstance = useNodeStore(state => state.setInstance);
+    const editMode = useFlowStore(state => state.editMode);
+    const zoom = useFlowStore(state => state.zoom);
+
+    const DRAG_STEP = DRAG_RANGE * invlerp(0, Math.abs(params.max - params.min), params.step);
+    const signalId = `${id}-signal`;
 
     const sockets: Socket[] = [
         {
@@ -108,12 +111,14 @@ export function Knob({ id, data }: KnobProps) {
         drawLine();
     }, [canvas, c]);
 
-    // keep label center
+    // center label
     useEffect(() => {
-        if (!labelRef.current) return;
+        if (!labelRef.current || !canvas.current) return;
 
-        const { width } = labelRef.current.getBoundingClientRect();
-        setLabelOffset(Math.round(16 - width / 2) + 1);
+        const { width: labelWidth } = labelRef.current.getBoundingClientRect();
+        const { width: knobWidth } = canvas.current.getBoundingClientRect();
+
+        setLabelOffset(-1 * Math.round((labelWidth - knobWidth) / (2 * zoom)));
     }, [params.label]);
 
     function drawLine() {
