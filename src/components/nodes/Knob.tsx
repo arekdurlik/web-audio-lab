@@ -133,16 +133,7 @@ export function Knob({ id, data }: KnobProps) {
         if (editMode || !canvas.current) return;
         document.removeEventListener('pointerup', handleDragEnd);
 
-        const rect = canvas.current.getBoundingClientRect();
-        const x = event.clientX;
-        const y = event.clientY;
-        const xc = rect.left + rect.width / 2;
-        const yc = rect.top + rect.height / 2;
-        const inCircle = pointInCircle(x, y, xc, yc, 16);
-
-        if (!inCircle) return;
-
-        startY.current = y;
+        startY.current = event.clientY;
         lastDragRangeStep.current = 0;
 
         document.addEventListener('pointermove', handleDrag);
@@ -193,11 +184,6 @@ export function Knob({ id, data }: KnobProps) {
     function handleDragEnd() {
         document.removeEventListener('pointermove', handleDrag);
         document.removeEventListener('pointerup', handleDragEnd);
-    }
-
-    function pointInCircle(x: number, y: number, cx: number, cy: number, radius: number) {
-        const distancesquared = (x - cx) * (x - cx) + (y - cy) * (y - cy);
-        return distancesquared <= radius * radius;
     }
 
     const Parameters = (

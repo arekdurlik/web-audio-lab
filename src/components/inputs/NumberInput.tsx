@@ -12,7 +12,6 @@ type NumberInputProps = {
     step?: number;
     width?: number;
     disabled?: boolean;
-    unit?: string;
     margin?: boolean;
 };
 

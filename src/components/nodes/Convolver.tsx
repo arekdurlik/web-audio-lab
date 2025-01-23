@@ -138,41 +138,37 @@ export function Convolver({ id, data }: ConvolverProps) {
             ) : (
                 <>
                     <NumberInput
-                        label="Fade in time:"
+                        label="Fade in time (s):"
                         max={22000}
                         value={params.fadeInTime}
                         onChange={v => setParams(state => ({ ...state, fadeInTime: v }))}
-                        unit="s"
                         width={72}
                         margin
                     />
                     <Hr />
                     <NumberInput
-                        label="Decay time:"
+                        label="Decay time (s):"
                         max={22000}
                         value={params.decayTime}
                         onChange={v => setParams(state => ({ ...state, decayTime: v }))}
-                        unit="s"
                         width={72}
                         margin
                     />
                     <Hr />
                     <NumberInput
-                        label="Start lowpass filter:"
+                        label="Start lowpass filter (Hz):"
                         max={22000}
                         value={params.lpFreqStart}
                         onChange={v => setParams(state => ({ ...state, lpFreqStart: v }))}
-                        unit="Hz"
                         width={72}
                         margin
                     />
                     <Hr />
                     <NumberInput
-                        label="End lowpass filter:"
+                        label="End lowpass filter (Hz):"
                         max={22000}
                         value={params.lpFreqEnd}
                         onChange={v => setParams(state => ({ ...state, lpFreqEnd: v }))}
-                        unit="Hz"
                         width={72}
                         margin
                     />
