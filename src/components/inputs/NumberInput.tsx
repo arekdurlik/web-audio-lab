@@ -39,8 +39,8 @@ export function NumberInput({
     function checkBounds(e: ChangeEvent<HTMLInputElement>) {
         const target = e.target as HTMLInputElement;
 
-        // digits and a single dot
-        const regex = /^\d*(\.\d*)?$/;
+        // digits, a single dot, and an optional minus sign
+        const regex = /^-?\d*(\.\d*)?$/;
 
         if (!regex.test(target.value)) {
             flashError();
@@ -49,7 +49,12 @@ export function NumberInput({
 
         setInternalValue(target.value);
 
-        if (!target.value.length || target.value.at(-1) === '.') return;
+        if (
+            !target.value.length ||
+            target.value.at(-1) === '.' ||
+            /^-?0*(\.0*)?$/.test(target.value) // '-', '-0.', '-.0'
+        )
+            return;
 
         const numberValue = Number(target.value);
 

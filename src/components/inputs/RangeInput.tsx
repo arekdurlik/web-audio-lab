@@ -1,4 +1,4 @@
-import { ChangeEvent, CSSProperties, useEffect, useState } from 'react';
+import { ChangeEvent, CSSProperties, MouseEvent, useEffect, useRef, useState } from 'react';
 import { clamp, countDecimals } from '../../helpers';
 import { FlexContainer } from '../../styled';
 import Log from './log';
@@ -50,11 +50,16 @@ export function RangeInput({
     style,
 }: RangeInputProps) {
     const [internalValue, setInternalValue] = useState(value);
-    const log = new Log({ minval: Math.max(1, min), maxval: max });
+    const isInternalUpdate = useRef(false);
+
+    const linearOffset = 1 - Math.min(1, min); // for 0-1 range in logarithmic mode
+    const log = new Log({ minval: Math.max(1, min), maxval: max + linearOffset });
 
     useEffect(() => {
+        if (isInternalUpdate.current) return;
+
         if (logarithmic) {
-            const pos = log.position(value);
+            const pos = log.position(value + linearOffset);
             setInternalValue(pos);
         } else {
             setInternalValue(value);
@@ -74,7 +79,7 @@ export function RangeInput({
     function calculateValue(pos: number) {
         const decimals = countDecimals(step.toString());
         const value = log.value(pos).toFixed(decimals);
-        return Number(value);
+        return Number(value) - linearOffset;
     }
 
     function handleChange(e: ChangeEvent<HTMLInputElement>) {
@@ -82,13 +87,26 @@ export function RangeInput({
             const newPosition = Number(e.target.value);
             setInternalValue(newPosition);
 
-            if (typeof onChange === 'function') onChange(calculateValue(newPosition));
+            if (typeof onChange === 'function') {
+                const decimals = countDecimals(step.toString());
+                onChange(+calculateValue(newPosition).toFixed(decimals));
+            }
         } else {
             const target = e.target as HTMLInputElement;
             const value = Number(target.value);
+            setInternalValue(value);
 
             if (typeof onChange === 'function') onChange(value);
         }
+    }
+
+    function handleDown(event: MouseEvent) {
+        isInternalUpdate.current = true;
+        event.stopPropagation();
+    }
+
+    function handleUp() {
+        isInternalUpdate.current = false;
     }
 
     return (
@@ -117,8 +135,8 @@ export function RangeInput({
                         max={logarithmic ? 100 : max}
                         disabled={disabled}
                         onChange={handleChange}
-                        onMouseDownCapture={e => e.stopPropagation()}
-                        onPointerDownCapture={e => e.stopPropagation()}
+                        onMouseDownCapture={handleDown}
+                        onMouseUpCapture={handleUp}
                         style={style}
                     />
                     {numberInput && (
