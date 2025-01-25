@@ -70,21 +70,23 @@ const Triangle = styled(SVG)<{ direction: 'right' | 'bottom' | 'left' | 'top' }>
             case 'bottom':
                 return `
     top: 0px;
+    left: -6px;
     `;
             case 'left':
                 return `
     transform: rotate(90deg);
     left: -7.5px;
-    top: -2px;`;
+    top: -4px;`;
             case 'top':
                 return `
     transform: rotate(180deg);
+    left: -6px;
     top: -4px;`;
             case 'right':
                 return `
     transform: rotate(-90deg);
     left: -3.5px;
-    top: -2px;`;
+    top: -3px;`;
         }
     }}
 `;

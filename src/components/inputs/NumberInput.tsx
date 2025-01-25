@@ -52,7 +52,7 @@ export function NumberInput({
         if (
             !target.value.length ||
             target.value.at(-1) === '.' ||
-            /^-?0*(\.0*)?$/.test(target.value) // '-', '-0.', '-.0'
+            (target.value !== '0' && /^-?0*(\.0*)?$/.test(target.value)) // '-', '-0.', '-.0'
         )
             return;
 

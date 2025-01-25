@@ -5,7 +5,6 @@ import { useOutsideClick } from '../../../hooks/useOutsideClick';
 import { useFlowStore } from '../../../stores/flowStore';
 import { File } from './File';
 import { Options } from './Options';
-import { Presets } from './Presets';
 import { MenuBarButton, MenuBarContainer, MenuBarOption } from './styled';
 
 export function MenuBar() {
@@ -17,9 +16,9 @@ export function MenuBar() {
                 <MenuBarItem label="File">
                     <File />
                 </MenuBarItem>
-                <MenuBarItem label="Presets">
+                {/* <MenuBarItem label="Presets">
                     <Presets />
-                </MenuBarItem>
+                </MenuBarItem> */}
                 <MenuBarItem label="Options">
                     <Options />
                 </MenuBarItem>
