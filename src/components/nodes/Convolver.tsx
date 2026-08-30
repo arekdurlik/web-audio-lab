@@ -48,7 +48,7 @@ export function Convolver({ id, data }: ConvolverProps) {
     const registerInstance = useNodeStore(state => state.setInstance);
     const { updateNode } = useUpdateFlowNode(id);
     const [sourceBuffer, setSourceBuffer] = useState<AudioBuffer | null>(null);
-    const responses = ['fender-twin.wav'];
+    const responses = ['fender-twin.wav', 'orange-4x12.wav'];
 
     useEffect(() => {
         registerInstance(audioId, instance.current, 'source');

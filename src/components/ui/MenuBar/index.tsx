@@ -43,6 +43,7 @@ function MenuBarItem({ label, children }: { label: string; children: ReactElemen
             <MenuBarButton active={active} onClick={() => setActive(!active)}>
                 {label}
             </MenuBarButton>
+            {/* @ts-expect-error onBlur does not exist */}
             {cloneElement(children, { onBlur: handleBlur, active })}
         </MenuBarOption>
     );

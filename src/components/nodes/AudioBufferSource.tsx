@@ -46,8 +46,8 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
                 buffer: createBrownianNoiseBuffer(audio.context),
             })
     );
-    const instance = useRef<AudioBufferSourceNode | null>();
-    const counterSource = useRef<AudioBufferSourceNode | null>();
+    const instance = useRef<AudioBufferSourceNode | null>(null);
+    const counterSource = useRef<AudioBufferSourceNode | null>(null);
     const duration = useRef(new ConstantSourceNode(audio.context, { offset: 0 }));
     const trigger = useRef(new ConstantSourceNode(audio.context, { offset: 0 }));
     const playbackRateParam = useRef(new ConstantSourceNode(audio.context, { offset: 0 }));

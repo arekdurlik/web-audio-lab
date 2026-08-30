@@ -32,7 +32,7 @@ export function Oscillator({ id, data }: OscillatorProps) {
     });
 
     const setInstance = useNodeStore(state => state.setInstance);
-    const instance = useRef<OscillatorNode | null>();
+    const instance = useRef<OscillatorNode | null>(null);
     const { updateNode } = useUpdateFlowNode(id);
 
     const audioId = `${id}-audio`;

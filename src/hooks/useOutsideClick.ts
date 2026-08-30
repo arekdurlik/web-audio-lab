@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { difference } from '../helpers';
 
 export function useOutsideClick(callback: Function, { ignoreOnDrag = false, threshold = 5 } = {}) {
-    const ref = useRef<any>();
+    const ref = useRef<any>(null);
     const mouseDown = useRef({ x: 0, y: 0 });
 
     useEffect(() => {
