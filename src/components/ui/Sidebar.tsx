@@ -85,6 +85,10 @@ export function Sidebar() {
                     label: 'Envelope',
                 },
                 {
+                    id: 'sequencer',
+                    label: 'Sequencer',
+                },
+                {
                     id: 'knob',
                     label: 'Knob',
                 },

@@ -1,4 +1,4 @@
-import { FC, MouseEvent, useEffect, useState } from 'react';
+import { FC, MouseEvent, useEffect, useRef, useState } from 'react';
 import SVG from 'react-inlinesvg';
 import { useUpdateNodeInternals } from 'reactflow';
 import styled from 'styled-components';
@@ -61,10 +61,12 @@ export const Node: FC<NodeProps> = function ({
         if (typeof onRotate === 'function') onRotate(rotation);
     }, [rotation]);
 
+    const socketsRef = useRef(sockets);
+    socketsRef.current = sockets;
+
     useEffect(() => {
-        const ids = sockets.map(socket => socket.id);
         return () => {
-            ids.forEach(removeInstance);
+            socketsRef.current.forEach(socket => removeInstance(socket.id));
         };
     }, []);
 

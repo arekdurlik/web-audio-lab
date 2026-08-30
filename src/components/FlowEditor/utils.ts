@@ -15,6 +15,7 @@ import { LiveInput } from '../nodes/LiveInput';
 import { Note } from '../nodes/Note';
 import { Oscillator } from '../nodes/Oscillator';
 import { Pitchshifter } from '../nodes/Pitchshifter';
+import { Sequencer } from '../nodes/Sequencer';
 import { StereoPanner } from '../nodes/StereoPanner';
 import { Text } from '../nodes/Text';
 import { WaveShaper } from '../nodes/WaveShaper';
@@ -61,6 +62,7 @@ export const nodeTypes = {
     pitchshifter: Pitchshifter,
     gate: Gate,
     envelope: Envelope,
+    sequencer: Sequencer,
 
     spdtFork: SPDTFork,
     spdtJoin: SPDTJoin,
@@ -94,6 +96,10 @@ export const nodeSizes = {
     text: {
         x: 7,
         y: 2,
+    },
+    sequencer: {
+        x: 6,
+        y: 3,
     },
     spdtFork: {
         x: 3,

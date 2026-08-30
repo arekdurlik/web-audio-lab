@@ -190,6 +190,24 @@ export type GateProps = NodeProps & {
     };
 };
 
+export type SequencerStepParam = { value: number; ramp: number; rampAnchor: 'start' | 'end' | 'both' };
+export type SequencerLaneParam = { steps: SequencerStepParam[] };
+export type SequencerTimingMode = 'free' | 'sync';
+export type SequencerDivision = '1/1' | '1/2' | '1/4' | '1/8' | '1/16' | '1/8t' | '1/16t';
+export type SequencerParams = SequencerProps['data']['params'];
+export type SequencerProps = NodeProps & {
+    data: {
+        params: {
+            lanes: SequencerLaneParam[];
+            stepCount: number;
+            timingMode: SequencerTimingMode;
+            freeSeconds: number;
+            bpm: number;
+            division: SequencerDivision;
+        };
+    };
+};
+
 export type WaveShaperType = 'array' | 'equation';
 export type WaveShaperParams = WaveShaperProps['data']['params'];
 export type WaveShaperProps = NodeProps & {
