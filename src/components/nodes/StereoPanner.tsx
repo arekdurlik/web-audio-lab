@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useNodeStore } from '../../stores/nodeStore';
@@ -23,7 +24,7 @@ export function StereoPanner({ id, data }: StereoPannerProps) {
         ...data.params,
     });
 
-    const [instance] = useState(new StereoPannerNode(audio.context, { pan: params.pan }));
+    const instance = useAudioNode(() => new StereoPannerNode(audio.context, { pan: params.pan }));
     const setInstance = useNodeStore(state => state.setInstance);
     const { updateNode } = useUpdateFlowNode(id);
 

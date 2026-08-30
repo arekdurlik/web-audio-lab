@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLazyRef } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useNodeStore } from '../../stores/nodeStore';
@@ -25,7 +26,9 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
         ...data.params,
     });
 
-    const instance = useRef(new ConstantSourceNode(audio.context, { offset: params.offset }));
+    const instance = useLazyRef(
+        () => new ConstantSourceNode(audio.context, { offset: params.offset })
+    );
     const setInstance = useNodeStore(state => state.setInstance);
     const { updateNode } = useUpdateFlowNode(id);
 

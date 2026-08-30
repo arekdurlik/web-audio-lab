@@ -1,5 +1,6 @@
 //@ts-nocheck
 import { useEffect, useRef, useState } from 'react';
+import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useNodeStore } from '../../stores/nodeStore';
@@ -16,9 +17,9 @@ export function Pitchshifter({ id, data }: PitchshifterProps) {
     });
     const audioIdInput = `${id}-audioInput`;
     const audioIdOutput = `${id}-audioOutput`;
-    const instance = useRef(new Jungle(audio.context));
-    const [input] = useState(new GainNode(audio.context));
-    const [output] = useState(new GainNode(audio.context));
+    const instance = useAudioNode(() => new Jungle(audio.context));
+    const input = useAudioNode(() => new GainNode(audio.context));
+    const output = useAudioNode(() => new GainNode(audio.context));
     const setInstance = useNodeStore(state => state.setInstance);
     const { updateNode } = useUpdateFlowNode(id);
     const sockets: Socket[] = [
@@ -38,8 +39,8 @@ export function Pitchshifter({ id, data }: PitchshifterProps) {
     ];
 
     useEffect(() => {
-        input.connect(instance.current.input);
-        instance.current.output.connect(output);
+        input.connect(instance.input);
+        instance.output.connect(output);
 
         setInstance(audioIdInput, input, 'target');
         setInstance(audioIdOutput, output, 'source');
@@ -50,7 +51,7 @@ export function Pitchshifter({ id, data }: PitchshifterProps) {
     }, [params]);
 
     useEffect(() => {
-        instance.current.setPitchOffset(getMultiplier(params.pitchOffset));
+        instance.setPitchOffset(getMultiplier(params.pitchOffset));
     }, [params.pitchOffset]);
 
     const Parameters = (

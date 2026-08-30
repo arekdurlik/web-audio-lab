@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { convertFloatArrayToUint8, curve, invlerp } from '../../helpers';
+import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useNodeStore } from '../../stores/nodeStore';
@@ -29,17 +30,30 @@ export function Analyser({ id, data }: AnalyserProps) {
     const widthRef = useRef(params.width);
     const fitInScreenRef = useRef(params.fitInScreen);
 
-    const [instance] = useState(
-        new AnalyserNode(audio.context, { smoothingTimeConstant: 0, fftSize: 2048 })
+    const instance = useAudioNode(
+        () => new AnalyserNode(audio.context, { smoothingTimeConstant: 0, fftSize: 2048 })
     );
-    const [dataArray] = useState(new Float32Array(instance.frequencyBinCount));
+    // muted stand-in for `destination` — some browsers stall an analyser with no path to output
+    const mute = useAudioNode(() => new GainNode(audio.context, { gain: 0 }));
+    const dataArray = useAudioNode(() => new Float32Array(instance.frequencyBinCount));
     const setInstance = useNodeStore(state => state.setInstance);
+    const setStaticConnection = useNodeStore(state => state.setStaticConnection);
+    const removeStaticConnection = useNodeStore(state => state.removeStaticConnection);
     const { updateNode } = useUpdateFlowNode(id);
     const canvas = useRef<HTMLCanvasElement | null>(null);
     const canvasWrapper = useRef<HTMLDivElement | null>(null);
     const [c, setC] = useState<CanvasRenderingContext2D | null>(null);
     const rafID = useRef(0);
     const imgData = useRef<Uint8ClampedArray>(new Uint8ClampedArray());
+    const uniqueBucketsRef = useRef<{ length: number; unique: number[] } | null>(null);
+    const analyserGradientRef = useRef<{ c: CanvasRenderingContext2D; gradient: CanvasGradient } | null>(
+        null
+    );
+    const vuGradientRef = useRef<{
+        c: CanvasRenderingContext2D;
+        cwidth: number;
+        gradient: CanvasGradient;
+    } | null>(null);
     let fps = 75,
         fpsInterval: number,
         now,
@@ -90,12 +104,14 @@ export function Analyser({ id, data }: AnalyserProps) {
     }, [canvas, c, canvasWrapper, params.type, params.width]);
 
     useEffect(() => {
-        instance.connect(audio.context.destination);
+        mute.connect(audio.context.destination);
         setInstance(audioId, instance, 'source');
+        setStaticConnection(audioId, mute);
 
         return () => {
             try {
-                instance.disconnect(audio.context.destination);
+                mute.disconnect(audio.context.destination);
+                removeStaticConnection(audioId);
                 cancelAnimationFrame(rafID.current);
             } catch {}
         };
@@ -218,24 +234,29 @@ export function Analyser({ id, data }: AnalyserProps) {
         const cheight = canvas.current.height;
         const meterWidth = 5;
 
-        const gradient = c.createLinearGradient(0, 0, 0, 100);
-        gradient.addColorStop(1, `rgb(0, 255, 0)`);
-        gradient.addColorStop(0.075, `rgb(0, 255, 0)`);
-        gradient.addColorStop(0.074, `rgb(255, 0, 0)`);
-        gradient.addColorStop(0, `rgb(255, 0, 0)`);
+        if (analyserGradientRef.current?.c !== c) {
+            const gradient = c.createLinearGradient(0, 0, 0, 100);
+            gradient.addColorStop(1, `rgb(0, 255, 0)`);
+            gradient.addColorStop(0.075, `rgb(0, 255, 0)`);
+            gradient.addColorStop(0.074, `rgb(255, 0, 0)`);
+            gradient.addColorStop(0, `rgb(255, 0, 0)`);
+            analyserGradientRef.current = { c, gradient };
+        }
+        const gradient = analyserGradientRef.current.gradient;
 
         c.fillStyle = '#000000';
         c.fillRect(0, 0, cwidth, cheight);
 
         // get samples logarithmically
         const length = dbArray.length;
-        const values = [];
-
-        for (let i = 0; i < length; i++) {
-            values.push(Math.floor(curve(i, 0, length, 30)));
+        if (uniqueBucketsRef.current?.length !== length) {
+            const values = [];
+            for (let i = 0; i < length; i++) {
+                values.push(Math.floor(curve(i, 0, length, 30)));
+            }
+            uniqueBucketsRef.current = { length, unique: [...new Set(values)] };
         }
-
-        const unique = [...new Set(values)];
+        const unique = uniqueBucketsRef.current.unique;
 
         // draw bars
         for (let i = 0; i < bars; i++) {
@@ -309,12 +330,15 @@ export function Analyser({ id, data }: AnalyserProps) {
                 break;
         }
 
-        const gradient = c.createLinearGradient(cwidth, 0, 0, 0);
-        gradient.addColorStop(1, `rgb(0, 255, 0)`);
-        gradient.addColorStop(0.119, `rgb(0, 255, 0)`);
-        gradient.addColorStop(0.118, `rgb(255, 0, 0)`);
-        gradient.addColorStop(0, `rgb(255, 0, 0)`);
-        c.fillStyle = gradient;
+        if (vuGradientRef.current?.c !== c || vuGradientRef.current?.cwidth !== cwidth) {
+            const gradient = c.createLinearGradient(cwidth, 0, 0, 0);
+            gradient.addColorStop(1, `rgb(0, 255, 0)`);
+            gradient.addColorStop(0.119, `rgb(0, 255, 0)`);
+            gradient.addColorStop(0.118, `rgb(255, 0, 0)`);
+            gradient.addColorStop(0, `rgb(255, 0, 0)`);
+            vuGradientRef.current = { c, cwidth, gradient };
+        }
+        c.fillStyle = vuGradientRef.current.gradient;
         c.fillRect(0, 0, cwidth * invlerp(-30, 4, avgPowerDecibels), cheight - 20);
     }
 

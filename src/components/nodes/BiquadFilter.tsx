@@ -1,4 +1,5 @@
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useNodeStore } from '../../stores/nodeStore';
@@ -25,14 +26,15 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
         ...data.params,
     });
 
-    const instance = useRef(
-        new BiquadFilterNode(audio.context, {
-            frequency: params.frequency,
-            detune: params.detune,
-            Q: params.Q,
-            gain: params.gain,
-            type: params.type,
-        })
+    const instance = useAudioNode(
+        () =>
+            new BiquadFilterNode(audio.context, {
+                frequency: params.frequency,
+                detune: params.detune,
+                Q: params.Q,
+                gain: params.gain,
+                type: params.type,
+            })
     );
     const setInstance = useNodeStore(state => state.setInstance);
     const { updateNode } = useUpdateFlowNode(id);
@@ -102,11 +104,11 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
     };
 
     useEffect(() => {
-        setInstance(audioId, instance.current, 'source');
-        setInstance(freqId, instance.current.frequency, 'param');
-        setInstance(detuneId, instance.current.detune, 'param');
-        setInstance(QId, instance.current.Q, 'param');
-        setInstance(gainId, instance.current.gain, 'param');
+        setInstance(audioId, instance, 'source');
+        setInstance(freqId, instance.frequency, 'param');
+        setInstance(detuneId, instance.detune, 'param');
+        setInstance(QId, instance.Q, 'param');
+        setInstance(gainId, instance.gain, 'param');
     }, []);
 
     useEffect(() => {
@@ -116,7 +118,7 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
     function handleType(event: ChangeEvent<HTMLSelectElement>) {
         const type = event.target.value as BiquadFilterType;
         setParams(state => ({ ...state, type }));
-        instance.current.type = type;
+        instance.type = type;
     }
 
     function handleParam(param: BiquadFilterParam, value: number) {
@@ -127,11 +129,11 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
     function setInstanceParam(param: BiquadFilterParam, value: any) {
         if (value === undefined || Number.isNaN(value)) return;
 
-        instance.current[param].setValueAtTime(
-            instance.current[param].value,
+        instance[param].setValueAtTime(
+            instance[param].value,
             audio.context.currentTime
         );
-        instance.current[param].linearRampToValueAtTime(value, audio.context.currentTime + 0.04);
+        instance[param].linearRampToValueAtTime(value, audio.context.currentTime + 0.04);
     }
 
     const Parameters = (

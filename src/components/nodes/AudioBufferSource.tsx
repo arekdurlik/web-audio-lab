@@ -5,6 +5,7 @@ import {
     createPinkNoiseBuffer,
     createWhiteNoiseBuffer,
 } from '../../audio/utils';
+import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useNodeStore } from '../../stores/nodeStore';
@@ -35,23 +36,31 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
     const [loadedFiles, setLoadedFiles] = useState<
         Map<string, { name: string; buffer: AudioBuffer }>
     >(
-        new Map()
-            .set('white-noise', {
-                name: 'White noise',
-                buffer: createWhiteNoiseBuffer(audio.context),
-            })
-            .set('pink-noise', { name: 'Pink noise', buffer: createPinkNoiseBuffer(audio.context) })
-            .set('brown-noise', {
-                name: 'Brown noise',
-                buffer: createBrownianNoiseBuffer(audio.context),
-            })
+        () =>
+            new Map()
+                .set('white-noise', {
+                    name: 'White noise',
+                    buffer: createWhiteNoiseBuffer(audio.context),
+                })
+                .set('pink-noise', {
+                    name: 'Pink noise',
+                    buffer: createPinkNoiseBuffer(audio.context),
+                })
+                .set('brown-noise', {
+                    name: 'Brown noise',
+                    buffer: createBrownianNoiseBuffer(audio.context),
+                })
     );
     const instance = useRef<AudioBufferSourceNode | null>(null);
     const counterSource = useRef<AudioBufferSourceNode | null>(null);
-    const duration = useRef(new ConstantSourceNode(audio.context, { offset: 0 }));
-    const trigger = useRef(new ConstantSourceNode(audio.context, { offset: 0 }));
-    const playbackRateParam = useRef(new ConstantSourceNode(audio.context, { offset: 0 }));
-    const prp = useRef(new AudioWorkletNode(audio.context, 'playback-reporting-processor'));
+    const duration = useAudioNode(() => new ConstantSourceNode(audio.context, { offset: 0 }));
+    const trigger = useAudioNode(() => new ConstantSourceNode(audio.context, { offset: 0 }));
+    const playbackRateParam = useAudioNode(
+        () => new ConstantSourceNode(audio.context, { offset: 0 })
+    );
+    const prp = useAudioNode(
+        () => new AudioWorkletNode(audio.context, 'playback-reporting-processor')
+    );
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const setInstance = useNodeStore(state => state.setInstance);
@@ -94,20 +103,20 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
     ];
 
     useEffect(() => {
-        setInstance(controlVoltageId, playbackRateParam.current.offset, 'param');
+        setInstance(controlVoltageId, playbackRateParam.offset, 'param');
 
-        prp.current.port.onmessage = function () {
+        prp.port.onmessage = function () {
             if (!playingRef.current) return;
 
-            trigger.current.offset.cancelScheduledValues(audio.context.currentTime);
-            trigger.current.offset.value = 1;
-            trigger.current.offset.setValueAtTime(0, audio.context.currentTime + 0.1);
+            trigger.offset.cancelScheduledValues(audio.context.currentTime);
+            trigger.offset.value = 1;
+            trigger.offset.setValueAtTime(0, audio.context.currentTime + 0.1);
         };
 
         try {
-            playbackRateParam.current.start();
-            trigger.current.start();
-            duration.current.start();
+            playbackRateParam.start();
+            trigger.start();
+            duration.start();
         } catch {}
 
         return () => {
@@ -120,9 +129,9 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
 
     useEffect(() => {
         if (params.playing) {
-            trigger.current.offset.cancelScheduledValues(audio.context.currentTime);
-            trigger.current.offset.value = 1;
-            trigger.current.offset.setValueAtTime(0, audio.context.currentTime + 0.03);
+            trigger.offset.cancelScheduledValues(audio.context.currentTime);
+            trigger.offset.value = 1;
+            trigger.offset.setValueAtTime(0, audio.context.currentTime + 0.03);
         }
     }, [params.playing]);
 
@@ -168,8 +177,8 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
 
         instance.current = new AudioBufferSourceNode(audio.context, { buffer, loop: params.loop });
         counterSource.current = new AudioBufferSourceNode(audio.context, { loop: params.loop });
-        playbackRateParam.current.connect(instance.current.playbackRate);
-        playbackRateParam.current.connect(counterSource.current.playbackRate);
+        playbackRateParam.connect(instance.current.playbackRate);
+        playbackRateParam.connect(counterSource.current.playbackRate);
 
         const counterBuffer = audio.context.createBuffer(
             1,
@@ -184,13 +193,13 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
             counterBuffer.getChannelData(0)[i] = i / length;
         }
 
-        counterSource.current.connect(prp.current);
+        counterSource.current.connect(prp);
         counterSource.current.start();
-        duration.current.offset.value = buffer.duration;
+        duration.offset.value = buffer.duration;
 
         setInstance(audioId, instance.current, 'source');
-        setInstance(durationId, duration.current, 'source');
-        setInstance(triggerId, trigger.current, 'source');
+        setInstance(durationId, duration, 'source');
+        setInstance(triggerId, trigger, 'source');
 
         instance.current.playbackRate.value = params.playbackRate;
         counterSource.current.playbackRate.value = params.playbackRate;

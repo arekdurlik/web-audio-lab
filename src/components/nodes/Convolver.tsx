@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { generateReverb } from '../../audio/generateReverb';
+import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useNodeStore } from '../../stores/nodeStore';
@@ -44,14 +45,14 @@ export function Convolver({ id, data }: ConvolverProps) {
         },
     ];
 
-    const instance = useRef(new ConvolverNode(audio.context));
+    const instance = useAudioNode(() => new ConvolverNode(audio.context));
     const registerInstance = useNodeStore(state => state.setInstance);
     const { updateNode } = useUpdateFlowNode(id);
     const [sourceBuffer, setSourceBuffer] = useState<AudioBuffer | null>(null);
     const responses = ['fender-twin.wav', 'orange-4x12.wav'];
 
     useEffect(() => {
-        registerInstance(audioId, instance.current, 'source');
+        registerInstance(audioId, instance, 'source');
     }, []);
 
     useEffect(() => {
@@ -71,31 +72,37 @@ export function Convolver({ id, data }: ConvolverProps) {
         if (sourceBuffer === null) {
             fetchResponse();
         } else {
-            instance.current.buffer = sourceBuffer;
+            instance.buffer = sourceBuffer;
         }
     }, [params.type]);
 
     // regenerate buffer
+    const regenerateTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     useEffect(() => {
         if (params.type === 'file') return;
 
-        generateReverb(
-            audio.context,
-            {
-                fadeInTime: params.fadeInTime,
-                decayTime: Math.max(0.01, params.decayTime),
-                lpFreqStart: params.lpFreqStart,
-                lpFreqEnd: params.lpFreqEnd,
-                numChannels: 1,
-                sampleRate: audio.context.sampleRate,
-            },
-            (buffer: AudioBuffer) => {
-                if (params.reverse) {
-                    buffer.getChannelData(0).reverse();
+        clearTimeout(regenerateTimeout.current);
+        regenerateTimeout.current = setTimeout(() => {
+            generateReverb(
+                audio.context,
+                {
+                    fadeInTime: params.fadeInTime,
+                    decayTime: Math.max(0.01, params.decayTime),
+                    lpFreqStart: params.lpFreqStart,
+                    lpFreqEnd: params.lpFreqEnd,
+                    numChannels: 1,
+                    sampleRate: audio.context.sampleRate,
+                },
+                (buffer: AudioBuffer) => {
+                    if (params.reverse) {
+                        buffer.getChannelData(0).reverse();
+                    }
+                    instance.buffer = buffer;
                 }
-                instance.current.buffer = buffer;
-            }
-        );
+            );
+        }, 300);
+
+        return () => clearTimeout(regenerateTimeout.current);
     }, [params]);
 
     async function fetchResponse() {
@@ -104,7 +111,7 @@ export function Convolver({ id, data }: ConvolverProps) {
             let arraybuffer = await response.arrayBuffer();
             const buffer = await audio.context.decodeAudioData(arraybuffer);
             setSourceBuffer(buffer);
-            instance.current.buffer = buffer;
+            instance.buffer = buffer;
         } catch (e) {
             console.error(e);
         }

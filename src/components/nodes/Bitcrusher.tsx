@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useNodeStore } from '../../stores/nodeStore';
@@ -15,13 +16,14 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
         ...data.params,
     });
 
-    const instance = useRef(
-        new AudioWorkletNode(audio.context, 'bit-crusher-processor', {
-            parameterData: {
-                bitDepth: params.bitDepth,
-                frequencyReduction: params.sampleRateReduction,
-            },
-        })
+    const instance = useAudioNode(
+        () =>
+            new AudioWorkletNode(audio.context, 'bit-crusher-processor', {
+                parameterData: {
+                    bitDepth: params.bitDepth,
+                    frequencyReduction: params.sampleRateReduction,
+                },
+            })
     );
     const setInstance = useNodeStore(state => state.setInstance);
     const { updateNode } = useUpdateFlowNode(id);
@@ -44,7 +46,7 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
     ];
 
     useEffect(() => {
-        setInstance(audioId, instance.current, 'source');
+        setInstance(audioId, instance, 'source');
     }, []);
 
     // update reactflow and audio instance
@@ -54,14 +56,14 @@ export function Bitcrusher({ id, data }: BitcrusherProps) {
 
     function handleBitDepth(value: number) {
         setParams(state => ({ ...state, bitDepth: value }));
-        instance.current.parameters
+        instance.parameters
             .get('bitDepth')
             ?.setValueAtTime(value, audio.context.currentTime);
     }
 
     function handleSampleRateReduction(value: number) {
         setParams(state => ({ ...state, sampleRateReduction: value }));
-        instance.current.parameters
+        instance.parameters
             .get('frequencyReduction')
             ?.setValueAtTime(value, audio.context.currentTime);
     }

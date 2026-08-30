@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLazyRef } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useNodeStore } from '../../stores/nodeStore';
@@ -23,7 +24,7 @@ export function Delay({ id, data }: DelayProps) {
         ...data.params,
     });
 
-    const instance = useRef(new DelayNode(audio.context, { maxDelayTime: params.max }));
+    const instance = useLazyRef(() => new DelayNode(audio.context, { maxDelayTime: params.max }));
     const setInstance = useNodeStore(state => state.setInstance);
     const { updateNode } = useUpdateFlowNode(id);
 

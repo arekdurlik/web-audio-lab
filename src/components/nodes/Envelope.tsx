@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useNodeStore } from '../../stores/nodeStore';
@@ -33,15 +34,16 @@ export function Envelope({ id, data }: EnvelopeProps) {
     const decayRef = useRef(params.d);
     const sustainRef = useRef(params.s);
     const releaseRef = useRef(params.r);
-    const [constant] = useState(new ConstantSourceNode(audio.context, { offset: 1 }));
-    const [gate] = useState(
-        new AudioWorkletNode(audio.context, 'gate-processor', {
-            parameterData: { threshold: 1 },
-        })
+    const constant = useAudioNode(() => new ConstantSourceNode(audio.context, { offset: 1 }));
+    const gate = useAudioNode(
+        () =>
+            new AudioWorkletNode(audio.context, 'gate-processor', {
+                parameterData: { threshold: 1 },
+            })
     );
 
-    const [input] = useState(new GainNode(audio.context, { gain: 1 }));
-    const [envelope] = useState(new GainNode(audio.context, { gain: 0 }));
+    const input = useAudioNode(() => new GainNode(audio.context, { gain: 1 }));
+    const envelope = useAudioNode(() => new GainNode(audio.context, { gain: 0 }));
     const setInstance = useNodeStore(state => state.setInstance);
     const { updateNode } = useUpdateFlowNode(id);
 

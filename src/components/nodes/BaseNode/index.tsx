@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { useOutsideClick } from '../../../hooks/useOutsideClick';
 import { useUpdateFlowNode } from '../../../hooks/useUpdateFlowNode';
 import { useFlowStore } from '../../../stores/flowStore';
+import { useNodeStore } from '../../../stores/nodeStore';
 import { LineHandle } from '../../handles/LineHandle';
 import { ParamHandle } from '../../handles/ParamHandle';
 import { Tooltip } from '../../ui/Tooltip';
@@ -50,6 +51,7 @@ export const Node: FC<NodeProps> = function ({
     const { updateNode, deleteNode } = useUpdateFlowNode(id);
     const activator = useOutsideClick(() => setActive(false));
     const { editMode } = useFlowStore();
+    const removeInstance = useNodeStore(state => state.removeInstance);
     const gridSize = 16;
     const mulWidth = width * gridSize + 1;
     const mulHeight = height * gridSize + 1;
@@ -58,6 +60,13 @@ export const Node: FC<NodeProps> = function ({
         updateNode({ rotation });
         if (typeof onRotate === 'function') onRotate(rotation);
     }, [rotation]);
+
+    useEffect(() => {
+        const ids = sockets.map(socket => socket.id);
+        return () => {
+            ids.forEach(removeInstance);
+        };
+    }, []);
 
     function handleRotate(event: MouseEvent) {
         event.stopPropagation();

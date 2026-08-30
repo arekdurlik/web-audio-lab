@@ -2,6 +2,7 @@ import { PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from '
 import SVG from 'react-inlinesvg';
 import styled from 'styled-components';
 import { clamp, countDecimals, invlerp, range } from '../../helpers';
+import { useLazyRef } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useFlowStore } from '../../stores/flowStore';
@@ -40,7 +41,7 @@ export function Knob({ id, data }: KnobProps) {
     const [c, setC] = useState<CanvasRenderingContext2D | null>(null);
     const [labelOffset, setLabelOffset] = useState(0);
     const valueRef = useRef(params.value);
-    const instance = useRef(new ConstantSourceNode(audio.context, { offset: params.value }));
+    const instance = useLazyRef(() => new ConstantSourceNode(audio.context, { offset: params.value }));
     const canvas = useRef<HTMLCanvasElement | null>(null);
     const canvasWrapper = useRef<HTMLDivElement | null>(null);
     const imgData = useRef<Uint8ClampedArray>(new Uint8ClampedArray());

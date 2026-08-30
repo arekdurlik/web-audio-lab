@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useNodeStore } from '../../stores/nodeStore';
@@ -21,10 +22,11 @@ export function Gate({ id, data }: GateProps) {
         },
         ...data.params,
     });
-    const instance = useRef(
-        new AudioWorkletNode(audio.context, 'gate-processor', {
-            parameterData: { threshold: params.threshold },
-        })
+    const instance = useAudioNode(
+        () =>
+            new AudioWorkletNode(audio.context, 'gate-processor', {
+                parameterData: { threshold: params.threshold },
+            })
     );
 
     const setInstance = useNodeStore(state => state.setInstance);
@@ -48,8 +50,8 @@ export function Gate({ id, data }: GateProps) {
     ];
 
     useEffect(() => {
-        setInstance(audioId, instance.current, 'source');
-        instance.current.onprocessorerror = function (e) {
+        setInstance(audioId, instance, 'source');
+        instance.onprocessorerror = function (e) {
             console.error(e);
         };
     }, []);
@@ -61,10 +63,10 @@ export function Gate({ id, data }: GateProps) {
     function handleThreshold(value: number) {
         setParams(state => ({ ...state, threshold: value }));
 
-        instance.current.port.postMessage({ paramChange: value });
+        instance.port.postMessage({ paramChange: value });
 
         // TODO: figure out why parameters.threshold[0] value is stale
-        const threshold = instance.current.parameters.get('threshold');
+        const threshold = instance.parameters.get('threshold');
         threshold?.cancelScheduledValues(audio.context.currentTime);
         threshold?.setValueAtTime(threshold.value, audio.context.currentTime);
         threshold?.linearRampToValueAtTime(

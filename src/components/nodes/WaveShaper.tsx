@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
 import { useNodeStore } from '../../stores/nodeStore';
@@ -27,7 +28,9 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
     const [arrayError, setArrayError] = useState(false);
     const [equationError, setEquationError] = useState(false);
     const audioId = `${id}-audio`;
-    const instance = useRef(new WaveShaperNode(audio.context, { oversample: params.oversample }));
+    const instance = useAudioNode(
+        () => new WaveShaperNode(audio.context, { oversample: params.oversample })
+    );
     const setInstance = useNodeStore(state => state.setInstance);
     const { updateNode } = useUpdateFlowNode(id);
     const sockets: Socket[] = [
@@ -48,7 +51,7 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
 
     // init
     useEffect(() => {
-        setInstance(audioId, instance.current, 'source');
+        setInstance(audioId, instance, 'source');
         handleApply();
     }, []);
 
@@ -88,7 +91,7 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
 
         setArrayError(false);
         const values = params.array.split(',').map(v => Number(v));
-        instance.current.curve = new Float32Array(values);
+        instance.curve = new Float32Array(values);
     }
 
     function applyEquation() {
@@ -102,7 +105,7 @@ export function WaveShaper({ id, data }: WaveShaperProps) {
             num.toFixed(1);
 
             setEquationError(false);
-            instance.current.curve = makeDistortionCurve();
+            instance.curve = makeDistortionCurve();
         } catch (e) {
             console.error(e);
             setEquationError(true);
