@@ -2,6 +2,7 @@ import { cloneElement, ReactElement, useState } from 'react';
 import styled from 'styled-components';
 import { surface } from '../../../98';
 import { useOutsideClick } from '../../../hooks/useOutsideClick';
+import { useUndoRedo } from '../../../hooks/useUndoRedo';
 import { useFlowStore } from '../../../stores/flowStore';
 import { File } from './File';
 import { Options } from './Options';
@@ -9,6 +10,7 @@ import { MenuBarButton, MenuBarContainer, MenuBarOption } from './styled';
 
 export function MenuBar() {
     const { editMode, setEditMode } = useFlowStore();
+    const { undo, redo, canUndo, canRedo } = useUndoRedo();
 
     return (
         <Container>
@@ -23,9 +25,17 @@ export function MenuBar() {
                     <Options />
                 </MenuBarItem>
             </MenuBarContainer>
-            <Button className={`${editMode && 'active'}`} onClick={() => setEditMode(!editMode)}>
-                Edit mode
-            </Button>
+            <Group>
+                <Button disabled={!canUndo} onClick={undo}>
+                    Undo
+                </Button>
+                <Button disabled={!canRedo} onClick={redo}>
+                    Redo
+                </Button>
+                <Button className={`${editMode && 'active'}`} onClick={() => setEditMode(!editMode)}>
+                    Edit mode
+                </Button>
+            </Group>
         </Container>
     );
 }
@@ -59,10 +69,18 @@ const Container = styled.div`
     background-color: ${surface};
 `;
 
+const Group = styled.div`
+    display: flex;
+`;
+
 const Button = styled.button`
     padding: 2px 15px;
     margin: 1px;
     min-height: unset;
     height: 17px;
     background: ${surface};
+
+    &:disabled {
+        color: #888;
+    }
 `;

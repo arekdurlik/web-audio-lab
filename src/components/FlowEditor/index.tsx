@@ -11,7 +11,9 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import styled from 'styled-components';
+import { useUndoRedo } from '../../hooks/useUndoRedo';
 import { useFlowStore } from '../../stores/flowStore';
+import { snapshotFingerprint, useHistoryStore } from '../../stores/historyStore';
 import { useNodeStore } from '../../stores/nodeStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { FlowControls } from './Controls';
@@ -31,6 +33,10 @@ export function FlowEditor() {
     const setPanning = useFlowStore(state => state.setPanning);
     const editMode = useFlowStore(state => state.editMode);
     const getEdgeType = useSettingsStore(state => state.getEdgeType);
+    const lastSnapshot = useHistoryStore(state => state.lastSnapshot);
+    const commitHistory = useHistoryStore(state => state.commit);
+    const historyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const { undo: handleUndo, redo: handleRedo } = useUndoRedo();
 
     useEffect(() => {
         const connections = edges.map(edge => ({
@@ -39,6 +45,50 @@ export function FlowEditor() {
         }));
         setConnections(connections);
     }, [edges]);
+
+    useEffect(() => {
+        const current = { nodes, edges };
+        if (snapshotFingerprint(current) === snapshotFingerprint(lastSnapshot)) return;
+
+        clearTimeout(historyTimerRef.current);
+        historyTimerRef.current = setTimeout(() => {
+            commitHistory(lastSnapshot, current);
+        }, 500);
+
+        return () => clearTimeout(historyTimerRef.current);
+    }, [nodes, edges]);
+
+    const flushHistory = useCallback(() => {
+        const current = { nodes, edges };
+        if (snapshotFingerprint(current) === snapshotFingerprint(lastSnapshot)) return;
+
+        clearTimeout(historyTimerRef.current);
+        commitHistory(lastSnapshot, current);
+    }, [lastSnapshot, nodes, edges, commitHistory]);
+
+    useEffect(() => {
+        function handleKeyDown(e: KeyboardEvent) {
+            const target = e.target as HTMLElement;
+            const isEditable =
+                target.tagName === 'INPUT' ||
+                target.tagName === 'TEXTAREA' ||
+                target.tagName === 'SELECT' ||
+                target.isContentEditable;
+            if (isEditable) return;
+
+            if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 'z') return;
+
+            e.preventDefault();
+            if (e.shiftKey) {
+                handleRedo();
+            } else {
+                handleUndo();
+            }
+        }
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [handleUndo, handleRedo]);
 
     const onDragOver = useCallback((event: DragEvent) => {
         event.preventDefault();
@@ -92,7 +142,8 @@ export function FlowEditor() {
     }, []);
 
     const onConnect = useCallback(
-        (params: Edge | Connection) =>
+        (params: Edge | Connection) => {
+            flushHistory();
             setEdges(edges => {
                 return addEdge(
                     {
@@ -103,9 +154,14 @@ export function FlowEditor() {
                     } as any,
                     edges
                 );
-            }),
-        [setEdges]
+            });
+        },
+        [setEdges, flushHistory]
     );
+
+    const onNodeDragStart = useCallback(() => {
+        flushHistory();
+    }, [flushHistory]);
 
     return (
         <Wrapper ref={reactFlowWrapper}>
@@ -123,6 +179,7 @@ export function FlowEditor() {
                 onEdgeUpdateStart={onEdgeUpdateStart}
                 onEdgeUpdateEnd={onEdgeUpdateEnd}
                 onConnect={onConnect}
+                onNodeDragStart={onNodeDragStart}
                 onDrop={onDrop}
                 onDragOver={onDragOver}
                 proOptions={propOptions}

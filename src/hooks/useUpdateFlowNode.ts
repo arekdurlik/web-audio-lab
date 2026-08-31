@@ -4,12 +4,9 @@ export function useUpdateFlowNode(id: string) {
     const reactFlowInstance = useReactFlow();
 
     function updateNode(newData: {}) {
-        const newNodes = reactFlowInstance.getNodes().map(node => {
-            if (node.id === id) {
-                node.data = { ...node.data, ...newData };
-            }
-            return node;
-        });
+        const newNodes = reactFlowInstance
+            .getNodes()
+            .map(node => (node.id === id ? { ...node, data: { ...node.data, ...newData } } : node));
 
         reactFlowInstance.setNodes(newNodes);
     }
