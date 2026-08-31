@@ -12,6 +12,7 @@ import { Gain } from '../nodes/Gain';
 import { Gate } from '../nodes/Gate';
 import { Knob } from '../nodes/Knob';
 import { LiveInput } from '../nodes/LiveInput';
+import { Looper } from '../nodes/Looper';
 import { Note } from '../nodes/Note';
 import { Oscillator } from '../nodes/Oscillator';
 import { Pitchshifter } from '../nodes/Pitchshifter';
@@ -63,6 +64,7 @@ export const nodeTypes = {
     gate: Gate,
     envelope: Envelope,
     sequencer: Sequencer,
+    looper: Looper,
 
     spdtFork: SPDTFork,
     spdtJoin: SPDTJoin,
@@ -100,6 +102,10 @@ export const nodeSizes = {
     sequencer: {
         x: 6,
         y: 3,
+    },
+    looper: {
+        x: 4,
+        y: 4,
     },
     spdtFork: {
         x: 3,

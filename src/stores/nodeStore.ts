@@ -9,7 +9,7 @@ type NodeStore = {
         }
     >;
     connections: { source?: string | null; target?: string | null }[];
-    staticConnections: Map<string, AudioNode>;
+    staticConnections: Map<string, { target: AudioNode; outputIndex: number }[]>;
     setConnections: (connections: { source?: string | null; target?: string | null }[]) => void;
     setInstance: (
         id: string,
@@ -17,7 +17,7 @@ type NodeStore = {
         type: 'source' | 'target' | 'param'
     ) => void;
     removeInstance: (id: string) => void;
-    setStaticConnection: (id: string, target: AudioNode) => void;
+    setStaticConnection: (id: string, target: AudioNode, outputIndex?: number) => void;
     removeStaticConnection: (id: string) => void;
     reconnectChain: (connections: { source?: string | null; target?: string | null }[]) => void;
 };
@@ -54,8 +54,12 @@ export const useNodeStore = create<NodeStore>((set, get) => ({
         get().staticConnections.delete(id);
         get().reconnectChain(get().connections);
     },
-    setStaticConnection(id, target) {
-        get().staticConnections.set(id, target);
+    setStaticConnection(id, target, outputIndex = 0) {
+        const existing = get().staticConnections.get(id) ?? [];
+        get().staticConnections.set(
+            id,
+            existing.filter(c => c.outputIndex !== outputIndex).concat({ target, outputIndex })
+        );
         get().reconnectChain(get().connections);
     },
     removeStaticConnection(id) {
@@ -86,13 +90,16 @@ export const useNodeStore = create<NodeStore>((set, get) => ({
             }
         });
 
-        get().staticConnections.forEach((target, id) => {
+        get().staticConnections.forEach((entries, id) => {
             const node = nodes.get(id);
-            if (node && node.instance instanceof AudioNode) {
+            if (!node || !(node.instance instanceof AudioNode)) return;
+            const source = node.instance;
+
+            entries.forEach(({ target, outputIndex }) => {
                 try {
-                    node.instance.connect(target);
+                    source.connect(target, outputIndex);
                 } catch {}
-            }
+            });
         });
     },
 }));

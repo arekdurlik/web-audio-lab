@@ -208,6 +208,18 @@ export type SequencerProps = NodeProps & {
     };
 };
 
+export type LooperParams = LooperProps['data']['params'];
+export type LooperProps = NodeProps & {
+    data: {
+        params: {
+            speed: number;
+            speedMin: number;
+            speedMax: number;
+            reverse: boolean;
+        };
+    };
+};
+
 export type WaveShaperType = 'array' | 'equation';
 export type WaveShaperParams = WaveShaperProps['data']['params'];
 export type WaveShaperProps = NodeProps & {
