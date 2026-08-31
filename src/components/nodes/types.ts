@@ -208,6 +208,19 @@ export type SequencerProps = NodeProps & {
     };
 };
 
+export type CompressorParams = CompressorProps['data']['params'];
+export type CompressorProps = NodeProps & {
+    data: {
+        params: {
+            threshold: number;
+            knee: number;
+            ratio: number;
+            attack: number;
+            release: number;
+        };
+    };
+};
+
 export type LooperParams = LooperProps['data']['params'];
 export type LooperProps = NodeProps & {
     data: {

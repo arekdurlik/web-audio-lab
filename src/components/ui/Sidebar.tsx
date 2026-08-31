@@ -31,6 +31,10 @@ export function Sidebar() {
                     label: 'Biquad filter',
                 },
                 {
+                    id: 'compressorNode',
+                    label: 'Compressor',
+                },
+                {
                     id: 'oscillatorNode',
                     label: 'Oscillator',
                 },

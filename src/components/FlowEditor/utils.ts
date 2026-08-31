@@ -3,6 +3,7 @@ import { Analyser } from '../nodes/Analyser';
 import { AudioBufferSource } from '../nodes/AudioBufferSource';
 import { BiquadFilter } from '../nodes/BiquadFilter';
 import { Bitcrusher } from '../nodes/Bitcrusher';
+import { Compressor } from '../nodes/Compressor';
 import { ConstantSource } from '../nodes/ConstantSource';
 import { Convolver } from '../nodes/Convolver';
 import { Delay } from '../nodes/Delay';
@@ -48,6 +49,7 @@ export const nodeTypes = {
     stereoPannerNode: StereoPanner,
     constantSourceNode: ConstantSource,
     filterNode: BiquadFilter,
+    compressorNode: Compressor,
     oscillatorNode: Oscillator,
     waveShaperNode: WaveShaper,
     audioBufferSourceNode: AudioBufferSource,
