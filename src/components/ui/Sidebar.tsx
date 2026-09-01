@@ -97,6 +97,10 @@ export function Sidebar() {
                     label: 'Looper',
                 },
                 {
+                    id: 'random',
+                    label: 'Random',
+                },
+                {
                     id: 'knob',
                     label: 'Knob',
                 },

@@ -221,6 +221,24 @@ export type CompressorProps = NodeProps & {
     };
 };
 
+export type RandomMode = 'range' | 'pool';
+export type RandomParams = RandomProps['data']['params'];
+export type RandomProps = NodeProps & {
+    data: {
+        params: {
+            mode: RandomMode;
+            min: number;
+            max: number;
+            pool: number[];
+            repeating: boolean;
+            rate: number;
+            rateMin: number;
+            rateMax: number;
+            ramp: number;
+        };
+    };
+};
+
 export type LooperParams = LooperProps['data']['params'];
 export type LooperProps = NodeProps & {
     data: {

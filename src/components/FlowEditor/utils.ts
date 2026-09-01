@@ -17,6 +17,7 @@ import { Looper } from '../nodes/Looper';
 import { Note } from '../nodes/Note';
 import { Oscillator } from '../nodes/Oscillator';
 import { Pitchshifter } from '../nodes/Pitchshifter';
+import { Random } from '../nodes/Random';
 import { Sequencer } from '../nodes/Sequencer';
 import { StereoPanner } from '../nodes/StereoPanner';
 import { Text } from '../nodes/Text';
@@ -67,6 +68,7 @@ export const nodeTypes = {
     envelope: Envelope,
     sequencer: Sequencer,
     looper: Looper,
+    random: Random,
 
     spdtFork: SPDTFork,
     spdtJoin: SPDTJoin,
