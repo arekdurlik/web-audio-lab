@@ -1,5 +1,6 @@
 import { ChangeEvent } from 'react';
 import styled from 'styled-components';
+import { window_frame } from '../../98';
 import { InputLabel } from './styled';
 
 type TextInputProps = {
@@ -54,7 +55,7 @@ export const TextInputWrapper = styled.div`
 
 const Input = styled.input<{ width?: number; error?: boolean }>`
     border-radius: 0;
-    border: 1px solid #000;
+    border: 1px solid ${window_frame};
     outline: none;
     z-index: 500;
     margin-left: 5px;

@@ -1,11 +1,12 @@
 import { cloneElement, ReactElement, useState } from 'react';
 import styled from 'styled-components';
-import { surface } from '../../../98';
+import { outsetBorder, surface } from '../../../98';
 import { useOutsideClick } from '../../../hooks/useOutsideClick';
 import { useUndoRedo } from '../../../hooks/useUndoRedo';
 import { useFlowStore } from '../../../stores/flowStore';
 import { File } from './File';
 import { Options } from './Options';
+import { Palette } from './Palette';
 import { MenuBarButton, MenuBarContainer, MenuBarOption } from './styled';
 
 export function MenuBar() {
@@ -23,6 +24,9 @@ export function MenuBar() {
                 </MenuBarItem> */}
                 <MenuBarItem label="Options">
                     <Options />
+                </MenuBarItem>
+                <MenuBarItem label="Palette">
+                    <Palette />
                 </MenuBarItem>
             </MenuBarContainer>
             <Group>
@@ -64,7 +68,9 @@ export const headerHeight = 21;
 const Container = styled.div`
     width: 100%;
     display: flex;
-    border: 1px outset;
+    box-sizing: border-box;
+    padding: 2px;
+    ${outsetBorder}
     height: ${headerHeight}px;
     background-color: ${surface};
 `;
@@ -77,7 +83,7 @@ const Button = styled.button`
     padding: 2px 15px;
     margin: 1px;
     min-height: unset;
-    height: 17px;
+    height: 15px;
     background: ${surface};
 
     &:disabled {

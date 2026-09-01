@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { text_color } from '../../98';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { MenuBar } from './MenuBar';
 
@@ -20,6 +21,7 @@ export function Navbar() {
 const Container = styled.div<{ scale: number }>`
     display: flex;
     justify-content: space-between;
+    color: ${text_color};
 
     ${({ scale }) => `zoom: ${scale};`}
 `;

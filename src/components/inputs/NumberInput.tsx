@@ -1,5 +1,6 @@
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+import { window_frame } from '../../98';
 import { clamp, countDecimals } from '../../helpers';
 
 type NumberInputProps = {
@@ -150,7 +151,7 @@ margin: 2px 5px;
 
 const Input = styled.input<{ width?: number }>`
     border-radius: 0;
-    border: 1px solid #000;
+    border: 1px solid ${window_frame};
     outline: none;
     z-index: 500;
     max-width: ${({ width }) => width}px;

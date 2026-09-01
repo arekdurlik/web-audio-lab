@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useReactFlow } from 'reactflow';
 import { useSettingsStore } from '../../../stores/settingsStore';
+import { Hr } from '../../nodes/BaseNode/styled';
 import { Menu, MenuItem } from './styled';
 
 export function Options() {
@@ -26,7 +27,7 @@ export function Options() {
             <MenuItem icon={uiScale === 2 ? 'radio' : ''} onClick={() => setUIScale(2)}>
                 Big UI
             </MenuItem>
-            <hr />
+            <Hr />
             <MenuItem
                 icon={edgeType === 'smoothstep' ? 'radio' : ''}
                 onClick={() => setEdgeType('smoothstep')}

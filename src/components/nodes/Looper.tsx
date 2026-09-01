@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { window_frame } from '../../98';
 import { LooperNode, LooperState } from '../../audio/nodes/LooperNode';
 import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
@@ -217,7 +218,7 @@ const PositionBar = styled.div`
     width: 100%;
     height: 4px;
     background: #ddd;
-    border: 1px solid #000;
+    border: 1px solid ${window_frame};
 `;
 
 const PositionFill = styled.div`

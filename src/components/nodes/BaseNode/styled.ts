@@ -1,7 +1,7 @@
 import { GiClockwiseRotation } from 'react-icons/gi';
 import { RiDeleteBin2Line } from 'react-icons/ri';
 import styled from 'styled-components';
-import { outsetBorder, surface } from '../../../98';
+import { button_highlight, button_shadow, outsetBorder, surface } from '../../../98';
 import { StyledLineHandle } from '../../handles/LineHandle';
 import { CheckboxWrapper } from '../../inputs/CheckboxInput';
 import { ExpandableInputWrapper, InputLabel } from '../../inputs/styled';
@@ -208,5 +208,5 @@ export const Hr = styled.div`
     left: 1px;
     width: calc(100% - 2px);
     height: 2px;
-    box-shadow: inset -1px -1px #ffffff, inset 1px 1px #808080;
+    box-shadow: inset -1px -1px ${button_highlight}, inset 1px 1px ${button_shadow};
 `;

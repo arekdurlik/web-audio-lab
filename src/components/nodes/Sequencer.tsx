@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useUpdateNodeInternals } from 'reactflow';
 import styled from 'styled-components';
+import { window_frame } from '../../98';
 import { MAX_STEPS, SequencerNode } from '../../audio/nodes/SequencerNode';
 import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
@@ -400,7 +401,7 @@ const AnchorButton = styled.button`
     max-width: 34px;
     height: 15px;
     border-radius: 0;
-    border: 1px solid #000;
+    border: 1px solid ${window_frame};
     outline: none;
     font-size: 9px;
     line-height: 1;
@@ -426,7 +427,7 @@ const StepInput = styled.input<{ $active?: boolean }>`
     min-width: 34px;
     max-width: 34px;
     border-radius: 0;
-    border: 1px solid #000;
+    border: 1px solid ${window_frame};
     outline: none;
     font-size: 10px;
     padding: 0 2px;

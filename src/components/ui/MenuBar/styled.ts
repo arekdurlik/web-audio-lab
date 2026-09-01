@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { insetBorder, surface, windowBorder } from '../../../98';
+import { insetBorder, outsetBorder, surface, windowBorder } from '../../../98';
 
 export const MenuBarContainer = styled.div`
     display: flex;
@@ -42,14 +42,14 @@ export const MenuBarButton = styled.button<{ active: boolean }>`
     padding: 3px 10px;
     min-width: auto;
     min-height: unset;
-    height: 19px;
+    height: 17px;
 
     &:active {
         box-shadow: none !important;
     }
 
     &:hover {
-        background-color: lightgray;
+        background-image: var(--hover-dither);
     }
 
     ${({ active }) =>
@@ -72,22 +72,31 @@ export const MenuItem = styled.button<{ icon?: string }>`
     position: relative;
 
     &:hover {
-        background-color: lightgray;
+        background-image: var(--hover-dither);
     }
 
     ${({ icon }) =>
         icon === 'radio' &&
         `
 &:before {
-  content: url('svg/radio.svg');
+  content: '';
   display: block;
   width: 6px;
   height: 6px;
-  position: absolute; 
+  position: absolute;
   left: 8px;
   top: 4px;
+  background-color: currentColor;
+  -webkit-mask: url('svg/radio.svg') no-repeat center / contain;
+  mask: url('svg/radio.svg') no-repeat center / contain;
 }
 `}
+`;
+
+export const PaletteRow = styled.div`
+    display: flex;
+    align-items: center;
+    padding: 2px;
 `;
 
 export const BottomBar = styled.div`
@@ -97,6 +106,6 @@ export const BottomBar = styled.div`
     display: flex;
     gap: 10px;
     align-items: center;
-    border: 1px outset;
+    ${outsetBorder}
     padding-inline: 2px;
 `;

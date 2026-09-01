@@ -2,7 +2,7 @@ import { DragEvent, useState } from 'react';
 import SVG from 'react-inlinesvg';
 import { useReactFlow } from 'reactflow';
 import styled from 'styled-components';
-import { outsetBorder, surface } from '../../98';
+import { button_shadow, outsetBorder, surface, text_color } from '../../98';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { initialNodeData, nodeSizes, NodeType } from '../FlowEditor/utils';
 import { headerHeight } from './MenuBar';
@@ -230,7 +230,7 @@ const Tab = styled.div<{ active: boolean }>`
     background-color: ${surface};
 
     &:hover {
-        background-color: lightgray;
+        background-image: var(--hover-dither);
         cursor: pointer;
     }
 
@@ -243,7 +243,7 @@ const Tab = styled.div<{ active: boolean }>`
 
 const Options = styled.div<{ active: boolean }>`
     overflow: hidden;
-    border-right: 1px outset;
+    border-right: 1px solid ${button_shadow};
 
     height: 0;
     ${({ active }) =>
@@ -265,12 +265,13 @@ const Option = styled.div`
     background-color: ${surface};
 
     &:hover {
-        background-color: lightgray;
+        background-image: var(--hover-dither);
     }
 `;
 
 const Container = styled.div<{ scale: number }>`
     background-color: ${surface};
+    color: ${text_color};
     box-sizing: border-box;
     overflow-y: auto;
     min-width: 100px;
@@ -281,6 +282,6 @@ const Container = styled.div<{ scale: number }>`
     ${({ scale }) => `zoom: ${scale};`}
 
     & > div:last-child > ${Options}:last-child {
-        border-bottom: 1px outset;
+        border-bottom: 1px solid ${button_shadow};
     }
 `;

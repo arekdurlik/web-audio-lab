@@ -1,5 +1,6 @@
 import SVG from 'react-inlinesvg';
 import styled from 'styled-components';
+import { window_frame } from '../../98';
 import { FlexContainer } from '../../styled';
 
 export const InputWrapper = styled.div`
@@ -16,7 +17,7 @@ export const InputLabel = styled.span`
 `;
 
 export const ParamInput = styled.input`
-    border: 1px solid #000;
+    border: 1px solid ${window_frame};
     border-radius: 0;
     margin-top: 5px;
     outline: none;
@@ -71,7 +72,7 @@ export const ExpandableInputLabel = styled(InputLabel)<{ $expanded?: boolean }>`
         $expanded !== undefined &&
         `
 &:hover {
-  background-color: lightgray;
+  background-image: var(--hover-dither);
   cursor: pointer;
 }
 `}
