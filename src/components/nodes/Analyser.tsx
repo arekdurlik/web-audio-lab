@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { convertFloatArrayToUint8, curve, invlerp } from '../../helpers';
+import { drawDithered, drawPixelText } from '../../canvas';
+import { hsvToRgb } from '../ui/ColorPicker/color';
+import { convertFloatArrayToUint8, curve, invlerp, lerp } from '../../helpers';
 import { useAudioNode } from '../../hooks/useAudioNode';
 import { useUpdateFlowNode } from '../../hooks/useUpdateFlowNode';
 import { audio } from '../../main';
@@ -14,6 +16,10 @@ import { Node } from './BaseNode';
 import { Hr } from './BaseNode/styled';
 import { Socket } from './BaseNode/types';
 import { AnalyserParams, AnalyserProps, AnalyserType } from './types';
+
+const LEVELS = 6;
+const VU_PIXEL_SIZE = 1;
+const BAR_PIXEL_SIZE = 1;
 
 export function Analyser({ id, data }: AnalyserProps) {
     const [params, setParams] = useState<AnalyserParams>({
@@ -46,14 +52,6 @@ export function Analyser({ id, data }: AnalyserProps) {
     const rafID = useRef(0);
     const imgData = useRef<Uint8ClampedArray>(new Uint8ClampedArray());
     const uniqueBucketsRef = useRef<{ length: number; unique: number[] } | null>(null);
-    const analyserGradientRef = useRef<{ c: CanvasRenderingContext2D; gradient: CanvasGradient } | null>(
-        null
-    );
-    const vuGradientRef = useRef<{
-        c: CanvasRenderingContext2D;
-        cwidth: number;
-        gradient: CanvasGradient;
-    } | null>(null);
     let fps = 75,
         fpsInterval: number,
         now,
@@ -82,7 +80,9 @@ export function Analyser({ id, data }: AnalyserProps) {
     useEffect(() => {
         if (!canvas.current) return;
 
-        setC(canvas.current.getContext('2d', { willReadFrequently: true }));
+        const ctx = canvas.current.getContext('2d', { willReadFrequently: true });
+        if (ctx) ctx.imageSmoothingEnabled = false;
+        setC(ctx);
     }, [canvas]);
 
     // setup canvas
@@ -234,16 +234,6 @@ export function Analyser({ id, data }: AnalyserProps) {
         const cheight = canvas.current.height;
         const meterWidth = 5;
 
-        if (analyserGradientRef.current?.c !== c) {
-            const gradient = c.createLinearGradient(0, 0, 0, 100);
-            gradient.addColorStop(1, `rgb(0, 255, 0)`);
-            gradient.addColorStop(0.075, `rgb(0, 255, 0)`);
-            gradient.addColorStop(0.074, `rgb(255, 0, 0)`);
-            gradient.addColorStop(0, `rgb(255, 0, 0)`);
-            analyserGradientRef.current = { c, gradient };
-        }
-        const gradient = analyserGradientRef.current.gradient;
-
         c.fillStyle = '#000000';
         c.fillRect(0, 0, cwidth, cheight);
 
@@ -262,8 +252,22 @@ export function Analyser({ id, data }: AnalyserProps) {
         for (let i = 0; i < bars; i++) {
             const value = dbArray[unique[Math.floor(i * (length / (7.5 * bars)))]];
 
-            c.fillStyle = gradient;
-            c.fillRect(i * meterWidth + i * gap, cheight, meterWidth, cheight - value + 100);
+            const barX = i * meterWidth + i * gap;
+            const h = cheight - value + 100;
+            const top = Math.max(0, Math.floor(cheight + Math.min(0, h)));
+            const bottom = Math.min(cheight, Math.ceil(cheight + Math.max(0, h)));
+            if (bottom <= top) continue;
+
+            drawDithered(
+                c,
+                meterWidth,
+                bottom - top,
+                LEVELS,
+                (x, y) => hsvToRgb(lerp(0, 120, invlerp(0, cheight, top + y)), 1, 1),
+                BAR_PIXEL_SIZE,
+                barX,
+                top
+            );
         }
     }
 
@@ -286,60 +290,60 @@ export function Analyser({ id, data }: AnalyserProps) {
         c.fillStyle = '#000000';
         c.fillRect(0, 0, cwidth, cheight);
 
-        c.font = '11px Pixelated MS Sans Serif';
-        c.fillStyle = '#aaa';
-        const h = cheight - 3;
+        const h = Math.round(cheight - 2);
+        const text = (str: string, x: number) =>
+            drawPixelText(c, str, x, h, '11px Pixelated MS Sans Serif', '#aaa');
+
         switch (widthRef.current) {
             case 1:
-                c.fillText('-30', cwidth * 0.006, h);
-                c.fillText('0', cwidth * 0.82, h);
+                text('-30', cwidth * 0.006);
+                text('0', cwidth * 0.82);
 
                 c.fillStyle = '#777';
-                c.fillRect(cwidth * 0.82 + 3.5, 0, 3, cheight - 20);
+                c.fillRect(Math.round(cwidth * 0.82 + 2.5), 0, 1, cheight - 14);
                 break;
             case 2:
-                c.fillText('-30', cwidth * 0.001, h);
-                c.fillText('-15', cwidth * 0.304, h);
-                c.fillText('-7', cwidth * 0.6, h);
-                c.fillText('0', cwidth * 0.8494, h);
+                text('-30', cwidth * 0.001);
+                text('-15', cwidth * 0.304);
+                text('-7', cwidth * 0.6);
+                text('0', cwidth * 0.8494);
 
                 c.fillStyle = '#777';
-                c.fillRect(cwidth * 0.854 + 3, 0, 3, cheight - 20);
+                c.fillRect(Math.round(cwidth * 0.854 + 2), 0, 1, cheight - 14);
                 break;
             case 3:
-                c.fillText('-30', cwidth * 0.001, h);
-                c.fillText('-20', cwidth * 0.225, h);
-                c.fillText('-10', cwidth * 0.527, h);
-                c.fillText('-5', cwidth * 0.695, h);
-                c.fillText('0', cwidth * 0.865, h);
-                c.fillText('dB', cwidth * 0.919, h);
+                text('-30', cwidth * 0.001);
+                text('-20', cwidth * 0.225);
+                text('-10', cwidth * 0.527);
+                text('-5', cwidth * 0.695);
+                text('0', cwidth * 0.865);
+                text('dB', cwidth * 0.919);
 
                 c.fillStyle = '#777';
-                c.fillRect(cwidth * 0.865 + 3.5, 0, 3, cheight - 20);
+                c.fillRect(Math.round(cwidth * 0.865 + 2.5), 0, 1, cheight - 14);
                 break;
             case 4:
-                c.fillText('-30', cwidth * 0.001, h);
-                c.fillText('-20', cwidth * 0.246, h);
-                c.fillText('-10', cwidth * 0.544, h);
-                c.fillText('-5', cwidth * 0.701, h);
-                c.fillText('0', cwidth * 0.87, h);
-                c.fillText('dB', cwidth * 0.939, h);
+                text('-30', cwidth * 0.001);
+                text('-20', cwidth * 0.246);
+                text('-10', cwidth * 0.544);
+                text('-5', cwidth * 0.701);
+                text('0', cwidth * 0.87);
+                text('dB', cwidth * 0.939);
 
                 c.fillStyle = '#777';
-                c.fillRect(cwidth * 0.8675 + 3.5, 0, 3, cheight - 20);
+                c.fillRect(Math.round(cwidth * 0.8675 + 2.5), 0, 1, cheight - 14);
                 break;
         }
 
-        if (vuGradientRef.current?.c !== c || vuGradientRef.current?.cwidth !== cwidth) {
-            const gradient = c.createLinearGradient(cwidth, 0, 0, 0);
-            gradient.addColorStop(1, `rgb(0, 255, 0)`);
-            gradient.addColorStop(0.119, `rgb(0, 255, 0)`);
-            gradient.addColorStop(0.118, `rgb(255, 0, 0)`);
-            gradient.addColorStop(0, `rgb(255, 0, 0)`);
-            vuGradientRef.current = { c, cwidth, gradient };
-        }
-        c.fillStyle = vuGradientRef.current.gradient;
-        c.fillRect(0, 0, cwidth * invlerp(-30, 4, avgPowerDecibels), cheight - 20);
+        const activeWidth = cwidth * invlerp(-30, 4, avgPowerDecibels);
+        drawDithered(
+            c,
+            activeWidth,
+            cheight - 14,
+            LEVELS,
+            x => hsvToRgb(lerp(120, 0, invlerp(0, cwidth * 0.881, x)), 1, 1),
+            VU_PIXEL_SIZE
+        );
     }
 
     const Parameters = (
@@ -353,7 +357,7 @@ export function Analyser({ id, data }: AnalyserProps) {
                 options={[
                     { value: 'oscilloscope', label: 'Oscilloscope' },
                     { value: 'analyser', label: 'Spectrum analyser' },
-                    { value: 'vu-meter', label: 'VU Meter' },
+                    { value: 'vu-meter', label: 'VU meter' },
                 ]}
                 expanded={params.expanded.t}
                 onExpandChange={v =>

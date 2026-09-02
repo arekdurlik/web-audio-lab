@@ -193,6 +193,7 @@ export const HoverOptions = styled.div<{ color?: string }>`
     justify-content: space-between;
     z-index: 1;
     ${({ color }) => color && `color: ${color};`}
+    ${({ color }) => color === 'white' && `filter: drop-shadow(1px 1px 0 #000);`}
 
     & > div {
         display: flex;
