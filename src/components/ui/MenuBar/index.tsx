@@ -7,6 +7,7 @@ import { useFlowStore } from '../../../stores/flowStore';
 import { File } from './File';
 import { Options } from './Options';
 import { Palette } from './Palette';
+import { MasterMeter } from './MasterMeter';
 import { MenuBarButton, MenuBarContainer, MenuBarOption } from './styled';
 
 export function MenuBar() {
@@ -30,15 +31,18 @@ export function MenuBar() {
                 </MenuBarItem>
             </MenuBarContainer>
             <Group>
-                <Button disabled={!canUndo} onClick={undo}>
-                    Undo
-                </Button>
-                <Button disabled={!canRedo} onClick={redo}>
-                    Redo
-                </Button>
+                <ButtonGroup>
+                    <Button disabled={!canUndo} onClick={undo}>
+                        Undo
+                    </Button>
+                    <Button disabled={!canRedo} onClick={redo}>
+                        Redo
+                    </Button>
+                </ButtonGroup>
                 <Button className={`${editMode && 'active'}`} onClick={() => setEditMode(!editMode)}>
                     Edit mode
                 </Button>
+                <MasterMeter />
             </Group>
         </Container>
     );
@@ -63,11 +67,12 @@ function MenuBarItem({ label, children }: { label: string; children: ReactElemen
     );
 }
 
-export const headerHeight = 21;
+export const headerHeight = 22;
 
 const Container = styled.div`
     width: 100%;
     display: flex;
+    align-items: center;
     box-sizing: border-box;
     padding: 2px;
     ${outsetBorder}
@@ -77,14 +82,25 @@ const Container = styled.div`
 
 const Group = styled.div`
     display: flex;
+    align-items: center;
+`;
+
+const ButtonGroup = styled.div`
+    display: flex;
+    margin: 1px;
+
+    > * {
+        margin: 0;
+    }
 `;
 
 const Button = styled.button`
     padding: 2px 15px;
     margin: 1px;
-    min-height: unset;
-    height: 15px;
+    min-width: unset;
+    min-height: 16px;
     background: ${surface};
+    white-space: nowrap;
 
     &:disabled {
         color: #888;

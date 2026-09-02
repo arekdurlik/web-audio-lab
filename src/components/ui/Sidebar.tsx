@@ -2,7 +2,7 @@ import { DragEvent, useState } from 'react';
 import SVG from 'react-inlinesvg';
 import { useReactFlow } from 'reactflow';
 import styled from 'styled-components';
-import { button_shadow, outsetBorder, surface, text_color } from '../../98';
+import { button_shadow, fieldBorder, outsetBorder, surface, text_color } from '../../98';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { initialNodeData, nodeSizes, NodeType } from '../FlowEditor/utils';
 import { headerHeight } from './MenuBar';
@@ -135,8 +135,18 @@ export function Sidebar() {
             ],
         },
     ]);
+    const [query, setQuery] = useState('');
     const uiScale = useSettingsStore(state => state.uiScale);
     const { setNodes, screenToFlowPosition, getNodes } = useReactFlow();
+
+    const isFiltering = !!query.trim();
+    const filteredGroups = options.map(o => ({
+        ...o,
+        items: isFiltering
+            ? o.items.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase()))
+            : o.items,
+    }));
+    const hasResults = !isFiltering || filteredGroups.some(o => o.items.length > 0);
 
     function handleTabClick(index: number) {
         const newOptions = options.slice();
@@ -189,26 +199,41 @@ export function Sidebar() {
             }}
             scale={uiScale}
         >
-            {options.map((o, i) => (
-                <div key={i}>
-                    <Tab active={options[i].active} onClick={() => handleTabClick(i)}>
-                        <Triangle src={triangle} />
-                        {o.title}
-                    </Tab>
-                    <Options active={options[i].active}>
-                        {o.items.map((item, j) => (
-                            <Option
-                                key={j}
-                                onDragStart={event => onDragStart(event, item.id)}
-                                onClick={handleClick(item.id as NodeType)}
-                                draggable
+            <SearchContainer>
+                <SearchInput
+                    type="text"
+                    placeholder="Search..."
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
+                />
+            </SearchContainer>
+            {filteredGroups.map(
+                (o, i) =>
+                    (!isFiltering || o.items.length > 0) && (
+                        <div key={i}>
+                            <Tab
+                                active={isFiltering || options[i].active}
+                                onClick={() => !isFiltering && handleTabClick(i)}
                             >
-                                {item.label}
-                            </Option>
-                        ))}
-                    </Options>
-                </div>
-            ))}
+                                <Triangle src={triangle} />
+                                {o.title}
+                            </Tab>
+                            <Options active={isFiltering || options[i].active}>
+                                {o.items.map((item, j) => (
+                                    <Option
+                                        key={j}
+                                        onDragStart={event => onDragStart(event, item.id)}
+                                        onClick={handleClick(item.id as NodeType)}
+                                        draggable
+                                    >
+                                        {item.label}
+                                    </Option>
+                                ))}
+                            </Options>
+                        </div>
+                    )
+            )}
+            {!hasResults && <NoResults>No results</NoResults>}
         </Container>
     );
 }
@@ -259,6 +284,29 @@ const Options = styled.div<{ active: boolean }>`
         cursor: grab;
     }
 `;
+const SearchContainer = styled.div`
+    display: flex;
+    border-right: 1px solid ${button_shadow};
+`;
+
+const SearchInput = styled.input`
+    display: block;
+    box-sizing: border-box;
+    flex: 1;
+    width: auto;
+    margin: 2px;
+    padding: 3px 5px;
+    outline: none;
+    ${fieldBorder}
+`;
+
+const NoResults = styled.div`
+    padding: 8px 5px;
+    color: ${button_shadow};
+    border-right: 1px solid ${button_shadow};
+    border-bottom: 1px solid ${button_shadow};
+`;
+
 const Option = styled.div`
     padding: 5px;
 

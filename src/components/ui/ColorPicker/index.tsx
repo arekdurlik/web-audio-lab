@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { fieldBorder, surface, windowBorder } from '../../../98';
+import { drawDithered } from '../../../canvas';
 import { useOutsideClick } from '../../../hooks/useOutsideClick';
-import { ditherChannel, hexToRgb, hsvToRgb, rgbToHex, rgbToHsv } from './color';
+import { hexToRgb, hsvToRgb, rgbToHex, rgbToHsv } from './color';
 
 const SV_SIZE = 64;
 const SV_SCALE = 1;
@@ -42,19 +43,11 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        for (let y = 0; y < SV_SIZE; y++) {
-            for (let x = 0; x < SV_SIZE; x++) {
-                const s = x / (SV_SIZE - 1);
-                const v = 1 - y / (SV_SIZE - 1);
-                const [r, g, b] = hsvToRgb(hue, s, v);
-                ctx.fillStyle = rgbToHex(
-                    ditherChannel(r, x, y, LEVELS),
-                    ditherChannel(g, x, y, LEVELS),
-                    ditherChannel(b, x, y, LEVELS)
-                );
-                ctx.fillRect(x, y, 1, 1);
-            }
-        }
+        drawDithered(ctx, SV_SIZE, SV_SIZE, LEVELS, (x, y) => {
+            const s = x / (SV_SIZE - 1);
+            const v = 1 - y / (SV_SIZE - 1);
+            return hsvToRgb(hue, s, v);
+        });
     }, [hue, open]);
 
     useEffect(() => {
@@ -63,18 +56,10 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        for (let x = 0; x < HUE_WIDTH; x++) {
+        drawDithered(ctx, HUE_WIDTH, HUE_HEIGHT, LEVELS, x => {
             const h = (x / (HUE_WIDTH - 1)) * 360;
-            const [r, g, b] = hsvToRgb(h, 1, 1);
-            for (let y = 0; y < HUE_HEIGHT; y++) {
-                ctx.fillStyle = rgbToHex(
-                    ditherChannel(r, x, y, LEVELS),
-                    ditherChannel(g, x, y, LEVELS),
-                    ditherChannel(b, x, y, LEVELS)
-                );
-                ctx.fillRect(x, y, 1, 1);
-            }
-        }
+            return hsvToRgb(h, 1, 1);
+        });
     }, [open]);
 
     function commit(h: number, s: number, v: number) {

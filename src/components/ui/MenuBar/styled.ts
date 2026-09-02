@@ -3,6 +3,7 @@ import { insetBorder, outsetBorder, surface, windowBorder } from '../../../98';
 
 export const MenuBarContainer = styled.div`
     display: flex;
+    align-items: center;
 
     position: relative;
     width: 100%;
@@ -41,8 +42,7 @@ export const MenuBarButton = styled.button<{ active: boolean }>`
     border: none;
     padding: 3px 10px;
     min-width: auto;
-    min-height: unset;
-    height: 17px;
+    min-height: 16px;
 
     &:active {
         box-shadow: none !important;

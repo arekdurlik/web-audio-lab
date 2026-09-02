@@ -12,6 +12,7 @@ async function createAudio() {
         in: new GainNode(actx),
         out: new GainNode(actx),
     };
+    const meter = new AnalyserNode(actx, { smoothingTimeConstant: 0, fftSize: 512 });
     const monoToStereo = createMonoToStereoConverter(actx);
 
     await actx.audioWorklet.addModule('worklet/bit-crusher-processor.js');
@@ -21,6 +22,7 @@ async function createAudio() {
 
     monoToStereo.output.connect(circuit.in);
     circuit.out.connect(destination);
+    circuit.out.connect(meter);
 
     async function handleGetLive() {
         try {
@@ -38,6 +40,7 @@ async function createAudio() {
     return {
         context: actx,
         circuit,
+        meter,
         getLive: () => handleGetLive(),
     };
 }
