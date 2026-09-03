@@ -195,6 +195,7 @@ const Value = styled.div<{ color?: string; font?: string }>`
     padding: 1px 3px;
     font-size: 11px;
     width: 100%;
+    -webkit-font-smoothing: antialiased;
 
     ${({ color }) => color && `color: ${color};`}
     ${({ font }) => font && `font-family: '${font}';`}

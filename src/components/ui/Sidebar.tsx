@@ -97,6 +97,14 @@ export function Sidebar() {
                     label: 'Looper',
                 },
                 {
+                    id: 'freeze',
+                    label: 'Freeze',
+                },
+                {
+                    id: 'granular',
+                    label: 'Granular',
+                },
+                {
                     id: 'random',
                     label: 'Random',
                 },

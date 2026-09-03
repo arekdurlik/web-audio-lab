@@ -9,8 +9,10 @@ import { Convolver } from '../nodes/Convolver';
 import { Delay } from '../nodes/Delay';
 import { Destination } from '../nodes/Destination';
 import { Envelope } from '../nodes/Envelope';
+import { Freeze } from '../nodes/Freeze';
 import { Gain } from '../nodes/Gain';
 import { Gate } from '../nodes/Gate';
+import { Granular } from '../nodes/Granular';
 import { Knob } from '../nodes/Knob';
 import { LiveInput } from '../nodes/LiveInput';
 import { Looper } from '../nodes/Looper';
@@ -69,6 +71,8 @@ export const nodeTypes = {
     sequencer: Sequencer,
     looper: Looper,
     random: Random,
+    freeze: Freeze,
+    granular: Granular,
 
     spdtFork: SPDTFork,
     spdtJoin: SPDTJoin,

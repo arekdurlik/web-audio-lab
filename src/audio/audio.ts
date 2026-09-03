@@ -19,6 +19,8 @@ async function createAudio() {
     await actx.audioWorklet.addModule('worklet/gate-processor.js');
     await actx.audioWorklet.addModule('worklet/playback-reporting-processor.js');
     await actx.audioWorklet.addModule('worklet/looper-processor.js');
+    await actx.audioWorklet.addModule('worklet/freeze-processor.js');
+    await actx.audioWorklet.addModule('worklet/granular-recorder-processor.js');
 
     monoToStereo.output.connect(circuit.in);
     circuit.out.connect(destination);

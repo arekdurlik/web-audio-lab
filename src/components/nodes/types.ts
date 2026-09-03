@@ -251,6 +251,50 @@ export type LooperProps = NodeProps & {
     };
 };
 
+export type FreezeParams = FreezeProps['data']['params'];
+export type FreezeProps = NodeProps & {
+    data: {
+        params: {
+            frozen: boolean;
+            sampleLength: number;
+            sampleLengthMin: number;
+            sampleLengthMax: number;
+            rampUp: number;
+            rampUpMin: number;
+            rampUpMax: number;
+            rampDown: number;
+            rampDownMin: number;
+            rampDownMax: number;
+            crossfade: number;
+        };
+    };
+};
+
+export type GranularNodeParams = GranularNodeProps['data']['params'];
+export type GranularNodeProps = NodeProps & {
+    data: {
+        params: {
+            playing: boolean;
+            held: boolean;
+            sourceMode: 'live' | 'file';
+            source: string;
+            position: number;
+            seek: number;
+            spray: number;
+            size: number;
+            pitch: number;
+            pitchJitter: number;
+            direction: number;
+            pan: number;
+            density: number;
+            attack: number;
+            decay: number;
+            captureLength: number;
+            width: number;
+        };
+    };
+};
+
 export type WaveShaperType = 'array' | 'equation';
 export type WaveShaperParams = WaveShaperProps['data']['params'];
 export type WaveShaperProps = NodeProps & {
