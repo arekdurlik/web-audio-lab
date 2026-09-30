@@ -179,6 +179,8 @@ export function FlowEditor() {
                 onEdgeUpdateStart={onEdgeUpdateStart}
                 onEdgeUpdateEnd={onEdgeUpdateEnd}
                 onConnect={onConnect}
+                defaultEdgeOptions={{ interactionWidth: 16 }}
+                deleteKeyCode={['Backspace', 'Delete']}
                 onNodeDragStart={onNodeDragStart}
                 onDrop={onDrop}
                 onDragOver={onDragOver}

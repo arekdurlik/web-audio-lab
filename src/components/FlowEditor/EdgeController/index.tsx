@@ -151,12 +151,15 @@ function BezierEdge({
         };
     }, []);
 
-    function setPixel(x: number, y: number, width: number) {
-        var n = (y * width + x) * 4;
+    function setPixel(x: number, y: number, width: number, height: number, index: number) {
+        if (x < 0 || x >= width || y < 0 || y >= height) return;
+
+        const alpha = edge.selected && index % 2 === 1 ? 0 : 255;
+        const n = (y * width + x) * 4;
         imgData.current[n] = 0;
         imgData.current[n + 1] = 0;
         imgData.current[n + 2] = 0;
-        imgData.current[n + 3] = 255;
+        imgData.current[n + 3] = alpha;
     }
 
     useEffect(() => {
@@ -184,6 +187,7 @@ function BezierEdge({
         canvas.style.height = height + 'px';
 
         canvas.style.position = 'absolute';
+        canvas.style.pointerEvents = 'none';
 
         canvas.style.left = -edgeWrapper.x + Math.round(left) - 0.5 * zoom + 'px';
         canvas.style.top =
@@ -236,6 +240,7 @@ function BezierEdge({
         const tx2 = tx - (p_tx - p_tx2);
         const ty2 = ty - (p_ty - p_ty2);
 
+        let pixelIndex = 0;
         plotCubicBezier(
             Math.round(sx),
             Math.round(sy),
@@ -246,11 +251,11 @@ function BezierEdge({
             Math.round(tx),
             Math.round(ty),
             (x: number, y: number) => {
-                setPixel(x, y, canvas.width);
+                setPixel(x, y, canvas.width, canvas.height, pixelIndex++);
             }
         );
         ctx.putImageData(imageData, 0, 0);
-    }, [zoom, el, sourceRect, targetRect]);
+    }, [zoom, el, sourceRect, targetRect, edge.selected]);
 
     return null;
 }
