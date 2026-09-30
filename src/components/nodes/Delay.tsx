@@ -44,7 +44,6 @@ export function Delay({ id, data }: DelayProps) {
             visual: 'param',
             type: 'target',
             edge: 'top',
-            offset: 48,
         },
         {
             id: audioId,

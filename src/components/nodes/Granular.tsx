@@ -97,7 +97,7 @@ function GranularViz({ instance, width }: { instance: GranularNode; width: numbe
             }
 
             // spray/pan box: where new grains can currently spawn
-            const posX = instance.params.position * width;
+            const posX = instance.readPosition() * width;
             const boxW = Math.round(instance.params.spray * width * 2);
             const boxH = Math.round(instance.params.pan * height);
             const boxX = Math.round(posX - boxW / 2);
@@ -159,7 +159,7 @@ export function Granular({ id, data }: GranularNodeProps) {
             attack: 0.3,
             decay: 0.3,
             captureLength: 20,
-            width: 4,
+            width: 5,
             expanded: {
                 source: true,
                 timing: true,
@@ -395,7 +395,7 @@ export function Granular({ id, data }: GranularNodeProps) {
                 expanded={params.expanded.display}
                 onToggle={v => setSectionExpanded('display', v)}
             >
-                {control('width', '', 1, 4, 1)}
+                {control('width', '', 1, 5, 1)}
             </Section>
         </FlexContainer>
     );

@@ -47,7 +47,6 @@ export function ConstantSource({ id, data }: ConstantSourceProps) {
             visual: 'param',
             type: 'target',
             edge: 'top',
-            offset: 48,
         },
     ];
 

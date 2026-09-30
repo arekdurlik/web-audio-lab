@@ -31,9 +31,37 @@ export type ActiveGrain = {
     speed: number;
 };
 
+class ModParam {
+    readonly offset: AudioParam;
+
+    private source: ConstantSourceNode;
+    private analyser: AnalyserNode;
+    private data: Float32Array;
+
+    constructor(ctx: AudioContext, initial: number, mute: GainNode) {
+        this.source = new ConstantSourceNode(ctx, { offset: initial });
+        this.offset = this.source.offset;
+        this.analyser = new AnalyserNode(ctx, { fftSize: 32 });
+        this.data = new Float32Array(this.analyser.fftSize);
+        this.source.connect(this.analyser).connect(mute);
+        this.source.start();
+    }
+
+    set(ctx: AudioContext, value: number) {
+        this.offset.setValueAtTime(value, ctx.currentTime);
+    }
+
+    read(): number {
+        this.analyser.getFloatTimeDomainData(this.data as unknown as Float32Array<ArrayBuffer>);
+        return this.data[this.data.length - 1];
+    }
+}
+
 export class GranularNode {
     readonly recorder: AudioWorkletNode;
     readonly output: GainNode;
+    readonly positionParam: AudioParam;
+    readonly pitchParam: AudioParam;
 
     params: GranularParams = {
         position: 0.5,
@@ -63,6 +91,8 @@ export class GranularNode {
     private mute: GainNode;
     private activeGrains: ActiveGrain[] = [];
     private events = new EventTarget();
+    private positionMod: ModParam;
+    private pitchMod: ModParam;
 
     constructor(ctx: AudioContext) {
         this.ctx = ctx;
@@ -72,6 +102,11 @@ export class GranularNode {
 
         this.mute = new GainNode(ctx, { gain: 0 });
         this.recorder.connect(this.mute).connect(ctx.destination);
+
+        this.positionMod = new ModParam(ctx, this.params.position, this.mute);
+        this.pitchMod = new ModParam(ctx, this.params.pitch, this.mute);
+        this.positionParam = this.positionMod.offset;
+        this.pitchParam = this.pitchMod.offset;
     }
 
     attach() {
@@ -87,6 +122,8 @@ export class GranularNode {
         const directionChanged =
             patch.direction !== undefined && patch.direction !== this.params.direction;
         this.params = { ...this.params, ...patch };
+        if (patch.position !== undefined) this.positionMod.set(this.ctx, patch.position);
+        if (patch.pitch !== undefined) this.pitchMod.set(this.ctx, patch.pitch);
         if (densityChanged && this.playing) this.restartSpawner();
         if (captureLengthChanged && this.playing && !this.held) this.startSnapshotting();
         if (directionChanged && !this.liveMode) this.buildReverseBuffer();
@@ -137,6 +174,7 @@ export class GranularNode {
                 (((this.params.position + (this.params.seek * SEEK_INTERVAL_MS) / 1000) % 1) + 1) %
                 1;
             this.params.position = next;
+            this.positionMod.set(this.ctx, next);
             this.events.dispatchEvent(new CustomEvent('position', { detail: next }));
         }, SEEK_INTERVAL_MS);
     }
@@ -162,6 +200,14 @@ export class GranularNode {
 
     getBuffer(): AudioBuffer | null {
         return this.buffer;
+    }
+
+    readPosition(): number {
+        return this.positionMod.read();
+    }
+
+    readPitch(): number {
+        return this.pitchMod.read();
     }
 
     getActiveGrains(): ActiveGrain[] {
@@ -221,8 +267,8 @@ export class GranularNode {
     private spawnGrain() {
         if (!this.buffer || this.grains >= MAX_GRAINS) return;
 
-        const { position, spray, size, pitch, pitchJitter, direction, pan, attack, decay } =
-            this.params;
+        const { pitch, spray, size, pitchJitter, direction, pan, attack, decay } = this.params;
+        const position = this.positionMod.read();
         const reverse = Math.random() > direction;
         if (reverse && !this.reverseBuffer) return;
 

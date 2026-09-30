@@ -62,8 +62,12 @@ const Triangle = styled(SVG)<{ direction: 'right' | 'bottom' | 'left' | 'top' }>
     width: 12px;
     height: 6px;
     fill: #fff;
-    stroke: #000;
+    stroke: currentColor;
     stroke-width: 1px;
+
+    path {
+        stroke: currentColor;
+    }
 
     ${({ direction }) => {
         switch (direction) {

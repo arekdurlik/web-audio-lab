@@ -58,7 +58,6 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
             visual: 'param',
             type: 'target',
             edge: 'top',
-            offset: 32,
         },
         {
             id: detuneId,
@@ -66,7 +65,6 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
             visual: 'param',
             type: 'target',
             edge: 'top',
-            offset: 64,
         },
         {
             id: QId,
@@ -74,7 +72,6 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
             visual: 'param',
             type: 'target',
             edge: 'bottom',
-            offset: 64,
         },
         {
             id: gainId,
@@ -82,7 +79,6 @@ export function BiquadFilter({ id, data }: BiquadFilterProps) {
             visual: 'param',
             type: 'target',
             edge: 'bottom',
-            offset: 32,
         },
         {
             id: audioId,

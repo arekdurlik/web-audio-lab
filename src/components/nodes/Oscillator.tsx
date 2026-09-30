@@ -45,7 +45,6 @@ export function Oscillator({ id, data }: OscillatorProps) {
             visual: 'param',
             type: 'target',
             edge: 'bottom',
-            offset: 48,
         },
         {
             id: detuneId,
@@ -53,7 +52,6 @@ export function Oscillator({ id, data }: OscillatorProps) {
             visual: 'param',
             type: 'target',
             edge: 'top',
-            offset: 48,
         },
         {
             id: audioId,

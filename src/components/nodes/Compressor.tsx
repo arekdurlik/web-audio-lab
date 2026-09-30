@@ -60,7 +60,6 @@ export function Compressor({ id, data }: CompressorProps) {
             visual: 'param',
             type: 'target',
             edge: 'top',
-            offset: 32,
         },
         {
             id: kneeId,
@@ -68,7 +67,6 @@ export function Compressor({ id, data }: CompressorProps) {
             visual: 'param',
             type: 'target',
             edge: 'top',
-            offset: 64,
         },
         {
             id: attackId,
@@ -76,7 +74,6 @@ export function Compressor({ id, data }: CompressorProps) {
             visual: 'param',
             type: 'target',
             edge: 'bottom',
-            offset: 24,
         },
         {
             id: releaseId,
@@ -84,7 +81,6 @@ export function Compressor({ id, data }: CompressorProps) {
             visual: 'param',
             type: 'target',
             edge: 'bottom',
-            offset: 48,
         },
         {
             id: ratioId,
@@ -92,7 +88,6 @@ export function Compressor({ id, data }: CompressorProps) {
             visual: 'param',
             type: 'target',
             edge: 'bottom',
-            offset: 72,
         },
         {
             id: audioId,

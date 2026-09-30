@@ -98,7 +98,6 @@ export function AudioBufferSource({ id, data }: AudioBufferSourceProps) {
             visual: 'param',
             type: 'target',
             edge: 'top',
-            offset: 48.5,
         },
     ];
 

@@ -7,7 +7,10 @@ export type Socket = {
     visual?: 'line' | 'param' | 'circle';
     type: 'target' | 'source';
     edge: Edge;
-    offset: number | [number, number, number, number];
+    /** Manual pixel offset. Omit on 'param' sockets to auto-layout (centered/spread) along the edge. */
+    offset?: number | [number, number, number, number];
+    /** Auto-layout only: use a 1.5-grid gap instead of 2-grid when spreading multiple sockets. */
+    compact?: boolean;
 };
 export type Edge = 'left' | 'top' | 'right' | 'bottom';
 
@@ -34,6 +37,7 @@ export type NodeProps = {
     borderColor?: string;
     background?: ReactNode;
     optionsColor?: string;
+    handleColor?: string;
     valueFont?: string;
     valueColor?: string;
     valueUnit?: string;

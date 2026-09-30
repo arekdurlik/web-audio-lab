@@ -1,6 +1,6 @@
 import { FC, MouseEvent, useEffect, useRef, useState } from 'react';
 import SVG from 'react-inlinesvg';
-import { useUpdateNodeInternals } from 'reactflow';
+import { Position, useUpdateNodeInternals } from 'reactflow';
 import styled from 'styled-components';
 import { useOutsideClick } from '../../../hooks/useOutsideClick';
 import { useUpdateFlowNode } from '../../../hooks/useUpdateFlowNode';
@@ -36,6 +36,7 @@ export const Node: FC<NodeProps> = function ({
     borderColor = '#000',
     background,
     optionsColor,
+    handleColor,
     valueFont,
     valueColor,
     valueUnit,
@@ -55,6 +56,8 @@ export const Node: FC<NodeProps> = function ({
     const gridSize = 16;
     const mulWidth = width * gridSize + 1;
     const mulHeight = height * gridSize + 1;
+    const renderedWidth = rotation === 0 || rotation === 2 || constantSize ? mulWidth : mulHeight;
+    const renderedHeight = rotation === 0 || rotation === 2 || constantSize ? mulHeight : mulWidth;
 
     useEffect(() => {
         updateNode({ rotation });
@@ -81,15 +84,46 @@ export const Node: FC<NodeProps> = function ({
         setExpanded(!expanded);
     }
 
+    const resolvedPositions = sockets.map(
+        socket => positions[rotation][getEdgeIndex(socket.edge)]
+    );
+
+    const autoOffsets = new Map<number, number>();
+    (Object.values(Position) as Position[]).forEach(pos => {
+        const indices = sockets.reduce<number[]>((acc, socket, i) => {
+            if (
+                socket.visual === 'param' &&
+                socket.offset === undefined &&
+                resolvedPositions[i] === pos
+            ) {
+                acc.push(i);
+            }
+            return acc;
+        }, []);
+        if (!indices.length) return;
+
+        const length = pos === Position.Left || pos === Position.Right ? renderedHeight : renderedWidth;
+        const compact = indices.some(i => sockets[i].compact);
+        const gap = (compact ? 1.5 : 2) * gridSize;
+        const center = length / 2;
+
+        indices.forEach((socketIndex, n) => {
+            const offset = center + (n - (indices.length - 1) / 2) * gap;
+            autoOffsets.set(socketIndex, offset);
+        });
+    });
+
     const handles = sockets.map((socket, i) => {
         const props = {
             key: i,
             id: socket.id,
             label: socket.label,
             type: socket.type,
-            position: positions[rotation][getEdgeIndex(socket.edge)],
+            position: resolvedPositions[i],
             offset:
-                socket.offset instanceof Array
+                socket.offset === undefined
+                    ? (autoOffsets.get(i) ?? 0) + 0.5
+                    : socket.offset instanceof Array
                     ? socket.offset[rotation] + 0.5
                     : socket.offset + 0.5,
             tooltip: socket.tooltip,
@@ -113,8 +147,8 @@ export const Node: FC<NodeProps> = function ({
             ref={activator}
         >
             <NodeContainer
-                width={rotation === 0 || rotation === 2 || constantSize ? mulWidth : mulHeight}
-                height={rotation === 0 || rotation === 2 || constantSize ? mulHeight : mulWidth}
+                width={renderedWidth}
+                height={renderedHeight}
                 disableBackground={disableBackground}
                 disableBorder={disableBorder}
                 active={expanded}
@@ -163,7 +197,7 @@ export const Node: FC<NodeProps> = function ({
                         )}
                     </HoverOptions>
                 )}
-                {handles}
+                <HandlesColor $color={handleColor}>{handles}</HandlesColor>
                 <NodeTitle position={labelPosition} rotation={rotation}>
                     {name}
                 </NodeTitle>
@@ -187,6 +221,11 @@ export const Node: FC<NodeProps> = function ({
         </div>
     );
 };
+
+const HandlesColor = styled.div<{ $color?: string }>`
+    display: contents;
+    ${({ $color }) => $color && `color: ${$color};`}
+`;
 
 const Value = styled.div<{ color?: string; font?: string }>`
     position: absolute;

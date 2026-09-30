@@ -44,7 +44,6 @@ export function StereoPanner({ id, data }: StereoPannerProps) {
             visual: 'param',
             type: 'target',
             edge: 'top',
-            offset: 48,
         },
         {
             id: audioId,

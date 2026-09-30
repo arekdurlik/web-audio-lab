@@ -59,8 +59,8 @@ export function Looper({ id, data }: LooperProps) {
     const loopId = `${id}-loop`;
     const sockets: Socket[] = [
         { id: audioId, label: '', type: 'target', edge: 'left', offset: 32 },
-        { id: speedId, label: 's', visual: 'param', type: 'target', edge: 'top', offset: 32 },
-        { id: positionId, label: 'p', visual: 'param', type: 'target', edge: 'top', offset: 64 },
+        { id: speedId, label: 's', visual: 'param', type: 'target', edge: 'top' },
+        { id: positionId, label: 'p', visual: 'param', type: 'target', edge: 'top' },
         { id: triggerId, type: 'source', edge: 'right', tooltip: 'Playback trigger', offset: 48 },
         { id: loopId, type: 'source', edge: 'right', tooltip: 'Loop only', offset: 32 },
         { id: audioId, type: 'source', edge: 'right', tooltip: 'Audio', offset: 16 },
