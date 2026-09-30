@@ -73,6 +73,10 @@ export function Sidebar() {
             active: false,
             items: [
                 {
+                    id: 'attenuverter',
+                    label: 'Attenuverter',
+                },
+                {
                     id: 'bitcrusher',
                     label: 'Bitcrusher',
                 },

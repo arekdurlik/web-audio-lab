@@ -24,6 +24,23 @@ export type GainProps = NodeProps & {
     };
 };
 
+export type AttenuverterParams = AttenuverterProps['data']['params'];
+export type AttenuverterProps = NodeProps & {
+    data: {
+        params: {
+            amount: number;
+            amountMin: number;
+            amountMax: number;
+            offset: number;
+            offsetMin: number;
+            offsetMax: number;
+            ramp: number;
+            rampMin: number;
+            rampMax: number;
+        };
+    };
+};
+
 export type EnvelopeParams = EnvelopeProps['data']['params'];
 export type EnvelopeProps = NodeProps & {
     data: {

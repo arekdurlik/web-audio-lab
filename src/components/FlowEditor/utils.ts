@@ -1,5 +1,6 @@
 import { Node } from 'reactflow';
 import { Analyser } from '../nodes/Analyser';
+import { Attenuverter } from '../nodes/Attenuverter';
 import { AudioBufferSource } from '../nodes/AudioBufferSource';
 import { BiquadFilter } from '../nodes/BiquadFilter';
 import { Bitcrusher } from '../nodes/Bitcrusher';
@@ -46,6 +47,7 @@ export const initialNodes: Node[] = [
 ];
 
 export const nodeTypes = {
+    attenuverter: Attenuverter,
     delayNode: Delay,
     gainNode: Gain,
     convolverNode: Convolver,
